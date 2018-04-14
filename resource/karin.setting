@@ -1,0 +1,15 @@
+[netlizard-game.config]
+b:open_game_music=true
+b:open_game_sound=true
+b:zoom_auto=true
+b:open_virtual_kb=true
+b:show_fps=true
+i:third_person_view_x_offset=10
+i:third_person_view_y_offset=25
+i:third_person_view_distance=300
+i:group_count=2
+i:character_count=4
+b:god_mode=true
+b:open_radar=true
+i:point_target=40
+t:time_limit=300

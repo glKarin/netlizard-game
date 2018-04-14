@@ -1,0 +1,8 @@
+ada.txt
+	ada.h - 外部接口头文件
+	ada_std.h - 额外全局定义
+	ada_struct.h - smd文件结构定义
+	ada_util.* - smd文件读取辅助工具
+	ada_smd.* - smd文件读取
+	ada_gl.* - smd结构的OpenGL封装
+	ada_render.* - OpenGL渲染smd模型

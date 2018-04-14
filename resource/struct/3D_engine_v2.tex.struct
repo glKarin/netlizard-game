@@ -1,0 +1,15 @@
+[NETLizard 3D Engine v2 Texture]
+<Contr Terrorism 3D>
+<Army Ranger 3D : Operation Arctic>
+<Contr Terrorism 3D Episode 2>
+
+<byte : description>
+
+3 : ASCII is '&&&', the field of texture file.
+1 : 1 / 0, 1 - RGBA, 0 - RGB.
+1 : color map length.
+(4 for RGBA) : (3 for RGB) * color map length : color map data, length is color map data, a color of 4 byte element.
+1 : texture width
+1 : texture height
+1 * width * height : pixel color index data
+, length is width * height, a color map index per a element.

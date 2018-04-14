@@ -1,0 +1,57 @@
+[Contr Terrorism 3D Episode 3]
+#lang=ru
+#version=konon.mobi cracked (no jad god mod)
+#class=t
+#function=b(int, bool)
+
+<byte : description>
+
+2 : ul-1 unknow length.
+2 * nd-1 : unknow data, length is ul-1 element is 2 byte.
+
+3 * 2 : start position x y z
+2 : start axis angle?
+
+p : map scene count.
+2 : 3D normal map length.
+3 * normal map length * 2 : 3D normal map data, length is normal map length, a 3D vector per 3 elements.
+2 byte : 2D texcoord map length.
+2 * texcoord map length * 2 : 2D texcoord map data, length is texcoord map length, a 2D vector per 2 elements.
+
+struct {
+	2 * 3 : AABB max x y z.
+	2 * 3 : AABB min x y z.
+	2 : vertex coord count.
+	2 : primitive count.
+	3 * vertex coord count * 2 : vertex coord data, length is vertex coord count, a 3D vector per 3 elements.
+	3 * primitive count * 2 : vertex coord index of primitive.
+	2 : AABB plane count.
+	struct {
+		2 : normal'X index. 
+		2 : vertex coord'X index.
+	} * plane count * 2 : plane normal and position index data, length is plane count, a normal'X + vertex coord'X index per 2 elements.
+	3 * primitive count * 2 : texcoord index data, length is primitive count, 3 texcoord'S index per 3 elements.
+	primitive count * 2 : texture file index.
+} * scene count : map scene data, length is scene count, element is the struct.
+
+2 : map scene BSP node count.
+struct {
+	struct{
+		3 * 2 : a rectangle point coord.
+	} * 4 : rectangle 4 point coord data.
+	3 * 2 : rectangle normal.
+	2 : previous scene index by rectangle spliting.
+	2 : next scene index by rectangle spliting.
+} * BSP node count : BSP tree data, length is BSP node count, element is the struct.
+
+2 : item count of map.
+struct{
+	2 : item count of the scene.
+	struct{
+		3 * 2 : item position x y z.
+		2 * 2 : item axis angle.
+		2 : item object vertex file index.
+	} * item count of the scene : item data, length is item count of the scene, element is the struct.
+} * map scene count : item data of map scene, length is map scene count, element is the struct.
+
+... : UNPARSED, about characters(player and AIs), lighting position for first-person weapon, and other unknow data.

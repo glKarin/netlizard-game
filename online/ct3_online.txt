@@ -1,0 +1,6 @@
+http://netlizard.net/levels/CT2/msg/1.txt?g=CT3&c=UA&n=SonyEricssonW900i&i=null&r=240x320
+http://netlizard.net/levels/CT2/d/3.php
+http://netlizard.net/levels/CT2/d/4.php
+http://netlizard.net/levels/CT2/d/1.php?l=lvl14
+http://netlizard.net/levels/d/1.php
+http://netlizard.net/levels/CT2/menu/down.png

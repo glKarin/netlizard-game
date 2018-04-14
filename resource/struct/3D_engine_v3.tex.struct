@@ -1,0 +1,16 @@
+[NETLizard 3D Engine v3 Texture]
+<Shadow of Egypt 3D>
+<Clone 3D>
+<Contr Terrorism 3D Episode 3>
+
+<byte : description>
+
+3 : ASCII is 'BIP', the field of texture file.
+1 : 1 / 0, 1 - RGBA, 0 - RGB.
+1 : texture depth? always 1?.
+1 : color map length.
+(4 for RGBA) : (3 for RGB) * color map length : color map data, length is color map data, a color of 4 byte element.
+2 : texture width, 2 byte store.
+2 : texture height, 2 byte store.
+1 * width * height : pixel color index data
+, length is width * height, a color map index per a element.
