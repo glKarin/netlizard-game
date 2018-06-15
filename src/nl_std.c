@@ -126,14 +126,15 @@ float rand_f(float min, float max, unsigned int per)
 		return 0.0f;
 	if(per == 0)
 		return (max - min) / 2.0f;
-	int min_i = (int)min * per;
-	int max_i = (int)max * per;
+	float fper = (float)per;
+	int min_i = (int)(min * fper);
+	int max_i = (int)(max * fper);
 	//printf("%f\n", p);
 	int i = max_i - min_i;
 	if(i == 0)
 		return 0.0;
 	int r = rand() % i + min_i;
-	return (float)r / (float)per;
+	return (float)r / fper;
 }
 
 double Math_Round(double n)
