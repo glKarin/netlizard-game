@@ -41,6 +41,8 @@
 #define BUTTON_BACK_Y 10
 #define LABEL_H 80
 
+#define IDLE_TIME_DELAY 0.4
+
 #define ANIMATION_COUNT 7
 
 static const character_status_type Animation_List[ANIMATION_COUNT] = {
@@ -73,7 +75,7 @@ static void Menu_ChooseCharacterModel(void);
 static void Menu_RenderCharacterModel(void);
 static int Menu_SwipeCharacterModel(int x, int y, int dx, int dy);
 static void Menu_UpdateAnimation(void *index);
-static void Menu_PlayAnimation(void);
+static void Menu_PlayAnimation(float delta);
 static void Menu_SetCharacterModelChooserPageSize(GLsizei w, GLsizei h);
 
 static button btn;
@@ -99,6 +101,7 @@ static unsigned int data_count = 0;
 static unsigned int action_data_count = 0;
 static GLsizei page_width = HARMATTAN_FULL_WIDTH;
 static GLsizei page_height = HARMATTAN_FULL_HEIGHT;
+static float idle_time = 0.0f;
 
 void Menu_SetCharacterModelChooserPageSize(GLsizei w, GLsizei h)
 {
@@ -124,13 +127,19 @@ int Menu_CharacterModelChooserIdleEventFunc(void)
 {
 	if(!has_init)
 		return 0;
-	/*
-		 if(key_state[Harmattan_K_Up] || key_state[Harmattan_K_w] || key_state[Harmattan_K_W])
-		 UI_MoveListViewCurrentIndex(&lst, -1);
-		 else if(key_state[Harmattan_K_Down] || key_state[Harmattan_K_s] || key_state[Harmattan_K_S])
-		 UI_MoveListViewCurrentIndex(&lst, 1);
-		 */
-	Menu_PlayAnimation();
+	Menu_PlayAnimation(delta_time);
+
+	idle_time += delta_time;
+	if(idle_time < IDLE_TIME_DELAY)
+		return 1;
+	while(idle_time - IDLE_TIME_DELAY > 0.0f)
+		idle_time -= IDLE_TIME_DELAY;
+	if(key_state[Harmattan_K_Up] || key_state[Harmattan_K_w] || key_state[Harmattan_K_W])
+		UI_MoveListViewCurrentIndex(&lst, -1);
+	else if(key_state[Harmattan_K_Down] || key_state[Harmattan_K_s] || key_state[Harmattan_K_S])
+		UI_MoveListViewCurrentIndex(&lst, 1);
+	else
+		idle_time = 0.0f;
 	return 1;
 }
 
@@ -289,6 +298,24 @@ int Menu_CharacterModelChooserKeyEventFunc(int key, int act, int pressed, int x,
 			{
 				Menu_BackAction();
 				return 1;
+			}
+			break;
+		case Harmattan_K_Up:
+		case Harmattan_K_w:
+		case Harmattan_K_W:
+			if(pressed)
+			{
+				UI_MoveListViewCurrentIndex(&lst, -1);
+				idle_time = 0.0f;
+			}
+			break;
+		case Harmattan_K_Down:
+		case Harmattan_K_s:
+		case Harmattan_K_S:
+			if(pressed)
+			{
+				UI_MoveListViewCurrentIndex(&lst, 1);
+				idle_time = 0.0f;
 			}
 			break;
 	}
@@ -455,8 +482,6 @@ void Menu_ViewCharacterModel(void *args)
 	action_lst.current_index = 0;
 	character_status_type status = Animation_List[action_lst.current_index];
 	Menu_UpdateAnimation(&status);
-
-	animation.last_play_time = Game_GetGameTime();
 }
 
 void Menu_ChooseCharacterModel(void)
@@ -561,6 +586,7 @@ void Menu_ResetCharacterModelChooser(void)
 	current_character = -1;
 	page_width = width;
 	page_height = height;
+	idle_time = 0.0f;
 }
 
 void Menu_RenderCharacterModel(void)
@@ -764,14 +790,13 @@ void Menu_UpdateAnimation(void *args)
 		return;
 }
 
-void Menu_PlayAnimation(void)
+void Menu_PlayAnimation(float delta)
 {
 	if(!has_init)
 		return;
 	if(model_list[current_character].source == unavailable_model_type)
 		return;
-	long long time = Game_GetGameTime();
-	int f = Game_ComputeAnimationPlayFrameCount(model_list[current_character].source, &animation, fps, time);
+	int f = Game_ComputeAnimationPlayFrameCount(model_list[current_character].source, &animation, fps, delta);
 
 	int n = Game_GetAnimationNextFrame(&animation, f);
 	if(n >= 0)

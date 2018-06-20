@@ -605,20 +605,20 @@ void Algo_GetNormalAngle2D(const vector2_t *normal, float *yr)
 		*yr = Algo_FormatAngle(rtoa(atan2(yl, xl)) - 90.0);
 }
 
-long long Game_GetGameTimeUS(void)
+unsigned long long Game_GetGameTimeUS(void)
 {
 	struct timeval cur_time;
 	gettimeofday(&cur_time, NULL);
-	long long t = (long long)cur_time.tv_sec * (long long)1000000 + (long long)cur_time.tv_usec;
+	unsigned long long t = (unsigned long long)cur_time.tv_sec * (unsigned long long)1000000 + (unsigned long long)cur_time.tv_usec;
 	return t;
 }
 
 // ms
-long long Game_GetGameTime(void)
+unsigned long long Game_GetGameTime(void)
 {
 	struct timeval cur_time;
 	gettimeofday(&cur_time, NULL);
-	long long t = (long long)cur_time.tv_sec * (long long)1000 + (long long)cur_time.tv_usec / 1000;
+	unsigned long long t = (unsigned long long)cur_time.tv_sec * (unsigned long long)1000 + (unsigned long long)cur_time.tv_usec / 1000;
 	return t;
 }
 

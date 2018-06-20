@@ -73,7 +73,7 @@ const char *Character_Model_Name[lol_total_model] = {
 		*/
 };
 
-int Game_ComputeAnimationPlayFrameCount(model_source_type source, character_animation_data *animation, int fps, long long time)
+int Game_ComputeAnimationPlayFrameCount(model_source_type source, character_animation_data *animation, int fps, float delta)
 {
 	//if(!model || !model -> anim)
 	if(!animation)
@@ -88,23 +88,26 @@ int Game_ComputeAnimationPlayFrameCount(model_source_type source, character_anim
 		if(nap > 0.0)
 		{
 			float t = 1000.0 / nap;
-			if((float)(time - animation -> last_play_time) > t)
+			float total = delta * 1000.0f + animation -> last_play_time;
+			if(total > t)
 			{
-				float p = (float)(time - animation -> last_play_time) / t;
-				double nf = 0.0;
-				double nl = modf(p, &nf);
-				f = (int)nf;
-				long long tl = (long long)(t * nl);
-				animation -> last_play_time = time - tl;
+				float p = total / t;
+				f = (int)floor(p);
+				animation -> last_play_time = total - (float)f * t;
 			}
 			else
-				f = 0; // 8 25
+			{
+				animation -> last_play_time += delta * 1000.0;
+				f = 0; // 2018 06 18
+			}
 		}
 		else
 			f = 0; // 2017 8 25
 	}
 	else
+	{
 		f = 1;
+	}
 	return f;
 }
 
@@ -292,6 +295,7 @@ int Game_UpdateCharacterStatus(game_character *gamer, character_status_type stat
 			gamer -> animation.frame_count = frame_count == -1 ? (int)gamer -> model.lol_character.model -> anim -> animation[gamer -> animation.anim].animation_bone[0].frame_count : frame_count;
 			gamer -> animation.anim_loop = Game_GetStatusAniamtionLoop(status);
 			gamer -> animation.fps = gamer -> model.lol_character.model -> anim -> animation[anim].fps;
+			gamer -> animation.last_play_time = 0.0f;
 		}
 		else
 			return 0;
@@ -388,6 +392,7 @@ int Game_UpdateCharacterStatus(game_character *gamer, character_status_type stat
 			gamer -> animation.frame_count = gamer -> model.netlizard_character.model -> animations[gamer -> animation.anim].end - gamer -> model.netlizard_character.model -> animations[gamer -> animation.anim].begin + 1;
 			gamer -> animation.anim_loop = Game_GetStatusAniamtionLoop(status);
 			gamer -> animation.fps = NETLIZARD_ANIMATION_FPS;
+			gamer -> animation.last_play_time = 0.0f;
 		}
 		else
 			return 0;
@@ -569,13 +574,13 @@ void Game_RenderGameCharacter(const game_character *gamer)
 		return;
 }
 
-void Game_CharacterPlayAnimation(game_character *gamer, long long time, int fps)
+void Game_CharacterPlayAnimation(game_character *gamer, long long time, int fps, float delta)
 {
 	if(!gamer)
 		return;
 	if(gamer -> model.source == unavailable_model_type)
 		return;
-	int f = Game_ComputeAnimationPlayFrameCount(gamer -> model.source, &gamer -> animation, fps, time);
+	int f = Game_ComputeAnimationPlayFrameCount(gamer -> model.source, &gamer -> animation, fps, delta);
 	character_status_type status;
 	animation_orientation_type o = forward_play_type;
 	if(gamer -> health == health_death_type)
@@ -637,7 +642,6 @@ void Game_CharacterPlayAnimation(game_character *gamer, long long time, int fps)
 		if(n == -2)
 		{
 			Game_UpdateCharacterStatus(gamer, status);
-			gamer -> animation.last_play_time = time;
 		}
 		else if(n >= 0)
 		{
@@ -654,7 +658,6 @@ void Game_CharacterPlayAnimation(game_character *gamer, long long time, int fps)
 		if((priority >= priority_new) || gamer -> animation.frame == gamer -> animation.frame_count - 1)
 		{
 			Game_UpdateCharacterStatus(gamer, status);
-			gamer -> animation.last_play_time = time;
 		}
 		else if(gamer -> animation.frame + f > gamer -> animation.frame_count - 1)
 		{

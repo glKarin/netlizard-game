@@ -9,7 +9,7 @@
 #include <ctype.h>
 #include <math.h>
 
-GLvoid NETLizard_HandleDoorEvent(GL_NETLizard_3D_Model *map_model, DoorV_Event *event, GLint state, long long time)
+GLvoid NETLizard_HandleDoorEvent(GL_NETLizard_3D_Model *map_model, DoorV_Event *event, GLint state, GLfloat per)
 {
 	if(!map_model || !event)
 		return;
@@ -21,7 +21,6 @@ GLvoid NETLizard_HandleDoorEvent(GL_NETLizard_3D_Model *map_model, DoorV_Event *
 		return;
 	if(state == 0 && event -> progress == 0)
 		return;
-	GLfloat per = (double)(time - event -> time) / 1000.0;
 	GLfloat unit = event -> unit * per;
 	GLfloat progress = state ? event -> progress + 100.0 * unit : event -> progress - 100.0 * unit;
 	if(progress < 0.0)
@@ -46,7 +45,7 @@ GLvoid NETLizard_HandleDoorEvent(GL_NETLizard_3D_Model *map_model, DoorV_Event *
 	model -> pos[2] += h;
 }
 
-GLvoid NETLizard_HandleDoubleVDoorEvent(GL_NETLizard_3D_Model *map_model, Double_DoorV_Event *event, GLint state, long long time)
+GLvoid NETLizard_HandleDoubleVDoorEvent(GL_NETLizard_3D_Model *map_model, Double_DoorV_Event *event, GLint state, GLfloat per)
 {
 	if(!map_model || !event)
 		return;
@@ -62,7 +61,6 @@ GLvoid NETLizard_HandleDoubleVDoorEvent(GL_NETLizard_3D_Model *map_model, Double
 		return;
 	if(state == 0 && event -> progress == 0)
 		return;
-	GLfloat per = (double)(time - event -> time) / 1000.0;
 	GLfloat unit = event -> unit * per;
 	GLfloat progress = state ? event -> progress + 100.0 * unit : event -> progress - 100.0 * unit;
 	if(progress < 0.0)
@@ -96,7 +94,7 @@ GLvoid NETLizard_HandleDoubleVDoorEvent(GL_NETLizard_3D_Model *map_model, Double
 	event -> progress = progress;
 }
 
-GLvoid NETLizard_HandleDoubleHDoorEvent(GL_NETLizard_3D_Model *map_model, Double_DoorH_Event *event, GLint state, long long time)
+GLvoid NETLizard_HandleDoubleHDoorEvent(GL_NETLizard_3D_Model *map_model, Double_DoorH_Event *event, GLint state, GLfloat per)
 {
 	if(!map_model || !event)
 		return;
@@ -112,7 +110,6 @@ GLvoid NETLizard_HandleDoubleHDoorEvent(GL_NETLizard_3D_Model *map_model, Double
 		return;
 	if(state == 0 && event -> progress == 0)
 		return;
-	GLfloat per = (double)(time - event -> time) / 1000.0;
 	GLfloat unit = event -> unit * per;
 	GLfloat progress = state ? event -> progress + 100.0 * unit : event -> progress - 100.0 * unit;
 	if(progress < 0.0)
@@ -150,7 +147,7 @@ GLvoid NETLizard_HandleDoubleHDoorEvent(GL_NETLizard_3D_Model *map_model, Double
 	event -> progress = progress;
 }
 
-GLvoid NETLizard_HandleElevatorEvent(GL_NETLizard_3D_Model *map_model, Elevator_Event *event, GLint state, long long time)
+GLvoid NETLizard_HandleElevatorEvent(GL_NETLizard_3D_Model *map_model, Elevator_Event *event, GLint state, GLfloat per)
 {
 	if(!map_model || !event)
 		return;
@@ -166,7 +163,6 @@ GLvoid NETLizard_HandleElevatorEvent(GL_NETLizard_3D_Model *map_model, Elevator_
 		event -> state = 2;
 	else if(event -> state == 3 && event -> progress == 100 && state == 1)
 		event -> state = 1;
-	GLfloat per = (double)(time - event -> time) / 1000.0;
 	GLfloat unit = event -> unit * per;
 	GLfloat progress = event -> state == 2 ? event -> progress + 100.0 * unit : event -> progress - 100.0 * unit;
 	//event -> progress = event -> state == 2 ? event -> progress + 100 * event -> unit : event -> progress - 100 * event -> unit;
@@ -203,7 +199,7 @@ GLvoid NETLizard_HandleElevatorEvent(GL_NETLizard_3D_Model *map_model, Elevator_
 	event -> progress = progress;
 }
 
-GLvoid NETLizard_HandleFanEvent(GL_NETLizard_3D_Model *map_model, Fan_Event *event, GLint state, long long time)
+GLvoid NETLizard_HandleFanEvent(GL_NETLizard_3D_Model *map_model, Fan_Event *event, GLint state, GLfloat per)
 {
 	if(!map_model || !event)
 		return;
@@ -215,14 +211,13 @@ GLvoid NETLizard_HandleFanEvent(GL_NETLizard_3D_Model *map_model, Fan_Event *eve
 	if(!model)
 		return;
 	GLuint x = event -> orientation == 0 ? 1 : 0;
-	GLfloat per = (double)(time - event -> time) / 1000.0;
 	GLfloat u = event -> unit * per;
 	GLfloat angle = event -> wise == 0 ? -u : u;
 	GLfloat f = Algo_FormatAngle(model -> angle[x] + angle);
 	model -> angle[x] = f;
 }
 
-GLvoid NETLizard_HandlePropEvent(GL_NETLizard_3D_Model *map_model, Prop_Event *event, GLint state, long long time)
+GLvoid NETLizard_HandlePropEvent(GL_NETLizard_3D_Model *map_model, Prop_Event *event, GLint state, GLfloat per)
 {
 	if(!map_model || !event)
 		return;
@@ -233,7 +228,6 @@ GLvoid NETLizard_HandlePropEvent(GL_NETLizard_3D_Model *map_model, Prop_Event *e
 	GL_NETLizard_3D_Item_Mesh *model = map_model -> item_meshes + (event -> item_id);
 	if(!model)
 		return;
-	GLfloat per = (double)(time - event -> time) / 1000.0;
 	GLfloat h = event -> prop_move_event.max_z - event -> prop_move_event.min_z;
 	{
 		if(event -> prop_move_event.state == 3 && event -> prop_move_event.progress == 100 && state == 0)
@@ -281,13 +275,12 @@ GLvoid NETLizard_HandlePropEvent(GL_NETLizard_3D_Model *map_model, Prop_Event *e
 	}
 }
 
-GLvoid NETLizard_HandleMachineEvent(GL_NETLizard_3D_Model *map_model, Machine_Event *event, GLint state, int mode, long long time)
+GLvoid NETLizard_HandleMachineEvent(GL_NETLizard_3D_Model *map_model, Machine_Event *event, GLint state, int mode, GLfloat per)
 {
 	if(!map_model || !event)
 		return;
 	if(event -> handle)
 		return;
-	GLfloat per = (double)(time - event -> time) / 1000.0;
 	if(((event -> sync == 0) && (state == 0 && event -> machine_gun_event.machine_gun_move_event.state == 0)) || event -> sync || state)
 	{
 		if(state == 0 && event -> machine_window_event.progress == 0)
@@ -488,7 +481,7 @@ NETLizard_Event * NETLizard_LoadEventFile(const char *file, game_name g, int lvl
 			char *ptr = strtok(str, Split);
 			if(strcasecmp(ptr, "vdd") == 0)
 			{
-				Double_DoorV_Event e = {Event_Double_DoorV, 0, 0, -1, -2, 0.0, 0, 0};
+				Double_DoorV_Event e = {Event_Double_DoorV, 0, -1, -2, 0.0, 0, 0};
 				e.handle = 0;
 				if((ptr = strtok(NULL, Split)) != NULL)
 					e.item_id = atoi(ptr);
@@ -504,7 +497,7 @@ NETLizard_Event * NETLizard_LoadEventFile(const char *file, game_name g, int lvl
 			}
 			else if(strcasecmp(ptr, "hdd") == 0)
 			{
-				Double_DoorH_Event e = {Event_Double_DoorH, 0, 0, -1, -2, 0.0, 0, 0, 0};
+				Double_DoorH_Event e = {Event_Double_DoorH, 0, -1, -2, 0.0, 0, 0, 0};
 				e.handle = 0;
 				if((ptr = strtok(NULL, Split)) != NULL)
 					e.item_id = atoi(ptr);
@@ -522,7 +515,7 @@ NETLizard_Event * NETLizard_LoadEventFile(const char *file, game_name g, int lvl
 			}
 			else if(strcasecmp(ptr, "fan") == 0)
 			{
-				Fan_Event e = {Event_Fan, 0, 0, -1, 0, 0, 0, 0.0, 360.0, 0, 0};
+				Fan_Event e = {Event_Fan, 0, -1, 0, 0, 0, 0.0, 360.0, 0, 0};
 				e.handle = 0;
 				if((ptr = strtok(NULL, Split)) != NULL)
 					e.item_id = atoi(ptr);
@@ -544,7 +537,7 @@ NETLizard_Event * NETLizard_LoadEventFile(const char *file, game_name g, int lvl
 			}
 			else if(strcasecmp(ptr, "ele") == 0)
 			{
-				Elevator_Event e = {Event_Elevator,0, 0,  -1, 0.0, 0, 0.0, 360.0, 0};
+				Elevator_Event e = {Event_Elevator, 0,  -1, 0.0, 0, 0.0, 360.0, 0};
 				e.handle = 0;
 				if((ptr = strtok(NULL, Split)) != NULL)
 					e.item_id = atoi(ptr);
@@ -562,7 +555,7 @@ NETLizard_Event * NETLizard_LoadEventFile(const char *file, game_name g, int lvl
 			}
 			else if(strcasecmp(ptr, "vd") == 0)
 			{
-				DoorV_Event e = {Event_DoorV, 0, 0, -1, 0.0, 0};
+				DoorV_Event e = {Event_DoorV, 0, -1, 0.0, 0};
 				e.handle = 0;
 				if((ptr = strtok(NULL, Split)) != NULL)
 					e.item_id = atoi(ptr);
@@ -574,7 +567,7 @@ NETLizard_Event * NETLizard_LoadEventFile(const char *file, game_name g, int lvl
 			}
 			else if(strcasecmp(ptr, "portal") == 0)
 			{
-				Portal_Event e = {Event_Portal, 0, 0, -1, 0, 0.0, 0.0, 0.0, 0.0, 0.0};
+				Portal_Event e = {Event_Portal, 0, -1, 0, 0.0, 0.0, 0.0, 0.0, 0.0};
 				e.handle = 0;
 				if((ptr = strtok(NULL, Split)) != NULL)
 					e.item_id = atoi(ptr);
@@ -594,7 +587,7 @@ NETLizard_Event * NETLizard_LoadEventFile(const char *file, game_name g, int lvl
 			}
 			else if(strcasecmp(ptr, "prop") == 0)
 			{
-				Prop_Event e = {Event_Prop, 0, 0, -1, {0.0, 0, 0.0, 360.0, 0}, {0, 0, 0, 0.0, 360.0, 0, 0}};
+				Prop_Event e = {Event_Prop, 0, -1, {0.0, 0, 0.0, 360.0, 0}, {0, 0, 0, 0.0, 360.0, 0, 0}};
 				e.handle = 0;
 				if((ptr = strtok(NULL, Split)) != NULL)
 					e.item_id = atoi(ptr);
@@ -626,7 +619,7 @@ NETLizard_Event * NETLizard_LoadEventFile(const char *file, game_name g, int lvl
 			}
 			else if(strcasecmp(ptr, "machine") == 0)
 			{
-				Machine_Event e = {Event_Machine, 0, 0, {-1, 500.0, {0.0, 0, 0.0, 360.0, 0}, {0.0, 0, 0, 0.0, 360.0, 0}}, {-1, -1, 0.0, 0.0, 0, 0, 0}, 0, 0.0, 0.0, 0.0};
+				Machine_Event e = {Event_Machine, 0, {-1, 500.0, {0.0, 0, 0.0, 360.0, 0}, {0.0, 0, 0, 0.0, 360.0, 0}}, {-1, -1, 0.0, 0.0, 0, 0, 0}, 0, 0.0, 0.0, 0.0};
 				e.handle = 0;
 				if((ptr = strtok(NULL, Split)) != NULL)
 					e.machine_gun_event.item_id = atoi(ptr);

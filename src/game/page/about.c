@@ -16,6 +16,8 @@
 #define BUTTON_H 60
 #define LABEL_H 80
 
+#define TEXT_MOVE_UNIT 10
+
 static int Menu_AboutIdleEventFunc(void);
 static int Menu_AboutKeyEventFunc(int k, int a, int p, int x, int y);
 static int Menu_AboutMouseEventFunc(int b, int p, int x, int y);
@@ -56,9 +58,9 @@ int Menu_AboutIdleEventFunc(void)
 	if(!has_init)
 		return 0;
 	if(key_state[Harmattan_K_Up] || key_state[Harmattan_K_w] || key_state[Harmattan_K_W])
-		UI_MoveTextBrowser(&tb, -1);
+		UI_MoveTextBrowser(&tb, -TEXT_MOVE_UNIT * delta_time);
 	else if(key_state[Harmattan_K_Down] || key_state[Harmattan_K_s] || key_state[Harmattan_K_S])
-		UI_MoveTextBrowser(&tb, 1);
+		UI_MoveTextBrowser(&tb, TEXT_MOVE_UNIT * delta_time);
 	return 1;
 }
 
@@ -145,6 +147,22 @@ int Menu_AboutKeyEventFunc(int key, int act, int pressed, int x, int y)
 			{
 				Menu_BackAction();
 				return 1;
+			}
+			break;
+		case Harmattan_K_Up:
+		case Harmattan_K_w:
+		case Harmattan_K_W:
+			if(pressed)
+			{
+				UI_MoveTextBrowser(&tb, -TEXT_MOVE_UNIT * delta_time);
+			}
+			break;
+		case Harmattan_K_Down:
+		case Harmattan_K_s:
+		case Harmattan_K_S:
+			if(pressed)
+			{
+				UI_MoveTextBrowser(&tb, TEXT_MOVE_UNIT * delta_time);
 			}
 			break;
 	}

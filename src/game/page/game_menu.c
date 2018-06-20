@@ -20,6 +20,8 @@
 #define BUTTON_H 60
 #define LABEL_H 80
 
+#define IDLE_TIME_DELAY 0.4
+
 static const struct _game_menu_action
 {
 	char *text;
@@ -61,6 +63,7 @@ static unsigned int data_count = 0;
 static int menu_level = 0;
 static GLsizei page_width = HARMATTAN_FULL_WIDTH;
 static GLsizei page_height = HARMATTAN_FULL_HEIGHT;
+static float idle_time = 0.0f;
 
 void GameMenu_SetPageSize(GLsizei w, GLsizei h)
 {
@@ -84,10 +87,17 @@ int GameMenu_IdleEventFunc(void)
 {
 	if(!has_init)
 		return 0;
+	idle_time += delta_time;
+	if(idle_time < IDLE_TIME_DELAY)
+		return 0;
+	while(idle_time - IDLE_TIME_DELAY > 0.0f)
+		idle_time -= IDLE_TIME_DELAY;
 	if(key_state[Harmattan_K_Up] || key_state[Harmattan_K_w] || key_state[Harmattan_K_W])
 		UI_MoveListViewCurrentIndex(&lst, -1);
 	else if(key_state[Harmattan_K_Down] || key_state[Harmattan_K_s] || key_state[Harmattan_K_S])
 		UI_MoveListViewCurrentIndex(&lst, 1);
+	else
+		idle_time = 0.0f;
 	return 1;
 }
 
@@ -232,6 +242,24 @@ int GameMenu_KeyEventFunc(int key, int act, int pressed, int x, int y)
 			{
 				GameMenu_BackAction();
 				return 1;
+			}
+			break;
+		case Harmattan_K_Up:
+		case Harmattan_K_w:
+		case Harmattan_K_W:
+			if(pressed)
+			{
+				UI_MoveListViewCurrentIndex(&lst, -1);
+				idle_time = 0.0f;
+			}
+			break;
+		case Harmattan_K_Down:
+		case Harmattan_K_s:
+		case Harmattan_K_S:
+			if(pressed)
+			{
+				UI_MoveListViewCurrentIndex(&lst, 1);
+				idle_time = 0.0f;
 			}
 			break;
 		default:

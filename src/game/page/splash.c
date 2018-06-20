@@ -10,7 +10,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define LABEL_SHOW_INTERVAL 400
+#define LABEL_SHOW_INTERVAL 0.4
+#define	FADE_OUT_UNIT 0.4
+#define	FADE_IN_UNIT 0.8
 #define CONTENT_H 80
 
 typedef enum _show_splash_state_type
@@ -32,9 +34,8 @@ static int Splash_KeyEventFunc(int key, int act, int pressed, int x, int y);
 static int Splash_MouseClickEventFunc(int button, int x, int y);
 static void Splash_SetPageSize(GLsizei w, GLsizei h);
 
-static long long show_splash_fade_out_interval = 3000;
-static long long show_splash_fade_in_interval = 2000;
-static long long show_splash_start_time = 0;
+static float show_splash_fade_out_unit = FADE_OUT_UNIT;
+static float show_splash_fade_in_unit = FADE_IN_UNIT;
 static show_splash_state_type show_splash_state = ready_show_splash_type;
 static int show_splash_started = 0;
 static char *splash_file = NULL;
@@ -42,7 +43,8 @@ static char *show_finished_action = NULL;
 static scene_2d fg;
 static scene_2d bg;
 static label content;
-static GLuint label_blink_count = 0;
+static float idle_time = 0.0f;
+static float per = 1.0f;
 static GLsizei page_width = HARMATTAN_FULL_WIDTH;
 static GLsizei page_height = HARMATTAN_FULL_HEIGHT;
 static bool_t has_init = 0;
@@ -81,16 +83,16 @@ void Splash_SetSplashImageFile(const char *file)
 		splash_file = strdup(file);
 }
 
-void Splash_SetSplashShowTimeInterval(long long t1, long long t2)
+void Splash_SetSplashShowTimeInterval(float t1, float t2)
 {
 	if(has_init)
 		return;
 	if(show_splash_started)
 		return;
 	if(t1 > 0)
-		show_splash_fade_out_interval = t1;
+		show_splash_fade_out_unit = t1;
 	if(t2 > 0)
-		show_splash_fade_in_interval = t2;
+		show_splash_fade_in_unit = t2;
 }
 
 int Splash_IdleEventFunc(void)
@@ -99,6 +101,8 @@ int Splash_IdleEventFunc(void)
 		return 0;
 	if(show_splash_state == finish_show_splash_type && show_finished_action)
 	{
+		per = 1.0f;
+		idle_time = 0.0f;
 		const void *slot = SignalSlot_GetAction(show_finished_action);
 		if(slot)
 			((void__func__void)slot)();
@@ -106,49 +110,43 @@ int Splash_IdleEventFunc(void)
 	}
 	else if(show_splash_state == wait_show_splash_type)
 	{
-		if(show_splash_start_time != 0)
-		{
-			long long time = Game_GetGameTime();
-			long long i = (time - show_splash_start_time) / LABEL_SHOW_INTERVAL;
-			if(i != label_blink_count)
-			{
-				label_blink_count = i;
-				content.base.visible ^= GL_TRUE;
-			}
-			return 1;
-		}
-		return 0;
-	}
-	else if(show_splash_state != fade_in_show_splash_type && show_splash_state != fade_out_show_splash_type)
-		return 0;
+		idle_time += delta_time;
+		if(idle_time < LABEL_SHOW_INTERVAL)
+			return 0;
+		while(idle_time - LABEL_SHOW_INTERVAL > 0.0f)
+			idle_time -= LABEL_SHOW_INTERVAL;
 
-	if(show_splash_start_time != 0)
-	{
-		long long time = Game_GetGameTime();
-		double per = 0.0;
-		if(show_splash_state == fade_out_show_splash_type)
-		{
-			per = (double)(time - show_splash_start_time) / (double)show_splash_fade_out_interval;
-			per = 1.0 - per;
-			if(per <= 0.0)
-			{
-				per = 0.0;
-				show_splash_state = wait_show_splash_type;
-			}
-		}
-		else
-		{
-			per = (double)(time - show_splash_start_time) / (double)show_splash_fade_in_interval;
-			if(per >= 1.0)
-			{
-				per = 1.0;
-				show_splash_state = finish_show_splash_type;
-			}
-		}
-		fg.color[3] = (GLfloat)per;
+		content.base.visible ^= GL_TRUE;
 		return 1;
 	}
-	return 0;
+	else if(show_splash_state != fade_in_show_splash_type && show_splash_state != fade_out_show_splash_type)
+	{
+		per = 1.0f;
+		idle_time = 0.0f;
+		return 0;
+	}
+
+	idle_time = 0.0f;
+	if(show_splash_state == fade_out_show_splash_type)
+	{
+		per -= delta_time * show_splash_fade_out_unit;
+		if(per <= 0.0)
+		{
+			per = 0.0;
+			show_splash_state = wait_show_splash_type;
+		}
+	}
+	else
+	{
+		per += delta_time * show_splash_fade_in_unit;
+		if(per >= 1.0)
+		{
+			per = 1.0;
+			show_splash_state = finish_show_splash_type;
+		}
+	}
+	fg.color[3] = (GLfloat)per;
+	return 1;
 }
 
 void Splash_InitFunc(void)
@@ -182,7 +180,6 @@ void Splash_DrawFunc(void)
 		return;
 	if(show_splash_state == ready_show_splash_type)
 	{
-		show_splash_start_time = Game_GetGameTime();
 		show_splash_state = fade_out_show_splash_type;
 	}
 
@@ -221,7 +218,7 @@ void Splash_FreeFunc(void)
 	delete_scene_2d(&bg);
 	delete_label(&content);
 	FREE_PTR(show_finished_action)
-	Splash_ResetSplash();
+		Splash_ResetSplash();
 	has_init = 0;
 }
 
@@ -252,7 +249,6 @@ int Splash_KeyEventFunc(int key, int act, int pressed, int x, int y)
 				if(show_splash_state == wait_show_splash_type)
 				{
 					show_splash_state = fade_in_show_splash_type;
-					show_splash_start_time = Game_GetGameTime();
 				}
 				return 1;
 			}
@@ -264,11 +260,10 @@ int Splash_KeyEventFunc(int key, int act, int pressed, int x, int y)
 int Splash_MouseClickEventFunc(int button, int x, int y)
 {
 	if(!has_init)
-		return;
+		return 0;
 	if(show_splash_state == wait_show_splash_type)
 	{
 		show_splash_state = fade_in_show_splash_type;
-		show_splash_start_time = Game_GetGameTime();
 		return 1;
 	}
 	return 0;
@@ -276,13 +271,13 @@ int Splash_MouseClickEventFunc(int button, int x, int y)
 
 void Splash_ResetSplash(void)
 {
-	show_splash_fade_out_interval = 3000;
-	show_splash_fade_in_interval = 2000;
-	show_splash_start_time = 0;
+	show_splash_fade_out_unit = FADE_OUT_UNIT;
+	show_splash_fade_in_unit = FADE_IN_UNIT;
 	show_splash_state = ready_show_splash_type;
 	show_splash_started = 0;
 	//splash_file = NULL;
-	label_blink_count = 0;
 	page_width = width;
 	page_height = height;
+	idle_time = 0.0f;
+	per = 1.0f;
 }

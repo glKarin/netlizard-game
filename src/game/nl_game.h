@@ -57,7 +57,7 @@ int Game_ShotCharacter2D(const GL_NETLizard_3D_Model *model, game_character *gam
 // 3D版本 线圆柱体碰撞测试
 int Game_ShotCharacter(const GL_NETLizard_3D_Model *model, game_character *gamer, game_character *characters, int start, int count, human_body_type *type, nl_vector3_t *c, nl_vector3_t *n);
 // 更新角色数组的动作
-void Game_UpdateAIAnimation(game_character *characters, int start, int count, long long time, int fps);
+void Game_UpdateAIAnimation(game_character *characters, int start, int count, long long time, int fps, float delta);
 // 计算角色在地图中的位置
 int Algo_ComputeCharacterPositionInNETLizard3DMap(const GL_NETLizard_3D_Model *map_model, game_character *gamer, const nl_vector3_t *new_v, nl_vector3_t *return_v);
 // 计算角色的第三人称视角坐标

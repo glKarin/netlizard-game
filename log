@@ -1,0 +1,7 @@
+
+netlizard-game: Graphics parameter buffer overflow (usage 2097152 bytes).
+To fix this, please create /etc/powervr.d/netlizard-game.ini with contents:
+
+        [default]
+				        ParamBufferSize=4194304
+

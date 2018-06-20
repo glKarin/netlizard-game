@@ -114,13 +114,13 @@ void Game_RenderCharacters(const game_character *characters, int start, int cc, 
 	}
 }
 
-void Game_UpdateAIAnimation(game_character *characters, int start, int count, long long time, int fps)
+void Game_UpdateAIAnimation(game_character *characters, int start, int count, long long time, int fps, float delta)
 {
 	if(!characters)
 		return;
 	int i;
 	for(i = start; i < count; i++)
-		Game_CharacterPlayAnimation(characters + i, time, fps);
+		Game_CharacterPlayAnimation(characters + i, time, fps, delta);
 }
 
 void Game_HandleCharacterAction(const GL_NETLizard_3D_Model *map_model, game_character *characters, int start, int count, long long time)

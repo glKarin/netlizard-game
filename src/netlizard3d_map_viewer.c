@@ -66,7 +66,7 @@ static int Viewer_NETLizard3DMapIdleEventFunc(void);
 static void Viewer_NETLizard3DMapReshapeFunc(int w, int h);
 static int Viewer_NETLizard3DMapKeyFunc(int key, int a, int pressed, int x, int y);
 static void Viewer_NETLizard3DMapInitSimpleLight(void);
-static void Viewer_HandleNETLizard3DMapEvent(void);
+static void Viewer_HandleNETLizard3DMapEvent(float delta);
 static void Viewer_LoadNETLizard3DMapEvent(void);
 
 static void Viewer_UpdateGLTransform(game_character *gamer);
@@ -253,7 +253,6 @@ void Viewer_NETLizard3DMapInitFunc(void)
 
 	new_game_character(&player, caitlyn_original, map_model -> start_pos[0], map_model -> start_pos[1], map_model -> start_pos[2] - (2293760 >> 16), 0.0, map_model -> start_angle[1], 0, "karin", scene, clone3d_M16);
 	player.ai.type = ai_player_type;
-	player.animation.last_play_time = time;
 	player.ai.time = time;
 
 	frustum_far = FRUSTUM_FAR;
@@ -787,11 +786,11 @@ int Viewer_NETLizard3DMapIdleEventFunc(void)
 	time = Game_GetGameTime();
 	Viewer_UpdatePlayerPosition();
 
-	Game_CharacterPlayAnimation(&player, time, fps);
+	Game_CharacterPlayAnimation(&player, time, fps, delta_time);
 	//Mode_DeathGameModeMain(&game_mode, fps);
 
 	Viewer_UpdateGLTransform(&player);
-	Viewer_HandleNETLizard3DMapEvent();
+	Viewer_HandleNETLizard3DMapEvent(delta_time);
 	player.ai.time = time;
 
 	return 1;
@@ -943,7 +942,7 @@ void Viewer_Init3DFunc(void)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void Viewer_HandleNETLizard3DMapEvent(void)
+void Viewer_HandleNETLizard3DMapEvent(float delta)
 {
 	if(!ev)
 		return;
@@ -960,11 +959,11 @@ void Viewer_HandleNETLizard3DMapEvent(void)
 			};
 			if(Math3D_PointInAABB2D(&pos, &aabb) || (player.collision_item != -1 && ev[e].doorv_event.item_id == player.collision_item))
 			{
-				NETLizard_HandleDoorEvent(map_model, &(ev[e].doorv_event), 1, time);
+				NETLizard_HandleDoorEvent(map_model, &(ev[e].doorv_event), 1, delta);
 			}
 			else
 			{
-				NETLizard_HandleDoorEvent(map_model, &(ev[e].doorv_event), 0, time);
+				NETLizard_HandleDoorEvent(map_model, &(ev[e].doorv_event), 0, delta);
 			}
 		}
 		else if(ev[e].event_type == Event_Double_DoorV)
@@ -983,11 +982,11 @@ void Viewer_HandleNETLizard3DMapEvent(void)
 			aabb_t aabb = {minv, maxv};
 			if(Math3D_PointInAABB(&pos, &aabb) || (player.collision_item != -1 && (ev[e].double_doorv_event.item_id == player.collision_item || ev[e].double_doorv_event.item_id_pair == player.collision_item)))
 			{
-				NETLizard_HandleDoubleVDoorEvent(map_model, &(ev[e].double_doorv_event), 1, time);
+				NETLizard_HandleDoubleVDoorEvent(map_model, &(ev[e].double_doorv_event), 1, delta);
 			}
 			else
 			{
-				NETLizard_HandleDoubleVDoorEvent(map_model, &(ev[e].double_doorv_event), 0, time);
+				NETLizard_HandleDoubleVDoorEvent(map_model, &(ev[e].double_doorv_event), 0, delta);
 			}
 		}
 		else if(ev[e].event_type == Event_Double_DoorH)
@@ -1006,11 +1005,11 @@ void Viewer_HandleNETLizard3DMapEvent(void)
 			aabb_t aabb = {minv, maxv};
 			if(Math3D_PointInAABB(&pos, &aabb) || (player.collision_item != -1 && (ev[e].double_doorh_event.item_id == player.collision_item || ev[e].double_doorh_event.item_id_pair == player.collision_item)))
 			{
-				NETLizard_HandleDoubleHDoorEvent(map_model, &(ev[e].double_doorh_event), 1, time);
+				NETLizard_HandleDoubleHDoorEvent(map_model, &(ev[e].double_doorh_event), 1, delta);
 			}
 			else
 			{
-				NETLizard_HandleDoubleHDoorEvent(map_model, &(ev[e].double_doorh_event), 0, time);
+				NETLizard_HandleDoubleHDoorEvent(map_model, &(ev[e].double_doorh_event), 0, delta);
 			}
 		}
 		else if(ev[e].event_type == Event_Elevator)
@@ -1023,20 +1022,20 @@ void Viewer_HandleNETLizard3DMapEvent(void)
 			};
 			if(Math3D_PointInAABB(&pos, &aabb))
 			{
-				NETLizard_HandleElevatorEvent(map_model, &(ev[e].elevator_event), 1, time);
+				NETLizard_HandleElevatorEvent(map_model, &(ev[e].elevator_event), 1, delta);
 			}
 			else
 			{
-				//NETLizard_HandleElevatorEvent(map_model, &(ev[e].elevator_event), 0, time);
+				//NETLizard_HandleElevatorEvent(map_model, &(ev[e].elevator_event), 0, delta);
 			}
 		}
 		else if(ev[e].event_type == Event_Fan)
 		{
-			NETLizard_HandleFanEvent(map_model, &(ev[e].fan_event), 1, time);
+			NETLizard_HandleFanEvent(map_model, &(ev[e].fan_event), 1, delta);
 		}
 		else if(ev[e].event_type == Event_Prop)
 		{
-			NETLizard_HandlePropEvent(map_model, &(ev[e].prop_event), 1, time);
+			NETLizard_HandlePropEvent(map_model, &(ev[e].prop_event), 1, delta);
 		}
 		else if(ev[e].event_type == Event_Machine)
 		{
@@ -1051,11 +1050,11 @@ void Viewer_HandleNETLizard3DMapEvent(void)
 				ev[e].machine_event.target_x = player.position[0];
 				ev[e].machine_event.target_y = player.position[1];
 				ev[e].machine_event.target_z = player.position[2] + player.height;
-				NETLizard_HandleMachineEvent(map_model, &(ev[e].machine_event), 1, 1, time);
+				NETLizard_HandleMachineEvent(map_model, &(ev[e].machine_event), 1, 1, delta);
 			}
 			else
 			{
-				NETLizard_HandleMachineEvent(map_model, &(ev[e].machine_event), 0, 0, time);
+				NETLizard_HandleMachineEvent(map_model, &(ev[e].machine_event), 0, 0, delta);
 			}
 		}
 		else if(ev[e].event_type == Event_Portal && player.collision_item != -1 && ev[e].portal_event.item_id == player.collision_item)
@@ -1067,10 +1066,6 @@ void Viewer_HandleNETLizard3DMapEvent(void)
 			if(ev[e].portal_event.mask & (1 << 2))
 				player.position[2] = ev[e].portal_event.zt - (2293760 >> 16);
 		}
-	}
-	for(e = 0; e < ev_count; e++)
-	{
-		ev[e].any_event.time = time;
 	}
 }
 
@@ -1085,13 +1080,5 @@ void Viewer_LoadNETLizard3DMapEvent(void)
 	if(level != -1)
 	{
 		ev = NETLizard_LoadEventFile(EVENT_FILE, game, level, &ev_count);
-		if(ev)
-		{
-			int i;
-			for(i = 0; i < ev_count; i++)
-			{
-				ev[i].any_event.time = time;
-			}
-		}
 	}
 }

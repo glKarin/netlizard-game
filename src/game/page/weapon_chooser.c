@@ -42,6 +42,8 @@
 #define BUTTON_BACK_Y 10
 #define LABEL_H 80
 
+#define IDLE_TIME_DELAY 0.4
+
 #define WEAPON_TYPE_COUNT 9
 
 static const weapon_attack_type Weapon_Type_List[WEAPON_TYPE_COUNT] = {
@@ -87,7 +89,6 @@ static list_view wp_lst;
 static label lb;
 static text_browser tb;
 static scene_3d weapon_view;
-static long long time = 0;
 static const float weapon_view_unit = 150;
 static bool_t auto_rotate = 1;
 
@@ -100,6 +101,7 @@ static unsigned int data_count = 0;
 static unsigned int wp_data_count = 0;
 static GLsizei page_width = HARMATTAN_FULL_WIDTH;
 static GLsizei page_height = HARMATTAN_FULL_HEIGHT;
+static float idle_time = 0.0f;
 
 void Menu_SetWeaponChooserPageSize(GLsizei w, GLsizei h)
 {
@@ -125,12 +127,6 @@ int Menu_WeaponChooserIdleEventFunc(void)
 {
 	if(!has_init)
 		return 0;
-	/*
-		 if(key_state[Harmattan_K_Up] || key_state[Harmattan_K_w] || key_state[Harmattan_K_W])
-		 UI_MoveListViewCurrentIndex(&lst, -1);
-		 else if(key_state[Harmattan_K_Down] || key_state[Harmattan_K_s] || key_state[Harmattan_K_S])
-		 UI_MoveListViewCurrentIndex(&lst, 1);
-		 */
 	if(auto_rotate)
 	{
 		if(current_weapon != -1)
@@ -138,13 +134,22 @@ int Menu_WeaponChooserIdleEventFunc(void)
 			const weapon *wp = weapon_list + current_weapon;
 			if(wp -> model && wp -> model -> tp_model)
 			{
-				long long cur = Game_GetGameTime();
-				double d = (cur - time) / 1000.0;
-				weapon_view.rotate.zr += d * weapon_view_unit;
-				time = cur;
+				weapon_view.rotate.zr += delta_time * weapon_view_unit;
 			}
 		}
 	}
+
+	idle_time += delta_time;
+	if(idle_time < IDLE_TIME_DELAY)
+		return 1;
+	while(idle_time - IDLE_TIME_DELAY > 0.0f)
+		idle_time -= IDLE_TIME_DELAY;
+	if(key_state[Harmattan_K_Up] || key_state[Harmattan_K_w] || key_state[Harmattan_K_W])
+		UI_MoveListViewCurrentIndex(&lst, -1);
+	else if(key_state[Harmattan_K_Down] || key_state[Harmattan_K_s] || key_state[Harmattan_K_S])
+		UI_MoveListViewCurrentIndex(&lst, 1);
+	else
+		idle_time = 0.0f;
 
 	return 1;
 }
@@ -304,6 +309,24 @@ int Menu_WeaponChooserKeyEventFunc(int key, int act, int pressed, int x, int y)
 			{
 				Menu_BackAction();
 				return 1;
+			}
+			break;
+		case Harmattan_K_Up:
+		case Harmattan_K_w:
+		case Harmattan_K_W:
+			if(pressed)
+			{
+				UI_MoveListViewCurrentIndex(&lst, -1);
+				idle_time = 0.0f;
+			}
+			break;
+		case Harmattan_K_Down:
+		case Harmattan_K_s:
+		case Harmattan_K_S:
+			if(pressed)
+			{
+				UI_MoveListViewCurrentIndex(&lst, 1);
+				idle_time = 0.0f;
 			}
 			break;
 	}
@@ -519,7 +542,6 @@ void Menu_ViewWeapon(void *args)
 	weapon_view.rotate.yr = 0.0;
 	weapon_view.rotate.zr = 0.0;
 	auto_rotate = 1;
-	time = Game_GetGameTime();
 }
 
 void Menu_ChooseWeapon(void)
@@ -618,9 +640,9 @@ void Menu_ResetWeaponChooser(void)
 {
 	page_width = width;
 	page_height = height;
-	time = 0;
 	auto_rotate = 1;
 	current_weapon = -1;
+	idle_time = 0.0f;
 }
 
 void Menu_RenderWeapon(void)

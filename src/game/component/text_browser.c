@@ -206,7 +206,7 @@ void delete_text_browser(text_browser *tb)
 	FREE_PTR(tb -> text)
 }
 
-int UI_MoveTextBrowser(text_browser *tb, GLint step)
+int UI_MoveTextBrowser(text_browser *tb, GLfloat step)
 {
 	if(!tb)
 		return 0;

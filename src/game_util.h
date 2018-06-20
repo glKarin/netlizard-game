@@ -221,9 +221,9 @@ vector3_t Algo_GLComputeDirection(float y, float x);
 vector3_t Algo_ComputeDirection(float yr, float xr);
 void Algo_GetNormalAngle2D(const vector2_t *normal, float *yr);
 // 获取当前事件 微秒
-long long Game_GetGameTimeUS(void);
+unsigned long long Game_GetGameTimeUS(void);
 // 毫秒
-long long Game_GetGameTime(void);
+unsigned long long Game_GetGameTime(void);
 void UI_ResizeScene2D(scene_2d *s, GLfloat w, GLfloat h);
 void Algo_GetNormalAngle(const nl_vector3_t *normal, float *yr, float *xr);
 const char * Console_PrintLine(const char *title, char ch);

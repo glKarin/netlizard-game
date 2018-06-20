@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define LABEL_SHOW_INTERVAL 400
+#define LABEL_SHOW_INTERVAL 0.4
 
 #define LABEL_H 40
 #define LABEL_Y 80
@@ -43,8 +43,7 @@ static label title;
 static progress_bar bar;
 static char *loading_finished_action = NULL;
 static char *loading_fail_action = NULL;
-static GLuint label_blink_count = 0;
-static long long loading_finished_time = 0;
+static float idle_time = 0.0f;
 static GLboolean auto_load = GL_FALSE;
 static bool_t has_init = 0;
 static GLsizei page_width = HARMATTAN_FULL_WIDTH;
@@ -115,7 +114,6 @@ void Menu_LoadingUpdateProgressFunc(int has_err, int p, const char *info)
 				SET_TEXT(content.text, Content_Text[0])
 			else
 				SET_TEXT(content.text, Content_Text[1])
-			loading_finished_time = Game_GetGameTime();
 			karinPostDrawGL();
 		}
 	}
@@ -129,13 +127,12 @@ int Menu_LoadingIdleEventFunc(void)
 		return 0;
 	if(loading_progress == 100 && !auto_load)
 	{
-		long long time = Game_GetGameTime();
-		long long i = (time - loading_finished_time) / LABEL_SHOW_INTERVAL;
-		if(i != label_blink_count)
-		{
-			label_blink_count = i;
-			content.base.visible ^= GL_TRUE;
-		}
+		idle_time += delta_time;
+		if(idle_time < LABEL_SHOW_INTERVAL)
+			return 0;
+		while(idle_time - LABEL_SHOW_INTERVAL > 0.0f)
+			idle_time -= LABEL_SHOW_INTERVAL;
+		content.base.visible ^= GL_TRUE;
 		return 1;
 	}
 	return 0;
@@ -324,8 +321,7 @@ void Menu_ResetLoading(void)
 {
 	loading_progress = 0;
 	loading_successful = 0;
-	label_blink_count = 0;
-	loading_finished_time = 0;
+	idle_time = 0.0f;
 	auto_load = GL_FALSE;
 	page_width = width;
 	page_height = height;

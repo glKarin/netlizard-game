@@ -5,9 +5,9 @@
 
 #define KARIN_MAX_CONFIG 4
 
-EGLDisplay eglDisplay;//EGL display
-EGLContext eglContext;//EGL context
-EGLSurface eglSurface;//EGL surface
+EGLDisplay eglDisplay; //EGL display
+EGLContext eglContext; //EGL context
+EGLSurface eglSurface; //EGL surface
 
 static void karinEGLErrorHandle(void)
 {
@@ -33,12 +33,8 @@ static void karinEGLErrorHandle(void)
 	fprintf(stderr, "%s: 0x%04x: %s\n", __func__, err, GLimp_StringErrors[err - 0x3000]);
 }
 
-Bool karinInitGLctxObject(void)
+unsigned karinInitGLctxObject(void)
 {
-	initGL = karinGLInit;
-	drawGL = karinGLDraw;
-	reshapeGL = karinGLReshape;
-
 	resizeHandler = karinXResizeHandler;
 
 	XSetErrorHandler(karinXErrorHandler);
@@ -63,7 +59,7 @@ Bool karinInitGLctxObject(void)
 			);
 }
 
-Bool karinCreateGLContext(const char* title)
+unsigned karinCreateGLContext(const char* title)
 {
 	Window root;
 	XSetWindowAttributes swa;
@@ -75,7 +71,7 @@ Bool karinCreateGLContext(const char* title)
 
 	dpy = XOpenDisplay(NULL);
 	if ( dpy == NULL )
-		return False;
+		return 0;
 	root = DefaultRootWindow(dpy);
 	//root = RootWindow( dpy, DefaultScreen( dpy ));
 	int blackColour = BlackPixel(dpy, DefaultScreen(dpy));
@@ -125,26 +121,26 @@ Bool karinCreateGLContext(const char* title)
 	if ( eglDisplay == EGL_NO_DISPLAY )
 	{
 		karinEGLErrorHandle();
-		return False;
+		return 0;
 	}
 	//Initialize EGL
 	if ( !eglInitialize(eglDisplay, &majorVersion, &minorVersion) )
 	{
 		karinEGLErrorHandle();
-		return False;
+		return 0;
 	}
 	//Get configs !This is NOT mandatory!!
 	if ( !eglGetConfigs(eglDisplay, config, KARIN_MAX_CONFIG, &numConfigs) )
 	{
 		karinEGLErrorHandle();
-		return False;
+		return 0;
 	}
 	//Choose config
 
 	if ( !eglChooseConfig(eglDisplay, attr, config, KARIN_MAX_CONFIG, &numConfigs) )
 	{
 		karinEGLErrorHandle();
-		return False;
+		return 0;
 	}
 	//Create a surface
 	int i;
@@ -158,7 +154,7 @@ Bool karinCreateGLContext(const char* title)
 		karinEGLErrorHandle();
 	}
 	if ( eglSurface == EGL_NO_SURFACE )
-		return False;
+		return 0;
 	//printf("%d %d\n", i, numConfigs);
 	//Create a GL context
 	eglContext = eglCreateContext(eglDisplay, config[i], EGL_NO_CONTEXT, 
@@ -171,16 +167,16 @@ Bool karinCreateGLContext(const char* title)
 	if ( eglContext == EGL_NO_CONTEXT )
 	{
 		karinEGLErrorHandle();
-		return False;
+		return 0;
 	}
 	//Make the context current
 	if ( !eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext) )
 	{
 		karinEGLErrorHandle();
-		return False;
+		return 0;
 	}
 
-	return True;
+	return 1;
 }
 
 void karinShutdown(void)
@@ -199,7 +195,7 @@ void karinShutdown(void)
 		XDestroyWindow(dpy, win);
 		XCloseDisplay(dpy);
 	}
-	glCtxHasInit = False;
+	glCtxHasInit = 0;
 }
 
 void karinSwapBuffers(void)
@@ -208,24 +204,24 @@ void karinSwapBuffers(void)
 		eglSwapBuffers(eglDisplay, eglSurface);
 }
 
-void (*karinGetProcAddress(const GLubyte *procname))(void)
+void (*karinGetProcAddress(const char *procname))(void)
 {
 	if(glCtxHasInit)
-		return eglGetProcAddress((const char *)procname);
+		return eglGetProcAddress(procname);
 	else
 		return NULL;
 }
 
-Bool karinCreateGLRenderWindow(const char *title)
+unsigned karinCreateGLRenderWindow(const char *title)
 {
 	if(!attr)
-		return False;
+		return 0;
 	if(glCtxHasInit)
 	{
 		eglMakeCurrent (eglDisplay, NULL, NULL, NULL);
 		eglDestroySurface(eglDisplay, eglSurface);
 		eglDestroyContext (eglDisplay, eglContext);
-		glCtxHasInit = False;
+		glCtxHasInit = 0;
 	}
 	if(dpy)
 	{

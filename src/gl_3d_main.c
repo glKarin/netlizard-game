@@ -86,11 +86,11 @@ static void Main3D_DrawGLFunc();
 static void Main3D_InitGLFunc();
 static void Main3D_ReshapeGLFunc(int w, int h);
 static void Main3D_FreeGLFunc();
-static Bool Main3D_KeyEventFunc(KeySym key, Bool pressed, int x,int y);
-static Bool Main3D_MouseEventFunc(int button, Bool pressed, int x, int y);
-static Bool Main3D_MouseClickEventFunc(int button, int x, int y);
-static Bool Main3D_MouseMotionEventFunc(int button, Bool pressed, int x, int y, int dx, int dy);
-static Bool Main3D_IdleEventFunc();
+static unsigned Main3D_KeyEventFunc(int key, unsigned pressed, int x,int y);
+static unsigned Main3D_MouseEventFunc(int button, unsigned pressed, int x, int y);
+static unsigned Main3D_MouseClickEventFunc(int button, int x, int y);
+static unsigned Main3D_MouseMotionEventFunc(int button, unsigned pressed, int x, int y, int dx, int dy);
+static unsigned Main3D_IdleEventFunc(void);
 
 void Main3D_MainLoop(void)
 {
@@ -120,7 +120,7 @@ void Main3D_Stop(void)
 	if(init_glk)
 	{
 		if(karinIsSingle())
-			karinSetSingle(False);
+			karinSetSingle(0);
 		if(karinIsRunning())
 			karinPostExit();
 	}
@@ -134,12 +134,12 @@ void Main3D_InitGLK(int x, int y, int w, int h, const char *title, int f, int fs
 		karinInitGLctxObject();
 		karinSetWindowPosiotionAndSize(x, y, w, h);
 		karinCreateGLRenderWindow(title);
-		karinFullscreen((Bool)fs);
+		karinFullscreen(fs);
 		init_glk = karinHasInitGLctx();
 	}
 	if(init_glk && !karinIsRunning())
 	{
-		karinSetSingle(True);
+		karinSetSingle(1);
 		if(f > 0)
 			karinSetMaxFPS(f);
 		//Main3D_Reset();
@@ -161,7 +161,7 @@ void Main3D_RegisterGLKFunction(void)
 	karinRegisterIdleFunc(Main3D_IdleEventFunc);
 }
 
-void Main3D_InitGLFunc()
+void Main3D_InitGLFunc(void)
 {
 	new_netlizard_font(&fnt, NETLIZARD_FONT_MAP_FILE, NETLIZARD_FONT_TEX_FILE);
 	//new_x_font(&fnt, "fixed", 1, '~');
@@ -170,7 +170,7 @@ void Main3D_InitGLFunc()
 		InitNETLizard3D();
 }
 
-void Main3D_DrawGLFunc()
+void Main3D_DrawGLFunc(void)
 {
 	if(DrawNETLizard3D)
 	{
@@ -185,7 +185,7 @@ void Main3D_ReshapeGLFunc(int w, int h)
 		ReshapeNETLizard3D(w, h);
 }
 
-void Main3D_FreeGLFunc()
+void Main3D_FreeGLFunc(void)
 {
 	if(FreeNETLizard3D)
 		FreeNETLizard3D();
@@ -193,7 +193,7 @@ void Main3D_FreeGLFunc()
 	FREE_PTR(keymap_file)
 }
 
-Bool Main3D_KeyEventFunc(KeySym key, Bool pressed, int x, int y)
+unsigned Main3D_KeyEventFunc(int key, unsigned pressed, int x, int y)
 {
 	Harmattan_Key k = Main3D_ConvertXKey(key);
 	if(k != Harmattan_Total_Key)
@@ -231,10 +231,10 @@ Bool Main3D_KeyEventFunc(KeySym key, Bool pressed, int x, int y)
 	if(KeyNETLizard3D)
 		res = KeyNETLizard3D(k, a, pressed, x, y);
 
-	return(res ? True : False);
+	return res;
 }
 
-Bool Main3D_MouseEventFunc(int button, Bool pressed, int x, int y)
+unsigned Main3D_MouseEventFunc(int button, unsigned pressed, int x, int y)
 {
 	int res = 0;
 	// check mouse single click event
@@ -265,10 +265,10 @@ Bool Main3D_MouseEventFunc(int button, Bool pressed, int x, int y)
 
 	if(MouseNETLizard3D)
 		res = MouseNETLizard3D(button, pressed, x, y);
-	return(res ? True : False);
+	return res;
 }
 
-Bool Main3D_MouseMotionEventFunc(int button, Bool pressed, int x, int y, int dx, int dy)
+unsigned Main3D_MouseMotionEventFunc(int button, unsigned pressed, int x, int y, int dx, int dy)
 {
 	int res = 0;
 	if(pressed)
@@ -279,15 +279,15 @@ Bool Main3D_MouseMotionEventFunc(int button, Bool pressed, int x, int y, int dx,
 	}
 	if(MotionNETLizard3D)
 		res |= MotionNETLizard3D(button, pressed, x, y, dx, dy);
-	return(res ? True : False);
+	return res;
 }
 
-Bool Main3D_IdleEventFunc(void)
+unsigned Main3D_IdleEventFunc(void)
 {
 	int res = 0;
 	if(IdleNETLizard3D)
 		res = IdleNETLizard3D();
-	return(res ? True : False);
+	return res;
 }
 
 void Main3D_ModelViewTransform(person_mode mode, GLfloat tps_y_angle/*left is less 0, right is greater than 0, equals 0 is in middle.*/ ,GLfloat tps_x_angle, GLfloat tps_factory, int auto_cast)
@@ -835,14 +835,14 @@ Game_Action Main3D_GetActionOfKey(Harmattan_Key key)
 		return Total_Action;
 }
 
-Bool Main3D_MouseClickEventFunc(int button, int x, int y)
+unsigned Main3D_MouseClickEventFunc(int button, int x, int y)
 {
 	int res = 0;
 	if(MouseClickNETLizard3D)
 	{
 		res = MouseClickNETLizard3D(button, x, y);
 	}
-	return(res ? True : False);
+	return res;
 }
 
 int Main3D_BaseTransform(void)

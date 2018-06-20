@@ -22,7 +22,6 @@ typedef struct _AnyType_Event
 {
 	NETLizard_Event_Type event_type;
 	GLint handle;
-	long long time;
 	GLint item_id;
 } AnyType_Event;
 
@@ -30,7 +29,6 @@ typedef struct _Portal_Event
 {
 	NETLizard_Event_Type event_type;
 	GLint handle;
-	long long time;
 	GLint item_id;
 	GLuint mask;
 	GLfloat xt;
@@ -44,7 +42,6 @@ typedef struct _DoorV_Event
 {
 	NETLizard_Event_Type event_type;
 	GLint handle;
-	long long time;
 	GLint item_id;
 	GLclampf unit; // 0 - 1
 	GLfloat progress; // 0 - 100
@@ -54,7 +51,6 @@ typedef struct _Double_DoorV_Event
 {
 	NETLizard_Event_Type event_type;
 	GLint handle;
-	long long time;
 	GLint item_id; // up
 	GLint item_id_pair; // down
 	GLclampf unit; // 0 - 1
@@ -66,7 +62,6 @@ typedef struct _Double_DoorH_Event
 {
 	NETLizard_Event_Type event_type;
 	GLint handle;
-	long long time;
 	GLint item_id;
 	GLint item_id_pair;
 	GLclampf unit; // 0 - 1
@@ -79,7 +74,6 @@ typedef struct _Switcher_Event
 {
 	NETLizard_Event_Type event_type;
 	GLint handle;
-	long long time;
 	GLint item_id;
 	GLfloat x_factory;
 	GLfloat y_factory;
@@ -93,7 +87,6 @@ typedef struct _Elevator_Event
 {
 	NETLizard_Event_Type event_type;
 	GLint handle;
-	long long time;
 	GLint item_id;
 	GLclampf unit; // 0 - 1
 	GLfloat progress; // 0 - 100
@@ -106,7 +99,6 @@ typedef struct _Fan_Event
 {
 	NETLizard_Event_Type event_type;
 	GLint handle;
-	long long time;
 	GLint item_id;
 	GLclampf unit; // 0 - 1
 	GLfloat progress; // 0 - 100
@@ -121,7 +113,6 @@ typedef struct _Prop_Event
 {
 	NETLizard_Event_Type event_type;
 	GLint handle;
-	long long time;
 	GLint item_id;
 	struct
 	{
@@ -147,7 +138,6 @@ typedef struct _Machine_Event
 {
 	NETLizard_Event_Type event_type;
 	GLint handle;
-	long long time;
 	struct
 	{
 		GLint item_id;
@@ -190,7 +180,6 @@ typedef struct _General_Event
 {
 	NETLizard_Event_Type event_type;
 	GLint handle;
-	long long time;
 	NETLizard_3D_Item_Type item_type;
 	NETLizard_Event_Type operation_event_type;
 	GLvoid *operation_event;
@@ -212,13 +201,13 @@ typedef union _NETLizard_Event
 	General_Event general_event;
 } NETLizard_Event;
 
-GLvoid NETLizard_HandleDoorEvent(GL_NETLizard_3D_Model *model, DoorV_Event *event, GLint state, long long time);
-GLvoid NETLizard_HandleDoubleVDoorEvent(GL_NETLizard_3D_Model *model, Double_DoorV_Event *event, GLint state, long long time);
-GLvoid NETLizard_HandleDoubleHDoorEvent(GL_NETLizard_3D_Model *model, Double_DoorH_Event *event, GLint state, long long time);
-GLvoid NETLizard_HandleElevatorEvent(GL_NETLizard_3D_Model *model, Elevator_Event *event, GLint state, long long time);
-GLvoid NETLizard_HandleFanEvent(GL_NETLizard_3D_Model *model, Fan_Event *event, GLint state, long long time);
-GLvoid NETLizard_HandlePropEvent(GL_NETLizard_3D_Model *model, Prop_Event *event, GLint state, long long time);
-GLvoid NETLizard_HandleMachineEvent(GL_NETLizard_3D_Model *map_model, Machine_Event *event, GLint state, int mode, long long time);
+GLvoid NETLizard_HandleDoorEvent(GL_NETLizard_3D_Model *model, DoorV_Event *event, GLint state, GLfloat per);
+GLvoid NETLizard_HandleDoubleVDoorEvent(GL_NETLizard_3D_Model *model, Double_DoorV_Event *event, GLint state, GLfloat per);
+GLvoid NETLizard_HandleDoubleHDoorEvent(GL_NETLizard_3D_Model *model, Double_DoorH_Event *event, GLint state, GLfloat per);
+GLvoid NETLizard_HandleElevatorEvent(GL_NETLizard_3D_Model *model, Elevator_Event *event, GLint state, GLfloat per);
+GLvoid NETLizard_HandleFanEvent(GL_NETLizard_3D_Model *model, Fan_Event *event, GLint state, GLfloat per);
+GLvoid NETLizard_HandlePropEvent(GL_NETLizard_3D_Model *model, Prop_Event *event, GLint state, GLfloat per);
+GLvoid NETLizard_HandleMachineEvent(GL_NETLizard_3D_Model *map_model, Machine_Event *event, GLint state, int mode, GLfloat per);
 // event
 
 NETLizard_Event * NETLizard_LoadEventFile(const char *file, game_name g, int lvl, int *event_count);

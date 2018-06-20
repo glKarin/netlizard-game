@@ -46,11 +46,10 @@ void delete_first_person(first_person *fp)
 	delete_scene_2d(&fp -> fp);
 }
 
-void UI_UpdateFirstPerson(first_person *fp, long long time)
+void UI_UpdateFirstPerson(first_person *fp, float delta)
 {
 	if(!fp)
 		return;
-	double delta = (double)(time - fp -> time) / 1000.0;
 	switch(fp -> status)
 	{
 		case fp_turnright_status_type:
@@ -202,10 +201,9 @@ void UI_UpdateFirstPerson(first_person *fp, long long time)
 		default:
 			break;
 	}
-	fp -> time = time;
 }
 
-void UI_UpdateFirstPersonStatus(first_person *fp, first_person_status_type s, long long time)
+void UI_UpdateFirstPersonStatus(first_person *fp, first_person_status_type s)
 {
 	if(!fp)
 		return;
@@ -288,7 +286,6 @@ void UI_UpdateFirstPersonStatus(first_person *fp, first_person_status_type s, lo
 		default:
 			break;
 	}
-	fp -> time = time;
 }
 
 void UI_RenderFirstPerson(first_person *fp)

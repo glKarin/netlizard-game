@@ -1,5 +1,5 @@
-#ifndef KARIN_GLUT_H
-#define KARIN_GLUT_H
+#ifndef _KARIN_GLUT_H
+#define _KARIN_GLUT_H
 
 /* ASCI-C std */
 #include <stdlib.h>
@@ -34,10 +34,17 @@
 #include <EGL/egl.h>
 #endif
 
+/* CONSTANT */
 #define HARMATTAN_FULL_HEIGHT 480
 #define HARMATTAN_FULL_WIDTH 854
 #define HARMATTAN_HEIGHT 376
 #define HARMATTAN_WIDTH 800
+
+/* Type */
+#define _true 1
+#define _false 0
+typedef unsigned char _bool_t;
+
 /* Macros */
 // utility macros
 #define KARIN_BUFFER_OFFSET(x, y) ((GLubyte *)NULL + sizeof(y) * (x))
@@ -68,16 +75,16 @@ typedef void (*reshapeGLFunc) (int w, int h);
 // x, y: mouse x and y
 // pressed: mouse or key is pressed
 // dx, dy: mouse motion delta position
-typedef Bool (*keyHandlerFunc) (KeySym key, Bool pressed, int x, int y);
-typedef Bool (*mouseHandlerFunc) (int button, Bool pressed, int x, int y);
-typedef Bool (*motionHandlerFunc) (int button, int pressed, int x, int y, int dx, int dy);
+typedef unsigned (*keyHandlerFunc) (int key, unsigned pressed, int x, int y);
+typedef unsigned (*mouseHandlerFunc) (int button, unsigned pressed, int x, int y);
+typedef unsigned (*motionHandlerFunc) (int button, unsigned pressed, int x, int y, int dx, int dy);
 // window resize event function
 typedef void (*resizeHandlerFunc) (void);
 // atexit function
 typedef void (*exitXFunc) (void);
 // idle function
 // return True if need re-draw GL
-typedef Bool (*idleFunc) (void);
+typedef unsigned (*idleFunc) (void);
 
 /* extern variant */
 extern Display *dpy;
@@ -102,19 +109,20 @@ extern int x;
 extern int y;
 
 extern int fps;
+extern float delta_time;
+extern unsigned long long time_usec;
 
 /* extern function */
 // GLX init function
-Bool karinSetGLctxInitAttributeArray(const int args[]);
-Bool karinSetGLctxInitAttribute(int param, ...);
-Bool karinAddGLctxInitAttribute(int param, ...);
-Bool karinInitGLctxObject(void);
-Bool karinCreateGLRenderWindow(const char *title);
+unsigned karinSetGLctxInitAttributeArray(const int args[], unsigned int size);
+unsigned karinSetGLctxInitAttribute(int param, ...);
+unsigned karinAddGLctxInitAttribute(int param, ...);
+unsigned karinInitGLctxObject(void);
+unsigned karinCreateGLRenderWindow(const char *title);
 #ifdef _HARMATTAN_OPENGL
-Bool karinInitGLctxObjectAndGLUT(int *argc, char *argv[]);
+unsigned karinInitGLctxObjectAndGLUT(int *argc, char *argv[]);
 #endif
 void karinSetWindowPosiotionAndSize(int lx, int ly, int w, int h);
-void karinSetAutoReshapeWhenResize(GLboolean b);
 
 // register function
 void karinRegisterDrawFunc(drawGLFunc f);
@@ -127,27 +135,32 @@ void karinRegisterExitFunc(exitXFunc f);
 void karinRegisterMotionFunc(motionHandlerFunc f);
 void karinRegisterResizeFunc(resizeHandlerFunc f);
 
-// application function
-void karinPostExit(void);
-void karinMainLoop(void);
-void karinFullscreen(Bool fs);
-void karinSetMaxFPS(int i);
-void karinSetSingle(GLboolean s);
-void karinShutdown(void);
-GLboolean karinIsRunning(void);
-GLboolean karinIsSingle(void);
-Bool karinHasInitGLctx(void);
+// state function
+unsigned karinIsRunning(void);
+unsigned karinIsSingle(void);
+unsigned karinHasInitGLctx(void);
+void karinFullscreen(unsigned fs);
 
 // GL function
-void karinSwapBuffers(void);
-void karinSetAutoSwapBuffers(GLboolean b);
-GLboolean karinQueryExtension(const char *extName);
+unsigned karinQueryExtension(const char *extName);
+void (*karinGetProcAddress(const char *procname))(void);
+#ifdef _HARMATTAN_OPENGL
+unsigned karinUseXFont(const char *name, int start, int size, unsigned list_start, unsigned int *w, unsigned int *h);
+#endif
+
+// control function
+void karinSetAutoReshapeWhenResize(unsigned b);
+void karinSetAutoSwapBuffers(unsigned b);
 void karinPostDrawGL(void);
-void (*karinGetProcAddress(const GLubyte *procname))(void);
-Bool karinUseXFont(const char *name, int start, int size, GLuint list_start, unsigned int *w, unsigned int *h);
+void karinSwapBuffers(void);
+void karinPostExit(void);
+void karinSetSingle(unsigned s);
+void karinSetMaxFPS(int i);
+void karinMainLoop(void);
+void karinShutdown(void);
 
 // utility function
 float karinCastFPS(void);
-const GLubyte * karinGetGLErrorString(void);
+const char * karinGetGLErrorString(void);
 
 #endif

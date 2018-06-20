@@ -27,7 +27,7 @@ void UI_RenderTextBrowser(text_browser *tb);
 void delete_text_browser(text_browser *tb);
 void UI_SetBrowserText(text_browser *tb, const char *text);
 int UI_SlideTextBrowser(text_browser *tb, GLfloat dis);
-int UI_MoveTextBrowser(text_browser *tb, GLint step);
+int UI_MoveTextBrowser(text_browser *tb, GLfloat step);
 void UI_ResizeTextBrowser(text_browser *t, GLfloat width, GLfloat height);
 void UI_ResetTextBrowserPosition(text_browser *t, GLfloat x, GLfloat y);
 void UI_ResetTextBrowserGeometry(text_browser *t, GLfloat x, GLfloat y, GLfloat width, GLfloat height);

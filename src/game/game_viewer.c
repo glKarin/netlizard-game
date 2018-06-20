@@ -103,7 +103,6 @@ static GLdouble frustum_far = FRUSTUM_FAR;
 static GLuint frustum_width = FRUSTUM_WIDTH;
 static GLuint frustum_height = FRUSTUM_HEIGHT;
 static bool_t has_init = 0; 
-static long long time = 0;
 static int last_key = Harmattan_Total_Key;
 static int last_pressed = 0;
 
@@ -411,7 +410,6 @@ int Game_InitGame(void)
 	new_score_table(&score_tb, 150, 60, 0.05, 554, 360, 400, 20, 1, Color_GetColor(purple_color, 0.4), Color_GetColor(black_color, 0.4), Color_GetColor(orange_color, 0.4), Color_GetColor(green_color, 0.4));
 	score_tb.fnt = &fnt;
 	score_tb.game_mode = &game_mode;
-	time = game_mode.game_time;
 	if(loading_progress_func)
 		loading_progress_func(0, 100, "Start game");
 	has_init = 1;
@@ -631,7 +629,7 @@ void Game_ViewerDrawFunc(void)
 						{
 							UI_SetFirstPersonTexture(&fp, game_mode.characters[game_mode.current_character].current_weapon.model -> fp_tex);
 						}
-						UI_UpdateFirstPerson(&fp, game_mode.game_time);
+						UI_UpdateFirstPerson(&fp, delta_time);
 						UI_RenderFirstPerson(&fp);
 #ifndef _HARMATTAN_OPENGLES2
 						if(is_lighting)
@@ -761,20 +759,19 @@ void Game_UpdateFPPosition(const game_character *c)
 	if(!c)
 		return;
 	if((c -> ai.action & aiaction_attack_type || c -> ai.action & aiaction_fight_type) && c -> current_weapon.status == firing_type)
-		UI_UpdateFirstPersonStatus(&fp, fp_fight_status_type, game_mode.game_time);
+		UI_UpdateFirstPersonStatus(&fp, fp_fight_status_type);
 	else if(c -> ai.action & aiaction_movexyz_type || c -> ai.action & aiaction_jump_type)
-		UI_UpdateFirstPersonStatus(&fp, fp_move_status_type, game_mode.game_time);
+		UI_UpdateFirstPersonStatus(&fp, fp_move_status_type);
 	else if(c -> ai.action & aiaction_turnleft_type)
-		UI_UpdateFirstPersonStatus(&fp, fp_turnleft_status_type, game_mode.game_time);
+		UI_UpdateFirstPersonStatus(&fp, fp_turnleft_status_type);
 	else if(c -> ai.action & aiaction_turnright_type)
-		UI_UpdateFirstPersonStatus(&fp, fp_turnright_status_type, game_mode.game_time);
+		UI_UpdateFirstPersonStatus(&fp, fp_turnright_status_type);
 	else if(c -> ai.action & aiaction_turndown_type)
-		UI_UpdateFirstPersonStatus(&fp, fp_turndown_status_type, game_mode.game_time);
+		UI_UpdateFirstPersonStatus(&fp, fp_turndown_status_type);
 	else if(c -> ai.action & aiaction_turnup_type)
-		UI_UpdateFirstPersonStatus(&fp, fp_turnup_status_type, game_mode.game_time);
+		UI_UpdateFirstPersonStatus(&fp, fp_turnup_status_type);
 	else
-		UI_UpdateFirstPersonStatus(&fp, fp_idle_status_type, game_mode.game_time);
-
+		UI_UpdateFirstPersonStatus(&fp, fp_idle_status_type);
 }
 
 void Game_UpdateZoomProgress(void)
@@ -797,7 +794,7 @@ void Game_UpdateZoomProgress(void)
 	{
 		if(zm.zoom_state > 0)
 		{
-			zm.foxy -= zm.zoom_out_unit * (double)(game_mode.game_time - time) / 1000.0;
+			zm.foxy -= zm.zoom_out_unit * delta_time;
 			if(zm.foxy < zm.min_foxy)
 			{
 				zm.foxy = zm.min_foxy;
@@ -806,7 +803,7 @@ void Game_UpdateZoomProgress(void)
 		}
 		else if(zm.zoom_state < 0)
 		{
-			zm.foxy += zm.zoom_in_unit * (double)(game_mode.game_time - time) / 1000.0;
+			zm.foxy += zm.zoom_in_unit * delta_time;
 			if(zm.foxy > zm.max_foxy)
 			{
 				zm.type = no_zoom_type;
@@ -859,7 +856,7 @@ void Game_UpdateGLTransform(game_character *gamer)
 			}
 			if(view_free_mode)
 			{
-				float r = turn_unit_3d * (float)((double)(game_mode.game_time - time) / 1000.0);
+				float r = turn_unit_3d * delta_time;
 				if(action_state[FreeViewTurnLeft_Action] && action_state[FreeViewTurnRight_Action] == 0)
 				{
 					view_y_angle = Algo_FormatAngle(view_y_angle + r);
@@ -1083,7 +1080,7 @@ int Game_ViewerIdleEventFunc(void)
 	if(game_mode.state == running_game_type)
 	{
 		//player -> health = health_full_type;
-		Mode_DeathGameModeMain(&game_mode, fps);
+		Mode_DeathGameModeMain(&game_mode, fps, delta_time);
 		if(game_mode.state == finish_game_type)
 		{
 			Game_GameOver();
@@ -1093,7 +1090,6 @@ int Game_ViewerIdleEventFunc(void)
 
 		game_character *c = game_mode.characters + game_mode.current_character;
 		Game_UpdateGLTransform(c);
-		time = game_mode.game_time;
 
 		fps_cross_hair.normal.scale = game_mode.characters[game_mode.current_character].current_weapon.firing_progress;
 
@@ -1234,7 +1230,6 @@ void Game_AfterGameMenuClosing(void)
 	const void *slot = SignalSlot_GetAction(SET_GAME_STATE);
 	if(slot)
 		((void__func__int)slot)(game_in_game_state);
-	time = game_mode.game_time;
 }
 
 void Game_PauseGameAndOpenMenu(void)
@@ -1315,7 +1310,6 @@ void Game_ResetViewer(void)
 	last_key = Harmattan_Total_Key;
 	last_pressed = 0;
 	turn_unit_3d = FREE_VIEW_ANGLE_UNIT;
-	time = 0;
 	player = NULL;
 	view_free_mode = GL_FALSE;
 	view_y_angle = 0.0;
@@ -1837,7 +1831,6 @@ void Game_ReplayGame(void)
 		player -> current_weapon.ammo_total_count_limit = -1;
 	}
 
-	time = game_mode.game_time;
 	view_y_angle = 0.0;
 	view_x_angle = 0.0;
 	view_free_reason = view_auto_free_type;

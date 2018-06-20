@@ -79,8 +79,8 @@ typedef	struct _character_animation_data
 	int frame_count;
 	animation_loop_type anim_loop;
 	animation_orientation_type anim_orient;
-	long long last_play_time;
 	int fps;
+	float last_play_time;
 } character_animation_data;
 
 typedef struct _lol_game_character
@@ -168,7 +168,7 @@ game_character * new_netlizard_game_character(game_character *c, const char *gam
 
 void delete_game_character(game_character *gamer);
 
-void Game_CharacterPlayAnimation(game_character *gamer, long long time, int fps);
+void Game_CharacterPlayAnimation(game_character *gamer, long long time, int fps, float delta);
 void Game_RenderGameCharacter(const game_character *gamer);
 void Game_UpdateCharacterPositionAndDirection(game_character *gamer, float x, float y, float z, float xr, float yr);
 game_character * new_game_character(game_character *c, int type, float x, float y, float z, float xr, float yr, int id, const char *name, int scene, weapon_model_type wt);
@@ -176,6 +176,6 @@ int Game_MakeGameCharacterModel(game_character_model *game_model, unsigned int t
 void Game_FreeCharacterModel(game_character_model *game_model);
 int Game_GetNETLizardAnimationIndex(GL_NETLizard_3D_Animation_Model *model, NETLizard_3D_Animation_Type type);
 int Game_GetAnimationNextFrame(const character_animation_data *data, int f);
-int Game_ComputeAnimationPlayFrameCount(model_source_type type, character_animation_data *animation, int fps, long long time);
+int Game_ComputeAnimationPlayFrameCount(model_source_type type, character_animation_data *animation, int fps, float delta);
 
 #endif

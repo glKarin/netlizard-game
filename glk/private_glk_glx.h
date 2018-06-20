@@ -10,15 +10,11 @@ static void karinGLXErrorHandler(void);
 
 void karinGLXErrorHandler(void)
 {
-	fprintf(stderr, "glx error.\n");
+	fprintf(stderr, "GLX error.\n");
 }
 
-Bool karinInitGLctxObject(void)
+unsigned karinInitGLctxObject(void)
 {
-	initGL = karinGLInit;
-	drawGL = karinGLDraw;
-	reshapeGL = karinGLReshape;
-
 	resizeHandler = karinXResizeHandler;
 
 	XSetErrorHandler(karinXErrorHandler);
@@ -37,17 +33,17 @@ Bool karinInitGLctxObject(void)
 			);
 }
 
-Bool karinInitGLCtxObjectAndGLUT(int *argc, char *argv[])
+unsigned karinInitGLCtxObjectAndGLUT(int *argc, char *argv[])
 {
 	if(karinInitGLctxObject())
 	{
 		glutInit(argc, argv);
-		return True;
+		return 1;
 	}
-	return False;
+	return 0;
 }
 
-Bool karinCreateGLContext(const char* title)
+unsigned karinCreateGLContext(const char* title)
 {
 	Window root;
 	XSetWindowAttributes swa;
@@ -58,7 +54,7 @@ Bool karinCreateGLContext(const char* title)
 
 	dpy = XOpenDisplay(NULL);
 	if ( dpy == NULL )
-		return False;
+		return 0;
 	//root = DefaultRootWindow(dpy);
 	root = RootWindow( dpy, DefaultScreen( dpy ));
 	//int blackColour = BlackPixel(dpy, DefaultScreen(dpy));
@@ -93,7 +89,7 @@ Bool karinCreateGLContext(const char* title)
 	if (!glXQueryExtension(dpy, NULL, NULL))
 	{
 		karinGLXErrorHandler();
-		return False;
+		return 0;
 	}
 	/*
 	//get configs
@@ -101,7 +97,7 @@ Bool karinCreateGLContext(const char* title)
 	if (!configs)
 	{
 		karinGLXErrorHandler();
-		return False;
+		return 0;
 	}
 	printf("%d___\n", numConfigs);
 	*/
@@ -110,7 +106,7 @@ Bool karinCreateGLContext(const char* title)
 	if(!config)
 	{
 		karinGLXErrorHandler();
-		return False;
+		return 0;
 	}
 	int i;
 	printf("glX config -> %d\n", numConfigs);
@@ -136,7 +132,7 @@ Bool karinCreateGLContext(const char* title)
 	printf("glX window -> %x\nglX context -> %ld\n", glw, glc);
 	glXMakeContextCurrent (dpy, win, win, glc);
 
-	return True;
+	return 1;
 }
 
 void karinShutdown(void)
@@ -155,7 +151,7 @@ void karinShutdown(void)
 		XDestroyWindow(dpy, win);
 		XCloseDisplay(dpy);
 	}
-	glCtxHasInit = False;
+	glCtxHasInit = 0;
 }
 
 void karinSwapBuffers(void)
@@ -164,13 +160,13 @@ void karinSwapBuffers(void)
 		glXSwapBuffers(dpy, glw);
 }
 
-Bool karinUseXFont(const char *name, int start, int size, GLuint list_start, unsigned int *w, unsigned int *h)
+unsigned karinUseXFont(const char *name, int start, int size, unsigned int list_start, unsigned int *w, unsigned int *h)
 {
 	if(glCtxHasInit)
 	{
 		XFontStruct *fontStruct = XLoadQueryFont(dpy, name);
 		if(!fontStruct)
-			return False;
+			return 0;
 		if(w)
 			*w = fontStruct -> max_bounds.rbearing - fontStruct -> max_bounds.lbearing;
 		if(h)
@@ -179,29 +175,29 @@ Bool karinUseXFont(const char *name, int start, int size, GLuint list_start, uns
 		//printf("%d %d %d %d %d\n", fontStruct -> max_bounds.lbearing, fontStruct -> max_bounds.rbearing, fontStruct -> max_bounds.width, fontStruct -> max_bounds.ascent, fontStruct -> max_bounds.descent);
 		glXUseXFont(fontStruct -> fid, start, size, list_start);
 		XFreeFont(dpy, fontStruct);
-		return True;
+		return 1;
 	}
-	return False;
+	return 0;
 }
 
-void (*karinGetProcAddress(const GLubyte *procname))(void)
+void (*karinGetProcAddress(const char *procname))(void)
 {
 	if(glCtxHasInit)
-		return glXGetProcAddress(procname);
+		return glXGetProcAddress((const GLubyte *)procname);
 	else
 		return NULL;
 }
 
-Bool karinCreateGLRenderWindow(const char *title)
+unsigned karinCreateGLRenderWindow(const char *title)
 {
 	if(!attr)
-		return False;
+		return 0;
 	if(glCtxHasInit)
 	{
 		glXDestroyContext(dpy, glc);
 		glXDestroyWindow(dpy, glw);
 		glXMakeContextCurrent (dpy, 0, 0, 0);
-		glCtxHasInit = False;
+		glCtxHasInit = 0;
 	}
 	if(dpy)
 	{

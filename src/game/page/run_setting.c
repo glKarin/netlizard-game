@@ -25,6 +25,8 @@
 #define BUTTON_H 60
 #define LABEL_H 80
 
+#define FLICK_MOVE_UNIT 100
+
 static int Menu_RunSettingIdleEventFunc(void);
 static int Menu_RunSettingKeyEventFunc(int k, int a, int p, int x, int y);
 static int Menu_RunSettingMouseEventFunc(int b, int p, int x, int y);
@@ -71,12 +73,10 @@ int Menu_RunSettingIdleEventFunc(void)
 {
 	if(!has_init)
 		return 0;
-	/*
-		 if(key_state[Harmattan_K_Up] || key_state[Harmattan_K_w])
-		 UI_MoveTextBrowser(&tb, -1);
-		 else if(key_state[Harmattan_K_Down] || key_state[Harmattan_K_s])
-		 UI_MoveTextBrowser(&tb, 1);
-		 */
+	if(key_state[Harmattan_K_Up] || key_state[Harmattan_K_w])
+		UI_SlideFlickable(&flick, delta_time * -FLICK_MOVE_UNIT);
+	else if(key_state[Harmattan_K_Down] || key_state[Harmattan_K_s])
+		UI_SlideFlickable(&flick, delta_time * FLICK_MOVE_UNIT);
 	return 1;
 }
 
@@ -185,6 +185,21 @@ int Menu_RunSettingKeyEventFunc(int key, int act, int pressed, int x, int y)
 				return 1;
 			}
 			break;
+		case Harmattan_K_Up:
+		case Harmattan_K_w:
+		case Harmattan_K_W:
+			if(pressed)
+			{
+				UI_SlideFlickable(&flick, delta_time * -FLICK_MOVE_UNIT);
+			}
+			break;
+		case Harmattan_K_Down:
+		case Harmattan_K_s:
+		case Harmattan_K_S:
+			if(pressed)
+			{
+				UI_SlideFlickable(&flick, delta_time * FLICK_MOVE_UNIT);
+			}
 			break;
 		default:
 			break;

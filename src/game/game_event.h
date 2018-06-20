@@ -17,9 +17,9 @@ extern Game_Map_Event *event;
 // state数组元素 -1 不处理 0 关闭 1 打开
 void Event_ProcessMapItemTriggerEvent(const GL_NETLizard_3D_Model *map_model, NETLizard_Event *event, int event_count, game_character *gamer, int *state);
 // 根据state数组，处理地图物品事件
-void Event_HandleMapItemTriggerEvent(GL_NETLizard_3D_Model *map_model, NETLizard_Event *event, int event_count, long long time, int *state);
+void Event_HandleMapItemTriggerEvent(GL_NETLizard_3D_Model *map_model, NETLizard_Event *event, int event_count, float delta, int *state);
 // 检测并处理角色触发的地图事件
-void Event_HandleCharacterTriggerEvent(GL_NETLizard_3D_Model *map_model, NETLizard_Event *event, int event_count, game_character *gamer, long long time);
+void Event_HandleCharacterTriggerEvent(GL_NETLizard_3D_Model *map_model, NETLizard_Event *event, int event_count, game_character *gamer, float delta);
 // 加载事件
 Game_Map_Event * Event_LoadEvent(const char *file, game_name game, int level);
 void Event_FreeEvent(Game_Map_Event *event);

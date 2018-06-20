@@ -34,6 +34,8 @@
 #define BUTTON_BACK_Y 10
 #define LABEL_H 80
 
+#define IDLE_TIME_DELAY 0.4
+
 static const char Scan_Label[] = "Press a key: \n";
 
 static int Menu_KeyMapSettingIdleEventFunc(void);
@@ -74,6 +76,7 @@ static list_view_data *data = NULL;
 static unsigned int data_count = 0;
 static GLsizei page_width = HARMATTAN_FULL_WIDTH;
 static GLsizei page_height = HARMATTAN_FULL_HEIGHT;
+static float idle_time = 0.0f;
 
 void Menu_SetKeyMapSettingPageSize(GLsizei w, GLsizei h)
 {
@@ -101,11 +104,20 @@ int Menu_KeyMapSettingIdleEventFunc(void)
 		return 0;
 	if(!scan_mode)
 	{
+		idle_time += delta_time;
+		if(idle_time < IDLE_TIME_DELAY)
+			return 0;
+		while(idle_time - IDLE_TIME_DELAY > 0.0f)
+			idle_time -= IDLE_TIME_DELAY;
 		if(key_state[Harmattan_K_Up] || key_state[Harmattan_K_w] || key_state[Harmattan_K_W])
 			UI_MoveListViewCurrentIndex(&lst, -1);
 		else if(key_state[Harmattan_K_Down] || key_state[Harmattan_K_s] || key_state[Harmattan_K_S])
 			UI_MoveListViewCurrentIndex(&lst, 1);
+		else
+			idle_time = 0.0f;
 	}
+	else
+		idle_time = 0.0f;
 	return 1;
 }
 
@@ -280,6 +292,24 @@ int Menu_KeyMapSettingKeyEventFunc(int key, int act, int pressed, int x, int y)
 				{
 					Menu_BackAction();
 					return 1;
+				}
+				break;
+			case Harmattan_K_Up:
+			case Harmattan_K_w:
+			case Harmattan_K_W:
+				if(pressed)
+				{
+					UI_MoveListViewCurrentIndex(&lst, -1);
+					idle_time = 0.0f;
+				}
+				break;
+			case Harmattan_K_Down:
+			case Harmattan_K_s:
+			case Harmattan_K_S:
+				if(pressed)
+				{
+					UI_MoveListViewCurrentIndex(&lst, 1);
+					idle_time = 0.0f;
 				}
 				break;
 		}
@@ -615,6 +645,7 @@ void Menu_ResetKeyMapSetting(void)
 	scan_mode = 0;
 	scan_action = Total_Action;
 	scan_key = Harmattan_Other_Key;
+	idle_time = 0.0f;
 }
 
 void Menu_UpdateKeyMap(void)

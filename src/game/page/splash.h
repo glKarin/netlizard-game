@@ -4,6 +4,6 @@
 void Splash_RegisterFunction(void);
 void Splash_SetSplashImageFile(const char *f);
 void Splash_SetSplashShowFinishedAction(const char *signal);
-void Splash_SetSplashShowTimeInterval(long long ms_out, long long ms_in);
+void Splash_SetSplashShowTimeInterval(float out, float in);
 
 #endif

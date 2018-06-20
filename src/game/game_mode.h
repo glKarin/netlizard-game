@@ -82,7 +82,7 @@ typedef struct _death_game_mode
 
 death_game_mode * new_death_game_mode(death_game_mode *mode, person_mode pm, game_mode_win_type win_type, int s, int point, game_mode_relive_type relive_type, int relive_time, int level);
 void Mode_InitDeathGameMode(death_game_mode *m, game_character *characters, int character_count, GL_NETLizard_3D_Model *model, Game_Map_Event *event);
-void Mode_DeathGameModeMain(death_game_mode *m, int fps);
+void Mode_DeathGameModeMain(death_game_mode *m, int fps, float delta);
 void delete_death_game_mode(death_game_mode *mode);
 int Mode_CheckDeathGameMode(const death_game_mode *m);
 void Mode_PauseGameMode(death_game_mode *m);

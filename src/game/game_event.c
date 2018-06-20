@@ -133,7 +133,7 @@ void Event_ProcessMapItemTriggerEvent(const GL_NETLizard_3D_Model *map_model, NE
 	}
 }
 
-void Event_HandleMapItemTriggerEvent(GL_NETLizard_3D_Model *map_model, NETLizard_Event *event, int event_count, long long time, int *state)
+void Event_HandleMapItemTriggerEvent(GL_NETLizard_3D_Model *map_model, NETLizard_Event *event, int event_count, float delta, int *state)
 {
 	if(!map_model || event_count == 0 || event == NULL || !state)
 		return;
@@ -142,65 +142,65 @@ void Event_HandleMapItemTriggerEvent(GL_NETLizard_3D_Model *map_model, NETLizard
 	{
 		if(event[e].event_type == Event_Fan)
 		{
-			NETLizard_HandleFanEvent(map_model, &(event[e].fan_event), 1, time);
+			NETLizard_HandleFanEvent(map_model, &(event[e].fan_event), 1, delta);
 		}
 		else if(event[e].event_type == Event_Prop)
 		{
-			NETLizard_HandlePropEvent(map_model, &(event[e].prop_event), 1, time);
+			NETLizard_HandlePropEvent(map_model, &(event[e].prop_event), 1, delta);
 		}
 		else if(event[e].event_type == Event_DoorV)
 		{
 			if(state[e] == 1)
 			{
-				NETLizard_HandleDoorEvent(map_model, &(event[e].doorv_event), 1, time);
+				NETLizard_HandleDoorEvent(map_model, &(event[e].doorv_event), 1, delta);
 			}
 			else if(state[e] == 0)
 			{
-				NETLizard_HandleDoorEvent(map_model, &(event[e].doorv_event), 0, time);
+				NETLizard_HandleDoorEvent(map_model, &(event[e].doorv_event), 0, delta);
 			}
 		}
 		else if(event[e].event_type == Event_Double_DoorV)
 		{
 			if(state[e] == 1)
 			{
-				NETLizard_HandleDoubleVDoorEvent(map_model, &(event[e].double_doorv_event), 1, time);
+				NETLizard_HandleDoubleVDoorEvent(map_model, &(event[e].double_doorv_event), 1, delta);
 			}
 			else if(state[e] == 0)
 			{
-				NETLizard_HandleDoubleVDoorEvent(map_model, &(event[e].double_doorv_event), 0, time);
+				NETLizard_HandleDoubleVDoorEvent(map_model, &(event[e].double_doorv_event), 0, delta);
 			}
 		}
 		else if(event[e].event_type == Event_Double_DoorH)
 		{
 			if(state[e] == 1)
 			{
-				NETLizard_HandleDoubleHDoorEvent(map_model, &(event[e].double_doorh_event), 1, time);
+				NETLizard_HandleDoubleHDoorEvent(map_model, &(event[e].double_doorh_event), 1, delta);
 			}
 			else if(state[e] == 0)
 			{
-				NETLizard_HandleDoubleHDoorEvent(map_model, &(event[e].double_doorh_event), 0, time);
+				NETLizard_HandleDoubleHDoorEvent(map_model, &(event[e].double_doorh_event), 0, delta);
 			}
 		}
 		else if(event[e].event_type == Event_Elevator)
 		{
 			if(state[e] == 1)
 			{
-				NETLizard_HandleElevatorEvent(map_model, &(event[e].elevator_event), 1, time);
+				NETLizard_HandleElevatorEvent(map_model, &(event[e].elevator_event), 1, delta);
 			}
 			else
 			{
-				//NETLizard_HandleElevatorEvent(map_model, &(event[e].elevator_event), 0, time);
+				//NETLizard_HandleElevatorEvent(map_model, &(event[e].elevator_event), 0, delta);
 			}
 		}
 		else if(event[e].event_type == Event_Machine)
 		{
 			if(state[e] == 1)
 			{
-				NETLizard_HandleMachineEvent(map_model, &(event[e].machine_event), 1, 1, time);
+				NETLizard_HandleMachineEvent(map_model, &(event[e].machine_event), 1, 1, delta);
 			}
 			else if(state[e] == 0)
 			{
-				NETLizard_HandleMachineEvent(map_model, &(event[e].machine_event), 0, 0, time);
+				NETLizard_HandleMachineEvent(map_model, &(event[e].machine_event), 0, 0, delta);
 			}
 		/*
 			 else
@@ -210,7 +210,7 @@ void Event_HandleMapItemTriggerEvent(GL_NETLizard_3D_Model *map_model, NETLizard
 	}
 }
 
-void Event_HandleCharacterTriggerEvent(GL_NETLizard_3D_Model *map_model, NETLizard_Event *event, int event_count, game_character *gamer, long long time)
+void Event_HandleCharacterTriggerEvent(GL_NETLizard_3D_Model *map_model, NETLizard_Event *event, int event_count, game_character *gamer, float delta)
 {
 	if(!map_model || event_count == 0 || event == NULL || !gamer)
 		return;

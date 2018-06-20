@@ -14,6 +14,8 @@ int x = 0;
 int y = 0;
 
 int fps = 0;
+float delta_time = 0.0;
+unsigned long long time_usec = 0LL;
 
 static int max_fps = 0;
 static double frame_time_us = 1000000.0;
@@ -39,24 +41,20 @@ static exitXFunc exitX = NULL;
 // default: auto reshape is GL_TRUE auto swap buffer is GL_TRUE
 // if running is GL_TRUE application is in loop
 // glCtxHasInit is True when GLX has initial
-static GLboolean autoReshape = GL_TRUE;
-static GLboolean autoSwapBuffers = GL_TRUE;
-static Bool glCtxHasInit = False;
-static GLboolean running = GL_FALSE;
-static GLboolean single = GL_TRUE;
+static unsigned autoReshape = 1;
+static unsigned autoSwapBuffers = 1;
+static unsigned glCtxHasInit = 0;
+static unsigned running = 0;
+static unsigned single = 1;
 
 /* static function */
-// default handler
-static void karinGLInit(void);
-static void karinGLDraw(void);
-static void karinGLReshape(int w, int h);
-
-static void karinXResizeHandler(void);
 static int karinXErrorHandler(Display *d, XErrorEvent *eev);
+static void karinXResizeHandler(void);
+static unsigned long long karinGetTimeUSec(void);
 
 // application function
-static Bool karinCreateGLContext(const char* title);
-static Bool karinXEventLoop(void);
+static unsigned karinCreateGLContext(const char* title);
+static unsigned karinXEventLoop(void);
 static void karinPrintGLInfo(void);
 static const char * karinX11EventString(int e);
 
@@ -74,87 +72,69 @@ static const char * karinX11EventString(int e);
 #define CONFIG_NONE EGL_NONE
 #endif
 
-Bool karinSetGLctxInitAttributeArray(const int args[])
+unsigned karinSetGLctxInitAttributeArray(const int args[], unsigned int size)
 {
-	size_t len = sizeof(args) / sizeof(int);
-	if(len == 0)
+	if(size == 0)
 	{
 		fprintf(stderr, "No configure attritube.\n");
-		return False;
+		return 0;
 	}
 	free(attr);
-	attr = NULL;
-	attr_count = 0;
-	void *ptr = calloc(len, sizeof(int));
-	if(!ptr)
-	{
-		fprintf(stderr, "Alloc fail.\n");
-		return False;
-	}
-	attr = (int *)ptr;
+	attr = (int *)calloc(size, sizeof(int));
 	memcpy(attr, args, sizeof(args));
-	attr_count = len - 1;
-	return True;
+	attr_count = size - 1;
+	return 1;
 }
 
-Bool karinSetGLctxInitAttribute(int param, ...)
+unsigned karinSetGLctxInitAttribute(int param, ...)
 {
 	if(param < 2)
 	{
 		fprintf(stderr, "Need 1 pair of configure attritube.\n");
-		return False;
+		return 0;
 	}
 	free(attr);
-	attr = NULL;
-	attr_count = 0;
-	void *ptr = calloc(param + 1, sizeof(int));
-	if(!ptr)
-	{
-		fprintf(stderr, "Alloc fail.\n");
-		return False;
-	}
-	attr = (int *)ptr;
+	attr = (int *)calloc(param + 1, sizeof(int));
+	int i;
 	va_list args;
 	va_start(args, param);
-		int i;
+	{
 		for(i = 0; i < param; i++)
 			attr[i] = va_arg(args, int);
+	}
 	va_end(args);
 	attr[i] = CONFIG_NONE;
 	attr_count = param;
-	return True;
+	return 1;
 }
 
-Bool karinAddGLctxInitAttribute(int param, ...)
+unsigned karinAddGLctxInitAttribute(int param, ...)
 {
 	if(param < 2)
 	{
 		fprintf(stderr, "Need 1 pair of configure attritube.\n");
-		return False;
+		return 0;
 	}
-	void *ptr = NULL;
 	if(attr_count == 0)
 	{
-		int arg_arr[param + 1];
+		int *arg_arr = (int *)calloc(param + 1, sizeof(int));
+		int i;
 		va_list args;
 		va_start(args, param);
-		int i;
-		for(i = 0; i < param; i++)
-			arg_arr[i] = va_arg(args, int);
+		{
+			for(i = 0; i < param; i++)
+				arg_arr[i] = va_arg(args, int);
+		}
 		va_end(args);
 		arg_arr[i] = CONFIG_NONE;
-		return karinSetGLctxInitAttributeArray(arg_arr);
+		unsigned r =  karinSetGLctxInitAttributeArray(arg_arr, param + 1);
+		free(arg_arr);
+		return r;
 	}
-	int old_conf[attr_count];
-	memcpy(old_conf, attr, sizeof(old_conf));
-	ptr = realloc((void *)attr, sizeof(int) * (attr_count + param + 1));
-	if(!ptr)
-	{
-		fprintf(stderr, "ReAlloc fail.\n");
-		return False;
-	}
-	attr = (int *)ptr;
-	memcpy(attr, old_conf, sizeof(old_conf));
+	int *old_conf = attr;
+	attr = (int *)calloc(attr_count + param + 1, sizeof(int));
+	memcpy(attr, old_conf, sizeof(int) * attr_count);
+	free(old_conf);
 	va_list args;
 	va_start(args, param);
 		int i;
@@ -163,21 +143,12 @@ Bool karinAddGLctxInitAttribute(int param, ...)
 	va_end(args);
 	attr[attr_count + i] = CONFIG_NONE;
 	attr_count += param;
-	return True;
+	return 1;
 }
 
-void karinSetAutoReshapeWhenResize(GLboolean b)
+void karinSetAutoReshapeWhenResize(unsigned b)
 {
 	autoReshape = b;
-}
-
-void karinGLInit(void)
-{
-	/*
-	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-	glShadeModel(GL_SMOOTH);
-	*/
-	//glEnable(GL_DEPTH_TEST);
 }
 
 void karinXResizeHandler(void)
@@ -187,47 +158,22 @@ void karinXResizeHandler(void)
 			reshapeGL((GLsizei)width, (GLsizei)height);
 }
 
-void karinGLDraw(void)
-{
-	/*
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glFlush();
-	*/
-}
-
-void karinGLReshape(int w, int h)
-{
-	/*
-	if(w < 1)
-		w = 1;
-	if(h < 1)
-		h = 1;
-	glViewport (0, 0, w, h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	//glOrtho(-5.0f, 5.0f, -5.0f, 5.0f, 0.0f, 10.0f);
-	gluPerspective(45.0, 2, 0.0, 10.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	*/
-}
-
 int karinXErrorHandler(Display *d, XErrorEvent *eev)
 {
-	char str[200];
+#define ERROR_STRING_LEN 200
+	char str[ERROR_STRING_LEN];
 	XGetErrorText(d, eev -> error_code, str, 99);
-	str[199] = '\0';
 	fprintf(stderr, "[ err -> %d - %s (%s)]\n", eev -> error_code, str, __func__);
+	str[ERROR_STRING_LEN - 1] = '\0';
 	return 0;
 }
 
-Bool karinXEventLoop(void)
+unsigned karinXEventLoop(void)
 {
 	if(!dpy)
 	{
 		fprintf(stderr, "X is not initialized!\n");
-		return False;
+		return 0;
 	}
 	XEvent xev;
 	KeySym key;
@@ -241,7 +187,7 @@ Bool karinXEventLoop(void)
 	int dx = 0;
 	int dy = 0;
 	static Bool mousePressed = False;
-	Bool handle = False;
+	unsigned handle = 1;
 
 #ifdef _XI2_MULTI_TOUCH
 	while (X11_Pending(dpy)) 
@@ -259,7 +205,7 @@ Bool karinXEventLoop(void)
 				if(keyHandler)
 				{
 					keyHandler(keysym, pressed, mx, my);
-					//handle = True;
+					//handle = 1;
 				}
 					/*
 				if (XLookupString(&xev.xkey,&text,1,&key,0)==1)
@@ -276,7 +222,7 @@ Bool karinXEventLoop(void)
 				height = xev.xcreatewindow.height;
 				if(resizeHandler)
 					resizeHandler();
-				handle = True;
+				handle = 1;
 				break;
 			case ConfigureNotify:
 				x = xev.xconfigure.x;
@@ -285,7 +231,7 @@ Bool karinXEventLoop(void)
 				height = xev.xconfigure.height;
 				if(resizeHandler)
 					resizeHandler();
-				handle = True;
+				handle = 1;
 				break;
 #ifndef _XI2_MULTI_TOUCH
 			case MotionNotify:
@@ -296,7 +242,7 @@ Bool karinXEventLoop(void)
 				if(motionHandler)
 				{
 					motionHandler(xev.xmotion.state, mousePressed, mx, my, dx, dy);
-					//handle = True;
+					//handle = 1;
 				}
 				break;
 			case ButtonPress:
@@ -307,7 +253,7 @@ Bool karinXEventLoop(void)
 				if(mouseHandler)
 				{
 					mouseHandler(xev.xbutton.button, mousePressed, mx, my);
-					//handle = True;
+					//handle = 1;
 				}
 				break;
 #endif
@@ -315,11 +261,11 @@ Bool karinXEventLoop(void)
 				printf("Window will distroying\n");
 				break;
 			case Expose:
-				handle = True;
+				handle = 1;
 				break;
 			case VisibilityNotify:
 				if(xev.xvisibility.state)
-					handle = True;
+					handle = 1;
 				break;
 				/*
 				printf(" f %d t %lu\n", xev.xclient.format, xev.xclient.message_type);
@@ -414,12 +360,12 @@ void karinPostExit(void)
 	running = GL_FALSE;
 }
 
-void karinSetSingle(GLboolean s)
+void karinSetSingle(unsigned s)
 {
 	single = s;
 }
 
-void karinSetAutoSwapBuffers(GLboolean b)
+void karinSetAutoSwapBuffers(unsigned b)
 {
 	autoSwapBuffers = b;
 }
@@ -432,63 +378,50 @@ void karinPostDrawGL(void)
 		return;
 	if(!drawGL)
 		return;
-	struct timeval beg_time, end_time;
-	double delta_time = 0.0;
-	gettimeofday(&beg_time, NULL);
 
 	drawGL();
 	if(autoSwapBuffers)
 		karinSwapBuffers();
-
-	gettimeofday(&end_time, NULL);
-	delta_time = (end_time.tv_sec - beg_time.tv_sec) * 1000000.0 + (end_time.tv_usec - beg_time.tv_usec);
-	if(max_fps > 0 && delta_time < frame_time_us)
-	{
-		usleep(frame_time_us - delta_time);
-		//printf("d %f\n", frame_time_us - delta_time);
-	}
-
-	double n = 1000000.0 / (double)(delta_time < frame_time_us ? frame_time_us : delta_time);
-	double nf = 0.0;
-	double nl = modf(n, &nf);
-	if(n >= 0.0)
-	{
-		if(nl >= 0.5)
-			nf += 1.0;
-	}
-	else
-	{
-		if(nl >= 0.5)
-			nf -= 1.0;
-	}
-	fps = (int)nf;
 }
 
 void karinMainLoop(void)
 {
 	if(!glCtxHasInit)
 		return;
-	running = GL_TRUE;
+	running = 1;
 #ifdef _HARMATTAN_OPENGLES2
 	gl2InitProgram();
 #endif
 	if(initGL)
 		initGL();
+	time_usec = karinGetTimeUSec();
+	static unsigned long long _next_time_usec = 0LL;
+	double delta_us = 0;
+	double dfps = 0.0;
 	while(running)
 	{
-		if(karinXEventLoop())
+		_next_time_usec = karinGetTimeUSec();
+		delta_us = (double)(_next_time_usec - time_usec);
+		delta_time = delta_us / 1000000.0;
+
+		karinXEventLoop();
+		if(idleHandler)
+			idleHandler();
+		karinPostDrawGL();
+		//karinEventHandler();
+
+#if 0
+		if(max_fps > 0 && delta_us < frame_time_us)
 		{
-			karinPostDrawGL();
+			usleep((int)(frame_time_us - delta_us));
+			printf("%d %f %f %f\n", fps, frame_time_us, delta_us, frame_time_us - delta_us);
 		}
-		else
-			//karinEventHandler();
-		{
-			if(idleHandler)
-			{
-				if(idleHandler())
-					karinPostDrawGL();
-			}
-		}
+#endif
+
+		dfps = 1000000.0 / (delta_us < frame_time_us ? frame_time_us : delta_us);
+		fps = (int)round(dfps);
+
+		time_usec = _next_time_usec;
 		//float delta = karinCastFPS();
 	}
 #ifdef _HARMATTAN_OPENGLES2
@@ -508,6 +441,13 @@ void karinSetWindowPosiotionAndSize(int lx, int ly, int w, int h)
 		h = 1;
 	width = w;
 	height = h;
+}
+
+unsigned long long karinGetTimeUSec(void)
+{
+	static struct timeval _tv;
+	gettimeofday(&_tv, NULL);
+	return (_tv.tv_sec * 1000000 + _tv.tv_usec);
 }
 
 void karinPrintGLInfo()
@@ -540,11 +480,11 @@ void karinPrintGLInfo()
 #endif
 }
 
-GLboolean karinQueryExtension(const char *extName)
+unsigned karinQueryExtension(const char *extName)
 {
 	const char *ptr = (const char *)glGetString(GL_EXTENSIONS);
 	if(!ptr)
-		return GL_FALSE;
+		return 0;
 	const char *const end = ptr + strlen(ptr);
 	size_t len = strlen(extName);
 
@@ -552,29 +492,29 @@ GLboolean karinQueryExtension(const char *extName)
 	{
 		size_t l = strcspn(ptr, " ");
 		if(l == len && strncmp(ptr, extName, l))
-			return GL_TRUE;
+			return 1;
 		else
 			ptr += (l + 1);
 	}
-	return GL_FALSE;
+	return 0;
 }
 
-GLboolean karinIsRunning(void)
+unsigned karinIsRunning(void)
 {
 	return running;
 }
 
-GLboolean karinIsSingle(void)
+unsigned karinIsSingle(void)
 {
 	return single;
 }
 
-Bool karinHasInitGLctx(void)
+unsigned karinHasInitGLctx(void)
 {
 	return glCtxHasInit;
 }
 
-void karinFullscreen(Bool fs)
+void karinFullscreen(unsigned fs)
 {
 	XClientMessageEvent xclient;
 
@@ -591,15 +531,15 @@ void karinFullscreen(Bool fs)
 			SubstructureRedirectMask | SubstructureNotifyMask,
 			(XEvent *) & xclient);
 	/*
-	int i;
-	for(i = 0; i < 478; i++)
-	{
-		char *str = XGetAtomName(dpy, i);
-		if(str){
-		printf("%d - %s\n",i, str);
-		XFree(str);}
-	}
-	*/
+		 int i;
+		 for(i = 0; i < 478; i++)
+		 {
+		 char *str = XGetAtomName(dpy, i);
+		 if(str){
+		 printf("%d - %s\n",i, str);
+		 XFree(str);}
+		 }
+		 */
 }
 
 void karinSetMaxFPS(int i)
@@ -612,9 +552,9 @@ void karinSetMaxFPS(int i)
 	//printf("%f\n", frame_time_us);
 }
 
-const GLubyte * karinGetGLErrorString(void)
+const char * karinGetGLErrorString(void)
 {
-	return gluErrorString(glGetError());
+	return (const char *)gluErrorString(glGetError());
 }
 
 const char * karinX11EventString(int e)

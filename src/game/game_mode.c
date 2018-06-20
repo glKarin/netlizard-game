@@ -70,7 +70,6 @@ void Mode_InitDeathGameMode(death_game_mode *m, game_character *characters, int 
 		for(i = 0; i < m -> character_count; i++)
 		{
 			m -> characters[i].ai.time = m -> game_time;
-			m -> characters[i].animation.last_play_time = m -> game_time;
 		}
 		int *group = NEW_II(int, m -> character_count);
 		int g = 0;
@@ -127,17 +126,9 @@ void Mode_InitDeathGameMode(death_game_mode *m, game_character *characters, int 
 
 	m -> map = model;
 	m -> event = event;
-	if(m -> event)
-	{
-		int i;
-		for(i = 0; i < m -> event -> event_count; i++)
-		{
-			m -> event -> event[i].any_event.time = m -> game_time;
-		}
-	}
 }
 
-void Mode_DeathGameModeMain(death_game_mode *m, int fps)
+void Mode_DeathGameModeMain(death_game_mode *m, int fps, float delta)
 {
 	if(!m)
 		return;
@@ -241,19 +232,15 @@ void Mode_DeathGameModeMain(death_game_mode *m, int fps)
 		for(i = 0; i < m -> character_count; i++)
 			Event_ProcessMapItemTriggerEvent(m -> map, m -> event -> event, m -> event -> event_count, m -> characters + i, state);
 
-		Event_HandleMapItemTriggerEvent(m -> map, m -> event -> event, m -> event -> event_count, m -> game_time, state);
+		Event_HandleMapItemTriggerEvent(m -> map, m -> event -> event, m -> event -> event_count, delta, state);
 
 		for(i = 0; i < m -> character_count; i++)
-			Event_HandleCharacterTriggerEvent(m -> map, m -> event -> event, m -> event -> event_count, m -> characters + i, m -> game_time);
+			Event_HandleCharacterTriggerEvent(m -> map, m -> event -> event, m -> event -> event_count, m -> characters + i, delta);
 
 		free(state);
-		for(i = 0; i < m -> event -> event_count; i++)
-		{
-			m -> event -> event[i].any_event.time = m -> game_time;
-		}
 	}
 
-	Game_UpdateAIAnimation(m -> characters, 0, m -> character_count, m -> game_time, fps);
+	Game_UpdateAIAnimation(m -> characters, 0, m -> character_count, m -> game_time, fps, delta);
 	for(i = 0; i < m -> character_count; i++)
 		m -> characters[i].ai.time = m -> game_time;
 }
@@ -332,15 +319,6 @@ void Mode_ContinueGameMode(death_game_mode *m)
 		for(i = 0; i < m -> character_count; i++)
 		{
 			m -> characters[i].ai.time += interval;
-			m -> characters[i].animation.last_play_time += interval;
-		}
-	}
-	if(m -> event)
-	{
-		int i;
-		for(i = 0; i < m -> event -> event_count; i++)
-		{
-			m -> event -> event[i].any_event.time += interval;
 		}
 	}
 	unsigned int k;
@@ -376,7 +354,6 @@ void Mode_ResetGameMode(death_game_mode *m)
 		for(i = 0; i < m -> character_count; i++)
 		{
 			m -> characters[i].ai.time = m -> game_time;
-			m -> characters[i].animation.last_play_time = m -> game_time;
 		}
 
 		for(i = 0; i < m -> group_count; i++)
@@ -393,14 +370,6 @@ void Mode_ResetGameMode(death_game_mode *m)
 		}
 	}
 
-	if(m -> event)
-	{
-		int i;
-		for(i = 0; i < m -> event -> event_count; i++)
-		{
-			m -> event -> event[i].any_event.time = m -> game_time;
-		}
-	}
 	List_DeleteAll(&m -> particle_list);
 	List_DeleteAll(&m -> bullet_list);
 	List_DeleteAll(&m -> sound_list);

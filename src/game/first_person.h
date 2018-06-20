@@ -31,7 +31,6 @@ typedef struct _first_person
 	float z;
 	first_person_hand_type hand;
 	first_person_status_type status;
-	long long time;
 	float x_offset;
 	float y_offset;
 	float x_offset_target;
@@ -49,9 +48,9 @@ typedef struct _first_person
 
 first_person * new_first_person(first_person *fp, first_person_hand_type hand, float x, float y, float z, float xmin, float xmax, float ymin, float ymax, float os, float is, float s);
 void delete_first_person(first_person *fp);
-void UI_UpdateFirstPerson(first_person *fp, long long time);
+void UI_UpdateFirstPerson(first_person *fp, float delta);
 void UI_RenderFirstPerson(first_person *fp);
 void UI_SetFirstPersonTexture(first_person *fp, texture *tex);
-void UI_UpdateFirstPersonStatus(first_person *fp, first_person_status_type s, long long time);
+void UI_UpdateFirstPersonStatus(first_person *fp, first_person_status_type s);
 
 #endif
