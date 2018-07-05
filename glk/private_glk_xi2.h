@@ -26,7 +26,7 @@ static Bool karinMultiMouseEvent(int which, int button, Bool pressed, int x, int
 static Bool karinMultiMouseMotionEvent(int which, int button, Bool pressed, int x, int y, int dx, int dy)
 {
 	//printf("Finger -> %d\n", which);
-	if(mouseHandler)
+	if(motionHandler)
 		return motionHandler(button, pressed, x, y, dx, dy);
 	return 0;
 }
