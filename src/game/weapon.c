@@ -94,32 +94,32 @@ weapon * new_weapon(weapon *w, weapon_model_type type)
 	RETURN_PTR(wp, w, weapon);
 
 		const weapon_model_resource *r = Weapon_Model_Resource + type;
-	wp -> weapon_index = type;
+	wp->weapon_index = type;
 
-	wp -> model = weapon_models_loaded ? weapon_models + type : NULL;
-	wp -> shot_range = r -> shot_range;
-	wp -> type = r -> type;
-	wp -> firing_rate = r -> firing_rate;
-	wp -> damage = r -> damage;
-	wp -> ammo_count = r -> ammo_count;
-	wp -> ammo_total_count = r -> ammo_total_count;
-	wp -> ammo_total_count_limit = wp -> ammo_total_count;
-	wp -> reload_time = r -> reload_time;
-	wp -> speed = r -> speed;
-	wp -> hit_rate = r -> hit_rate;
-	wp -> damage_attenuation = r -> damage_attenuation;
-	wp -> boom_range = r -> boom_range;
-	wp -> boom_damage_attenuation = r -> boom_damage_attenuation;
-	wp -> length = r -> length;
-	wp -> shell_count = r -> shell_count;
+	wp->model = weapon_models_loaded ? weapon_models + type : NULL;
+	wp->shot_range = r->shot_range;
+	wp->type = r->type;
+	wp->firing_rate = r->firing_rate;
+	wp->damage = r->damage;
+	wp->ammo_count = r->ammo_count;
+	wp->ammo_total_count = r->ammo_total_count;
+	wp->ammo_total_count_limit = wp->ammo_total_count;
+	wp->reload_time = r->reload_time;
+	wp->speed = r->speed;
+	wp->hit_rate = r->hit_rate;
+	wp->damage_attenuation = r->damage_attenuation;
+	wp->boom_range = r->boom_range;
+	wp->boom_damage_attenuation = r->boom_damage_attenuation;
+	wp->length = r->length;
+	wp->shell_count = r->shell_count;
 
-	wp -> status = ready_type;
-	wp -> firing_progress = 0.0;
-	wp -> time = 0;
-	if(wp -> ammo_count > 0)
-		wp -> ammo = wp -> ammo_count;
+	wp->status = ready_type;
+	wp->firing_progress = 0.0;
+	wp->time = 0;
+	if(wp->ammo_count > 0)
+		wp->ammo = wp->ammo_count;
 	else
-		wp -> ammo = 1;
+		wp->ammo = 1;
 
 	return wp;
 }
@@ -128,7 +128,7 @@ void delete_weapon(weapon *wp)
 {
 	if(!wp)
 		return;
-	wp -> model = NULL;
+	wp->model = NULL;
 }
 
 bullet * Game_WeaponFire(bullet bt[], const weapon *wp, float w, int character_index, int group, unsigned int *count)
@@ -136,54 +136,54 @@ bullet * Game_WeaponFire(bullet bt[], const weapon *wp, float w, int character_i
 	if(!wp || !count)
 		return NULL;
 
-	if(wp -> status != firing_type)
+	if(wp->status != firing_type)
 		return NULL;
 
 	bullet *b = NULL;
 	if(!bt)
-		b = NEW_II(bullet, wp -> shell_count);
+		b = NEW_II(bullet, wp->shell_count);
 	else
 		b = bt;
 
 	if(count)
-		*count = wp -> shell_count;
+		*count = wp->shell_count;
 
 	bullet_type type;
-	if(wp -> type <= short_attack_type)
+	if(wp->type <= short_attack_type)
 		type = no_bullet_type;
-	else if(wp -> type >= launcher1_gun_type && wp -> type <= launcher2_gun_type)
+	else if(wp->type >= launcher1_gun_type && wp->type <= launcher2_gun_type)
 		type = shell_bullet_type;
-	else if(wp -> type >= grenades_type && wp -> type <= smoke_bomb_type)
+	else if(wp->type >= grenades_type && wp->type <= smoke_bomb_type)
 		type = grenade_bullet_type;
 	else
 		type = normal_bullet_type;
 
 	unsigned int i;
-	for(i = 0; i < wp -> shell_count; i++)
+	for(i = 0; i < wp->shell_count; i++)
 	{
 		int o = (int)floor((SHOTGUN_ANGLE_MAX_OFFSET - SHOTGUN_ANGLE_MIN_OFFSET) * 100);
 
-		float x = wp -> x_angle;
-		float y = wp -> y_angle;
+		float x = wp->x_angle;
+		float y = wp->y_angle;
 
 		if(i != 0)
 		{
 			int r = rand() % (o * 2) - o;
-			x = Algo_FormatAngle(wp -> x_angle + ((float)r / 100.0));
+			x = Algo_FormatAngle(wp->x_angle + ((float)r / 100.0));
 			r = rand() % (o * 2) - o;
-			y = Algo_FormatAngle(wp -> y_angle + ((float)r / 100.0));
+			y = Algo_FormatAngle(wp->y_angle + ((float)r / 100.0));
 		}
-		nl_vector3_t wpos = {wp -> position[0], wp -> position[1], wp -> position[2]};
+		nl_vector3_t wpos = {wp->position[0], wp->position[1], wp->position[2]};
 		nl_vector3_t dir = Algo_ComputeDirection(y, x);
 		Vector3_Inverse(&dir);
 		dir = Vector3_Scale(&dir, w);
 		dir = Vector3_PlusVector3(&wpos, &dir);
-		float len = wp -> length;
-		if(wp -> type == pistol_gun_type || wp -> type == grenades_type || wp -> type == flash_flares_type || wp -> type == smoke_bomb_type || wp -> type <= short_attack_type)
+		float len = wp->length;
+		if(wp->type == pistol_gun_type || wp->type == grenades_type || wp->type == flash_flares_type || wp->type == smoke_bomb_type || wp->type <= short_attack_type)
 			len += w;
 
-		new_bullet(b + i, dir.x, dir.y, dir.z, x, y, wp -> time, wp -> speed, wp -> damage, wp -> damage_attenuation, wp -> boom_range, wp -> boom_damage_attenuation, wp -> shot_range, 
-				wp -> type == launcher1_gun_type || wp -> type == grenades_type || wp -> type == flash_flares_type || wp -> type == smoke_bomb_type ? 1 : 0/*gravity*/, type, //流弹炮 手雷需要计算重力加速度
+		new_bullet(b + i, dir.x, dir.y, dir.z, x, y, wp->time, wp->speed, wp->damage, wp->damage_attenuation, wp->boom_range, wp->boom_damage_attenuation, wp->shot_range, 
+				wp->type == launcher1_gun_type || wp->type == grenades_type || wp->type == flash_flares_type || wp->type == smoke_bomb_type ? 1 : 0/*gravity*/, type, //流弹炮 手雷需要计算重力加速度
 				character_index, group, len);
 	}
 	return b;
@@ -199,60 +199,60 @@ void Game_LoadWeaponModel(void)
 	{
 		const weapon_model_resource *r = Weapon_Model_Resource + i;
 
-		if(r -> mesh_file == NULL)
+		if(r->mesh_file == NULL)
 			weapon_models[i].tp_model = NULL;
 		else
 		{
 			if(i <= ct3d_Flash_Grenade)
 			{
-				weapon_models[i].tp_model = NETLizard_ReadGLCT3DEp2ItemModelFile(r -> mesh_file, r -> mesh_index);
+				weapon_models[i].tp_model = NETLizard_ReadGLCT3DEp2ItemModelFile(r->mesh_file, r->mesh_index);
 				if(weapon_models[i].tp_model)
 				{
-					weapon_models[i].position[1] = 0.0 - (weapon_models[i].tp_model -> item_meshes[0].item_mesh.ortho[1] - weapon_models[i].tp_model -> item_meshes[0].item_mesh.ortho[4]) / 2;
-					weapon_models[i].position[2] = 0.0 - (weapon_models[i].tp_model -> item_meshes[0].item_mesh.ortho[2] - weapon_models[i].tp_model -> item_meshes[0].item_mesh.ortho[5]) / 2;
+					weapon_models[i].position[1] = 0.0 - (weapon_models[i].tp_model->item_meshes[0].item_mesh.ortho[1] - weapon_models[i].tp_model->item_meshes[0].item_mesh.ortho[4]) / 2;
+					weapon_models[i].position[2] = 0.0 - (weapon_models[i].tp_model->item_meshes[0].item_mesh.ortho[2] - weapon_models[i].tp_model->item_meshes[0].item_mesh.ortho[5]) / 2;
 				}
 			}
 			else if(i >= specnaz3d_Dagger && i <= specnaz3d_Fragmentation_Grenade)
 			{
-				weapon_models[i].tp_model = NETLizard_ReadGLSpecnaz3DItemModelFile(r -> mesh_file, r -> mesh_index);
+				weapon_models[i].tp_model = NETLizard_ReadGLSpecnaz3DItemModelFile(r->mesh_file, r->mesh_index);
 				if(weapon_models[i].tp_model)
 				{
-					weapon_models[i].position[1] = 0.0 - (weapon_models[i].tp_model -> item_meshes[0].item_mesh.ortho[1] - weapon_models[i].tp_model -> item_meshes[0].item_mesh.ortho[4]) / 2;
-					weapon_models[i].tp_model -> item_meshes[0].angle[1] = 180.0;
+					weapon_models[i].position[1] = 0.0 - (weapon_models[i].tp_model->item_meshes[0].item_mesh.ortho[1] - weapon_models[i].tp_model->item_meshes[0].item_mesh.ortho[4]) / 2;
+					weapon_models[i].tp_model->item_meshes[0].angle[1] = 180.0;
 				}
 			}
 			else if(i >= egypt3d_Dagger && i <= egypt3d_The_Sword_of_Osiris)
 			{
-				weapon_models[i].tp_model = NETLizard_ReadGLEgypt3DItemModelFile(r -> mesh_file, r -> mesh_index);
+				weapon_models[i].tp_model = NETLizard_ReadGLEgypt3DItemModelFile(r->mesh_file, r->mesh_index);
 				if(weapon_models[i].tp_model)
 				{
-					weapon_models[i].position[1] = 0.0 - (weapon_models[i].tp_model -> item_meshes[0].item_mesh.ortho[1] - weapon_models[i].tp_model -> item_meshes[0].item_mesh.ortho[4]) / 2;
-					weapon_models[i].tp_model -> item_meshes[0].angle[1] = 180.0;
+					weapon_models[i].position[1] = 0.0 - (weapon_models[i].tp_model->item_meshes[0].item_mesh.ortho[1] - weapon_models[i].tp_model->item_meshes[0].item_mesh.ortho[4]) / 2;
+					weapon_models[i].tp_model->item_meshes[0].angle[1] = 180.0;
 				}
 			}
 			else if(i >= clone3d_Colt_Walker && i <= clone3d_Rocket_Launcher)
 			{
-				weapon_models[i].tp_model = NETLizard_ReadGLClone3DItemModelFile(r -> mesh_file, r -> mesh_index);
+				weapon_models[i].tp_model = NETLizard_ReadGLClone3DItemModelFile(r->mesh_file, r->mesh_index);
 				if(weapon_models[i].tp_model)
 				{
-					weapon_models[i].position[1] = 0.0 - (weapon_models[i].tp_model -> item_meshes[0].item_mesh.ortho[1] - weapon_models[i].tp_model -> item_meshes[0].item_mesh.ortho[4]) / 2;
-					weapon_models[i].position[2] = 0.0 - (weapon_models[i].tp_model -> item_meshes[0].item_mesh.ortho[2] - weapon_models[i].tp_model -> item_meshes[0].item_mesh.ortho[5]) / 2;
+					weapon_models[i].position[1] = 0.0 - (weapon_models[i].tp_model->item_meshes[0].item_mesh.ortho[1] - weapon_models[i].tp_model->item_meshes[0].item_mesh.ortho[4]) / 2;
+					weapon_models[i].position[2] = 0.0 - (weapon_models[i].tp_model->item_meshes[0].item_mesh.ortho[2] - weapon_models[i].tp_model->item_meshes[0].item_mesh.ortho[5]) / 2;
 				}
 			}
 		}
 
-		if(r -> fp_file == NULL)
+		if(r->fp_file == NULL)
 			weapon_models[i].fp_tex = NULL;
 		else
 		{
 			if(i <= ct3d_Flash_Grenade)
-				weapon_models[i].fp_tex = new_texture_from_nl_v2_3d_file(r -> fp_file);
+				weapon_models[i].fp_tex = new_texture_from_nl_v2_3d_file(r->fp_file);
 			else if(i >= specnaz3d_Dagger && i <= specnaz3d_Fragmentation_Grenade)
-				weapon_models[i].fp_tex = new_texture_from_nl_v2_3d_file(r -> fp_file);
+				weapon_models[i].fp_tex = new_texture_from_nl_v2_3d_file(r->fp_file);
 			else if(i >= egypt3d_Dagger && i <= egypt3d_The_Sword_of_Osiris)
-				weapon_models[i].fp_tex = new_texture_from_nl_v3_3d_compress_file(r -> fp_file);
+				weapon_models[i].fp_tex = new_texture_from_nl_v3_3d_compress_file(r->fp_file);
 			else if(i >= clone3d_Colt_Walker && i <= clone3d_Rocket_Launcher)
-				weapon_models[i].fp_tex = new_texture_from_nl_v3_3d_compress_file(r -> fp_file);
+				weapon_models[i].fp_tex = new_texture_from_nl_v3_3d_compress_file(r->fp_file);
 		}
 
 		weapon_models[i].scale = 1.0;
@@ -270,8 +270,8 @@ void Game_FreeWeaponModel(void)
 	{
 		if(weapon_models[i].fp_tex)
 		{
-			if(glIsTexture(weapon_models[i].fp_tex -> texid))
-				glDeleteTextures(1, &weapon_models[i].fp_tex -> texid);
+			if(glIsTexture(weapon_models[i].fp_tex->texid))
+				glDeleteTextures(1, &weapon_models[i].fp_tex->texid);
 			free(weapon_models[i].fp_tex);
 		}
 		if(weapon_models[i].tp_model)
@@ -286,21 +286,117 @@ void Game_FreeWeaponModel(void)
 
 weapon_model_type Game_RandLongWeapon(void)
 {
-	int r = rand() % (clone3d_Rocket_Launcher);
-	while(1)
-	{
-		if(r != ct3d_Dagger && r != ct3d_Fragmentation_Grenade && r != ct3d_Flash_Grenade && r != specnaz3d_Dagger && r != specnaz3d_Fragmentation_Grenade && r != egypt3d_The_Sword_of_Osiris && r != egypt3d_Dagger)
-			break;
-		r = rand() % (clone3d_Rocket_Launcher);
-	}
-	return r;
+	const weapon_model_type Types[] = {
+		ct3d_MP5,
+		ct3d_M4a1,
+		ct3d_AK47,
+		ct3d_D3AU1,
+		ct3d_AWP,
+		specnaz3d_MP5,
+		specnaz3d_M4a1,
+		specnaz3d_AK47,
+		specnaz3d_M32,
+		egypt3d_MP40,
+		egypt3d_Mosin_Nagant,
+		egypt3d_AK47,
+		egypt3d_Plasma_Gun,
+		clone3d_SPAS12, 
+		clone3d_M16,
+		clone3d_Rocket_Launcher,
+	};
+	return Types[rand() % (countof(Types))];
 }
 
-void Game_ChangeRandLongWeapon(weapon *w)
+weapon_model_type Game_RandHeavyWeapon(void)
 {
-	if(!w)
-		return;
-	delete_weapon(w);
-	weapon_model_type t = Game_RandLongWeapon();
-	new_weapon(w, t);
+	const weapon_model_type Types[] = {
+		ct3d_D3AU1,
+		ct3d_AWP,
+		specnaz3d_M32,
+		egypt3d_Plasma_Gun,
+		clone3d_Rocket_Launcher,
+	};
+	return Types[rand() % (countof(Types))];
+}
+
+weapon_model_type Game_RandLightWeapon(void)
+{
+	const const weapon_model_type Types[] = {
+		ct3d_MP5,
+		ct3d_M4a1,
+		ct3d_AK47,
+		specnaz3d_MP5,
+		specnaz3d_M4a1,
+		specnaz3d_AK47,
+		egypt3d_MP40,
+		egypt3d_Mosin_Nagant,
+		egypt3d_AK47,
+		clone3d_SPAS12, 
+		clone3d_M16,
+	};
+	return Types[rand() % (countof(Types))];
+}
+
+weapon_model_type Game_RandKnifeWeapon(void)
+{
+	const weapon_model_type Types[] = {
+		ct3d_Dagger,
+		specnaz3d_Dagger,
+		egypt3d_Dagger,
+		egypt3d_The_Sword_of_Osiris,
+	};
+	return Types[rand() % (countof(Types))];
+}
+
+weapon_model_type Game_RandPistolWeapon(void)
+{
+	const weapon_model_type Types[] = {
+		ct3d_USP,
+		ct3d_Python,
+		ct3d_Desert_Eagle,
+		specnaz3d_Desert_Eagle,
+		egypt3d_Colt_Walker,
+		clone3d_Colt_Walker,
+	};
+	return Types[rand() % (countof(Types))];
+}
+
+weapon_model_type Game_RandGrenadeWeapon(void)
+{
+	const weapon_model_type Types[] = {
+		ct3d_Flash_Grenade,
+		ct3d_Fragmentation_Grenade,
+		specnaz3d_Fragmentation_Grenade,
+	};
+	return Types[rand() % (countof(Types))];
+}
+
+int Game_Rand4WeaponTypes(weapon_model_type wps[], unsigned int max, unsigned mask)
+{
+	if(!wps || max < 4)
+		return -1;
+	if(mask == 0)
+		return 0;
+	int ret = 0;
+	if(mask & fighting_weapon)
+	{
+		wps[FIGHTING_WEAPON_INDEX] = Game_RandKnifeWeapon();
+		ret |= fighting_weapon;
+	}
+	if(mask & secondary_weapon)
+	{
+		wps[SECONDARY_WEAPON_INDEX] = Game_RandPistolWeapon();
+		ret |= secondary_weapon;
+	}
+	if(mask & main_weapon_1)
+	{
+		wps[MAIN_WEAPON_1_INDEX] = Game_RandLongWeapon();
+		ret |= main_weapon_1;
+	}
+	if(mask & launch_weapon)
+	{
+		wps[LAUNCH_WEAPON_INDEX] = Game_RandGrenadeWeapon();
+		ret |= launch_weapon;
+	}
+	return ret;
 }

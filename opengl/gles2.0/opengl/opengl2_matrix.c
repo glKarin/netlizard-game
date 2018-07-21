@@ -124,7 +124,7 @@ GLvoid gl2PushMatrix()
 	(*p)++;
 	GL2_Matrix44 *nmat = gl2GetTopMatrix();
 	GL2_Matrix44 *mat = gl2SeekMatrix(-1);
-	arrcpy16(nmat -> m, mat -> m);
+	arrcpy16(nmat->m, mat->m);
 	//printf("push %d\n", *p);
 }
 
@@ -146,7 +146,7 @@ GLvoid gl2PopMatrix(GLvoid)
 	//memset(mat, 0, sizeof(GL2_Matrix44));
 	//printf("pop %d\n", *p);
 	/*
-	float *mat2 = gl2GetTopMatrix() -> m;
+	float *mat2 = gl2GetTopMatrix()->m;
 	PRINT_MATEIX(mat2)
 	*/
 }

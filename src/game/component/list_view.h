@@ -78,4 +78,5 @@ int UI_MoveListViewCurrentIndex(list_view *lst, GLint step);
 void UI_ResetListViewPosition(list_view *l, GLfloat x, GLfloat y);
 void UI_ResizeListView(list_view *l, GLfloat width, GLfloat height);
 void UI_ResetListViewGeometry(list_view *l, GLfloat x, GLfloat y, GLfloat width, GLfloat height);
+unsigned UI_SetListCurrentIndex(list_view *l, unsigned int index);
 #endif

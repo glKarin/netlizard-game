@@ -77,18 +77,18 @@ int Info_ShowNETLizardStruct(const char *type, int comment)
 	array *arr = nlReadFile(file);
 	if(!arr)
 		return 0;
-	char *data = (char *)(arr -> array);
+	char *data = (char *)(arr->array);
 	char *title = NULL;
 	int i = 0;
 	char ch;
-	while(i < arr -> length)
+	while(i < arr->length)
 	{
 		while((ch = data[i]) == '\n') i++;
 		if(title == NULL && ch == '[')
 		{
 			i += 1;
 			int j = 0;
-			while(data[i + j] != ']' && i + j < arr -> length)
+			while(data[i + j] != ']' && i + j < arr->length)
 				j++;
 			title = NEW_II(char, j + 1);
 			memcpy(title, data + i, sizeof(char) * (j + 1));
@@ -103,7 +103,7 @@ int Info_ShowNETLizardStruct(const char *type, int comment)
 			i += 1;
 			while(isspace((ch = data[i]))) i++;
 			int j = 0;
-			while(data[i + j] != '\n' && i + j < arr -> length)
+			while(data[i + j] != '\n' && i + j < arr->length)
 				j++;
 			if(show_comment)
 			{
@@ -120,7 +120,7 @@ int Info_ShowNETLizardStruct(const char *type, int comment)
 		{
 			i += 1;
 			int j = 0;
-			while(data[i + j] != '>' && i + j < arr -> length)
+			while(data[i + j] != '>' && i + j < arr->length)
 				j++;
 			char *str = NEW_II(char, j + 1);
 			memcpy(str, data + i, sizeof(char) * (j + 1));
@@ -134,7 +134,7 @@ int Info_ShowNETLizardStruct(const char *type, int comment)
 		else if(title)
 		{
 			int j = 0;
-			while(data[i + j] != '\n' && i + j < arr -> length)
+			while(data[i + j] != '\n' && i + j < arr->length)
 				j++;
 			char *str = NEW_II(char, j + 1);
 			memcpy(str, data + i, sizeof(char) * (j + 1));
@@ -147,7 +147,7 @@ int Info_ShowNETLizardStruct(const char *type, int comment)
 		else
 		{
 			int j = 0;
-			while(data[i + j] != '\n' && i + j < arr -> length)
+			while(data[i + j] != '\n' && i + j < arr->length)
 				j++;
 			j++;
 			i += j;

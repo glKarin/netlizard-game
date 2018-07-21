@@ -22,15 +22,15 @@ int * Algo_GetNETLizard3DMapRenderScenes(const GL_NETLizard_3D_Model *netlizard_
 	int *scenes = NULL;
 	unsigned int i;
 	unsigned int count = 0;
-	for(i = 0; i < netlizard_3d_model -> count; i++)
+	for(i = 0; i < netlizard_3d_model->count; i++)
 	{
-		const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model -> meshes + i;
-		int r = Algo_AABBInFrustum(frustum, mesh -> ortho[3], mesh -> ortho[4], mesh -> ortho[5], mesh -> ortho[0], mesh -> ortho[1], mesh -> ortho[2]);
+		const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model->meshes + i;
+		int r = Algo_AABBInFrustum(frustum, mesh->ortho[3], mesh->ortho[4], mesh->ortho[5], mesh->ortho[0], mesh->ortho[1], mesh->ortho[2]);
 		if(r)
 		{
 			if(!scenes)
 			{
-				scenes = NEW_II(unsigned int, netlizard_3d_model -> count);
+				scenes = NEW_II(unsigned int, netlizard_3d_model->count);
 			}
 			scenes[count] = i;
 			count++;
@@ -48,16 +48,16 @@ int Algo_ComputeFloorCoord(const GL_NETLizard_3D_Model *netlizard_3d_model, cons
 {
 	if(!netlizard_3d_model || !scene || !new_pos)
 		return 0;
-	const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model -> meshes + *scene;
+	const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model->meshes + *scene;
 	unsigned int j;
-	for(j = 0; j < mesh -> plane_count; j++)
+	for(j = 0; j < mesh->plane_count; j++)
 	{
 		// 计算当前位置的地板坐标
-		if(mesh -> plane[j].normal[2] > UP_NORMAL_LIMIT)
+		if(mesh->plane[j].normal[2] > UP_NORMAL_LIMIT)
 		{
 			plane_t pla = {
-				{mesh -> plane[j].position[0], mesh -> plane[j].position[1], mesh -> plane[j].position[2]},
-				{mesh -> plane[j].normal[0], mesh -> plane[j].normal[1], mesh -> plane[j].normal[2]}
+				{mesh->plane[j].position[0], mesh->plane[j].position[1], mesh->plane[j].position[2]},
+				{mesh->plane[j].normal[0], mesh->plane[j].normal[1], mesh->plane[j].normal[2]}
 			};
 			nl_vector3_t point = {0.0, 0.0, 0.0};
 			nl_vector3_t dir = pla.normal;
@@ -72,19 +72,19 @@ int Algo_ComputeFloorCoord(const GL_NETLizard_3D_Model *netlizard_3d_model, cons
 
 	// 对于无地板的场景，如空中的场景，获取该场景下方的场景，直到获取有地板的场景，从而计算出地板坐标
 	// 获取该场景盒子最小z坐标
-	float nglz = mesh -> ortho[5];
-	int *scenes = NEW_II(int, netlizard_3d_model -> count);
+	float nglz = mesh->ortho[5];
+	int *scenes = NEW_II(int, netlizard_3d_model->count);
 	unsigned int i;
-	for(i = 0; i < netlizard_3d_model -> count; i++)
+	for(i = 0; i < netlizard_3d_model->count; i++)
 		scenes[i] = -1;
 	int cur = 0;
 	scenes[cur] = *scene;
 	cur++;
-	for(i = 0; i < netlizard_3d_model -> count; i++)
+	for(i = 0; i < netlizard_3d_model->count; i++)
 	{
 		unsigned int l;
 		int checked = 0;
-		for(l = 0; l < netlizard_3d_model -> count; l++)
+		for(l = 0; l < netlizard_3d_model->count; l++)
 		{
 			if(scenes[l] == -1)
 			{
@@ -100,24 +100,24 @@ int Algo_ComputeFloorCoord(const GL_NETLizard_3D_Model *netlizard_3d_model, cons
 		}
 		if(checked)
 			continue;
-		const GL_NETLizard_3D_Mesh *next_mesh = netlizard_3d_model -> meshes + i;
-		nl_vector3_t new_position = {new_pos -> x, new_pos -> y, nglz};
+		const GL_NETLizard_3D_Mesh *next_mesh = netlizard_3d_model->meshes + i;
+		nl_vector3_t new_position = {new_pos->x, new_pos->y, nglz};
 		aabb_t aabb = {
-			{next_mesh -> ortho[3], next_mesh -> ortho[4], next_mesh -> ortho[5]},
-			{next_mesh -> ortho[0], next_mesh -> ortho[1], next_mesh -> ortho[2]}
+			{next_mesh->ortho[3], next_mesh->ortho[4], next_mesh->ortho[5]},
+			{next_mesh->ortho[0], next_mesh->ortho[1], next_mesh->ortho[2]}
 		};
 		if(!Math3D_PointInAABB(&new_position, &aabb))
 			continue;
 
 		unsigned int k;
-		for(k = 0; k < next_mesh -> plane_count; k++)
+		for(k = 0; k < next_mesh->plane_count; k++)
 		{
 			// 计算当前位置的地板坐标
-			if(next_mesh -> plane[k].normal[2] > UP_NORMAL_LIMIT)
+			if(next_mesh->plane[k].normal[2] > UP_NORMAL_LIMIT)
 			{
 				plane_t pla = {
-					{next_mesh -> plane[k].position[0], next_mesh -> plane[k].position[1], next_mesh -> plane[k].position[2]},
-					{next_mesh -> plane[k].normal[0], next_mesh -> plane[k].normal[1], next_mesh -> plane[k].normal[2]}
+					{next_mesh->plane[k].position[0], next_mesh->plane[k].position[1], next_mesh->plane[k].position[2]},
+					{next_mesh->plane[k].normal[0], next_mesh->plane[k].normal[1], next_mesh->plane[k].normal[2]}
 				};
 				nl_vector3_t point = {0.0, 0.0, 0.0};
 				nl_vector3_t dir = pla.normal;
@@ -132,7 +132,7 @@ int Algo_ComputeFloorCoord(const GL_NETLizard_3D_Model *netlizard_3d_model, cons
 		}
 		scenes[cur] = i;
 		cur++;
-		nglz = next_mesh -> ortho[5];
+		nglz = next_mesh->ortho[5];
 		i = 0;
 	}
 	free(scenes);
@@ -154,20 +154,20 @@ map_collision_testing_result_type Algo_NETLizard3DMapCollisionTesting(const GL_N
 	map_collision_testing_result_type res = map_out_aabb_type;
 
 	float lamda = 0.0;
-	unsigned int *scenes = NEW_II(int, netlizard_3d_model -> count);
+	unsigned int *scenes = NEW_II(int, netlizard_3d_model->count);
 	unsigned int c = 0;
 	unsigned int i;
-	for(i = 0; i < netlizard_3d_model -> count; i++)
+	for(i = 0; i < netlizard_3d_model->count; i++)
 	{
-		const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model -> meshes + i;
+		const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model->meshes + i;
 		aabb_t aabb = {
-			{mesh -> ortho[3], mesh -> ortho[4], mesh -> ortho[5]},
-			{mesh -> ortho[0], mesh -> ortho[1], mesh -> ortho[2]}
+			{mesh->ortho[3], mesh->ortho[4], mesh->ortho[5]},
+			{mesh->ortho[0], mesh->ortho[1], mesh->ortho[2]}
 		};
 		if(Math3D_PointInAABB(new_position, &aabb))
 		{
 			unsigned int n = 0;
-			for(n = 0; n < netlizard_3d_model -> count; n++)
+			for(n = 0; n < netlizard_3d_model->count; n++)
 			{
 				if(scenes[n] == 0)
 					break;
@@ -192,8 +192,8 @@ map_collision_testing_result_type Algo_NETLizard3DMapCollisionTesting(const GL_N
 		s = scenes[0] - 1;
 		for(i = 1; i < c; i++)
 		{
-			const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model -> meshes + (scenes[i] - 1);
-			if(mesh -> plane_count != 0)
+			const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model->meshes + (scenes[i] - 1);
+			if(mesh->plane_count != 0)
 			{
 				s = scenes[i] - 1;
 				break;
@@ -207,18 +207,18 @@ map_collision_testing_result_type Algo_NETLizard3DMapCollisionTesting(const GL_N
 		return map_out_aabb_type;
 	if(scene)
 		*scene = s;
-	const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model -> meshes + s;
+	const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model->meshes + s;
 	res = map_only_in_aabb_type;
-	if(mesh -> plane)
+	if(mesh->plane)
 	{
 		unsigned int j;
-		for(j = 0; j < mesh -> plane_count; j++)
+		for(j = 0; j < mesh->plane_count; j++)
 		{
 			plane_t plane = {
-				{mesh -> plane[j].position[0], mesh -> plane[j].position[1], mesh -> plane[j].position[2]},
-				{mesh -> plane[j].normal[0], mesh -> plane[j].normal[1], mesh -> plane[j].normal[2]}
+				{mesh->plane[j].position[0], mesh->plane[j].position[1], mesh->plane[j].position[2]},
+				{mesh->plane[j].normal[0], mesh->plane[j].normal[1], mesh->plane[j].normal[2]}
 			};
-			line_t l = {*new_position, {-mesh -> plane[j].normal[0], -mesh -> plane[j].normal[1], -mesh -> plane[j].normal[2]}};
+			line_t l = {*new_position, {-mesh->plane[j].normal[0], -mesh->plane[j].normal[1], -mesh->plane[j].normal[2]}};
 			int r = Math3D_LineToPlaneCollision(&l, &plane, &lamda, NULL);
 			if(r != 1)
 			{
@@ -227,9 +227,9 @@ map_collision_testing_result_type Algo_NETLizard3DMapCollisionTesting(const GL_N
 			}
 			float limit = 0;
 			int po = 0;
-			if(mesh -> plane[j].normal[2] > UP_NORMAL_LIMIT)
+			if(mesh->plane[j].normal[2] > UP_NORMAL_LIMIT)
 				limit = 0;
-			else if(mesh -> plane[j].normal[2] < -UP_NORMAL_LIMIT)
+			else if(mesh->plane[j].normal[2] < -UP_NORMAL_LIMIT)
 				limit = height;
 			else
 			{
@@ -263,43 +263,43 @@ item_collision_testing_result_type Algo_NETLizard3DItemCollisionTesting(const GL
 		return item_in_all_planes_and_in_aabb_type;
 
 	int res = item_only_in_aabb_type;
-	const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model -> meshes + scene;
+	const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model->meshes + scene;
 	//float lamda = 0.0;
-	nl_vector3_t position = {pos -> x, pos -> y, pos -> z - height};
-	nl_vector3_t new_position = {new_pos -> x, new_pos -> y, new_pos -> z - height};
+	nl_vector3_t position = {pos->x, pos->y, pos->z - height};
+	nl_vector3_t new_position = {new_pos->x, new_pos->y, new_pos->z - height};
 	nl_vector3_t direction = Vector3_SubtractVector3(&new_position, &position);
 	Vector3_Normalize(&direction);
 	line_t line = {new_position, direction};
 	unsigned int k;
-	for(k = mesh -> item_index_range[0]; k < mesh -> item_index_range[1]; k++)
+	for(k = mesh->item_index_range[0]; k < mesh->item_index_range[1]; k++)
 	{
-		const GL_NETLizard_3D_Item_Mesh *im = netlizard_3d_model -> item_meshes + k;
+		const GL_NETLizard_3D_Item_Mesh *im = netlizard_3d_model->item_meshes + k;
 		aabb_t aabb = {
-			{im -> item_mesh.ortho[3] - width + im -> pos[0], im -> item_mesh.ortho[4] - width + im -> pos[1], im -> item_mesh.ortho[5] + im -> pos[2]},
-			{im -> item_mesh.ortho[0] + width + im -> pos[0], im -> item_mesh.ortho[1] + width + im -> pos[1], im -> item_mesh.ortho[2] + im -> pos[2]}
+			{im->item_mesh.ortho[3] - width + im->pos[0], im->item_mesh.ortho[4] - width + im->pos[1], im->item_mesh.ortho[5] + im->pos[2]},
+			{im->item_mesh.ortho[0] + width + im->pos[0], im->item_mesh.ortho[1] + width + im->pos[1], im->item_mesh.ortho[2] + im->pos[2]}
 		};
 		// 检测新位置是否在地图中某一物品盒子内
 		if(Math3D_PointInAABB(&new_position, &aabb))
 		{
 			res = item_only_in_aabb_type;
-			//printfi(im -> item_type);
+			//printfi(im->item_type);
 			if(index)
 				*index = k;
-			if(im -> item_type & Item_Weapon_Type || im -> item_type & Item_Tiny_Type || im -> item_type & Item_Box_Type)
+			if(im->item_type & Item_Weapon_Type || im->item_type & Item_Tiny_Type || im->item_type & Item_Box_Type)
 			{
 				if(index)
 					*index = k;
 				return item_not_need_collision_testing_type;
 			}
 			// 检测新位置是否在物品盒子中真实场景内
-			if(im -> item_mesh.plane_count > 0)
+			if(im->item_mesh.plane_count > 0)
 			{
-				const GL_NETLizard_3D_Plane *planes = im -> item_mesh.plane;
+				const GL_NETLizard_3D_Plane *planes = im->item_mesh.plane;
 				unsigned int j;
-				for(j = 0; j < im -> item_mesh.plane_count; j++)
+				for(j = 0; j < im->item_mesh.plane_count; j++)
 				{
 					plane_t plane = {
-						{planes[j].position[0] + im -> pos[0], planes[j].position[1] + im -> pos[1], planes[j].position[2] + im -> pos[2]},
+						{planes[j].position[0] + im->pos[0], planes[j].position[1] + im->pos[1], planes[j].position[2] + im->pos[2]},
 						{-planes[j].normal[0], -planes[j].normal[1], -planes[j].normal[2]}
 					};
 					nl_vector3_t point = {0.0, 0.0, 0.0};
@@ -313,9 +313,9 @@ item_collision_testing_result_type Algo_NETLizard3DItemCollisionTesting(const GL
 						//if(res > 0 && lamda <= width)
 						if(c_normal)
 						{
-							c_normal -> x = -normal.x;
-							c_normal -> y = -normal.y;
-							c_normal -> z = -normal.z;
+							c_normal->x = -normal.x;
+							c_normal->y = -normal.y;
+							c_normal->z = -normal.z;
 						}
 						if(index)
 							*index = k;
@@ -347,34 +347,34 @@ int Algo_GetItemTopCoord(const GL_NETLizard_3D_Model *netlizard_3d_model, const 
 {
 	if(!netlizard_3d_model || !new_position)
 		return 0;
-	const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model -> meshes + scene;
+	const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model->meshes + scene;
 	float final_z = 0.0;
 	float lamda = 0.0;
 	int available = 0;
 	float h = 0.0;
 	unsigned int a;
-	for(a = mesh -> item_index_range[0]; a < mesh -> item_index_range[1]; a++)
+	for(a = mesh->item_index_range[0]; a < mesh->item_index_range[1]; a++)
 	{
-		const GL_NETLizard_3D_Item_Mesh *im = netlizard_3d_model -> item_meshes + a;
-		if(im -> item_type != Item_Elevator_Type && new_position -> z < im -> item_mesh.ortho[2] + im -> pos[2])
+		const GL_NETLizard_3D_Item_Mesh *im = netlizard_3d_model->item_meshes + a;
+		if(im->item_type != Item_Elevator_Type && new_position->z < im->item_mesh.ortho[2] + im->pos[2])
 			continue;
-		const GL_NETLizard_3D_Plane *planes = im -> item_mesh.plane;
-		if(im -> item_type & Item_DoorV_Type || im -> item_type & Item_DoorH_Type || im -> item_type & Item_Weapon_Type || im -> item_type & Item_Tiny_Type || im -> item_type & Item_Box_Type)
+		const GL_NETLizard_3D_Plane *planes = im->item_mesh.plane;
+		if(im->item_type & Item_DoorV_Type || im->item_type & Item_DoorH_Type || im->item_type & Item_Weapon_Type || im->item_type & Item_Tiny_Type || im->item_type & Item_Box_Type)
 			continue;
 		aabb_t aabb = {
-			{im -> item_mesh.ortho[3] - width + im -> pos[0], im -> item_mesh.ortho[4] - width + im -> pos[1], im -> item_mesh.ortho[5] + im -> pos[2]},
-			{im -> item_mesh.ortho[0] + width + im -> pos[0], im -> item_mesh.ortho[1] + width + im -> pos[1], im -> item_mesh.ortho[2] + im -> pos[2]}
+			{im->item_mesh.ortho[3] - width + im->pos[0], im->item_mesh.ortho[4] - width + im->pos[1], im->item_mesh.ortho[5] + im->pos[2]},
+			{im->item_mesh.ortho[0] + width + im->pos[0], im->item_mesh.ortho[1] + width + im->pos[1], im->item_mesh.ortho[2] + im->pos[2]}
 		};
 		// 检测新位置是否在地图中某一物品盒子内
 		if(Math3D_PointInAABB2D(new_position, &aabb))
 		{
 			unsigned int j;
-			for(j = 0; j < im -> item_mesh.plane_count; j++)
+			for(j = 0; j < im->item_mesh.plane_count; j++)
 			{
 				if(planes[j].normal[2] > UP_NORMAL_LIMIT)
 				{
 					plane_t plane = {
-						{planes[j].position[0] + im -> pos[0], planes[j].position[1] + im -> pos[1], planes[j].position[2] + im -> pos[2]},
+						{planes[j].position[0] + im->pos[0], planes[j].position[1] + im->pos[1], planes[j].position[2] + im->pos[2]},
 						{planes[j].normal[0], planes[j].normal[1], planes[j].normal[2]}
 					};
 					nl_vector3_t point = {0.0, 0.0, 0.0};
@@ -382,7 +382,7 @@ int Algo_GetItemTopCoord(const GL_NETLizard_3D_Model *netlizard_3d_model, const 
 					dir.z = - dir.z;
 					line_t l = {*new_position, dir};
 					int res = Math3D_LineToPlaneIntersect(&l, &plane, &point);
-					if(res && Math3D_PointInAABB(&point, &aabb))// && point.z <= new_position -> z)
+					if(res && Math3D_PointInAABB(&point, &aabb))// && point.z <= new_position->z)
 					{
 						float d = 0.0;
 						nl_vector3_t n = {0.0, 0.0, 0.0};
@@ -435,15 +435,15 @@ int Algo_GetItemTopCoordForAll(const GL_NETLizard_3D_Model *netlizard_3d_model, 
 	int available = 0;
 	int ii = -1;
 	unsigned int a;
-	for(a = 0; a < netlizard_3d_model -> item_count; a++)
+	for(a = 0; a < netlizard_3d_model->item_count; a++)
 	{
-		const GL_NETLizard_3D_Item_Mesh *im = netlizard_3d_model -> item_meshes + a;
-		const GL_NETLizard_3D_Plane *planes = im -> item_mesh.plane;
-		if(im -> item_type & Item_DoorV_Type || im -> item_type & Item_DoorH_Type || im -> item_type & Item_Weapon_Type || im -> item_type & Item_Tiny_Type || im -> item_type & Item_Box_Type)
+		const GL_NETLizard_3D_Item_Mesh *im = netlizard_3d_model->item_meshes + a;
+		const GL_NETLizard_3D_Plane *planes = im->item_mesh.plane;
+		if(im->item_type & Item_DoorV_Type || im->item_type & Item_DoorH_Type || im->item_type & Item_Weapon_Type || im->item_type & Item_Tiny_Type || im->item_type & Item_Box_Type)
 			continue;
 		aabb_t aabb = {
-			{im -> item_mesh.ortho[3] + im -> pos[0], im -> item_mesh.ortho[4] + im -> pos[1], im -> item_mesh.ortho[5] + im -> pos[2]},
-			{im -> item_mesh.ortho[0] + im -> pos[0], im -> item_mesh.ortho[1] + im -> pos[1], im -> item_mesh.ortho[2] + im -> pos[2]}
+			{im->item_mesh.ortho[3] + im->pos[0], im->item_mesh.ortho[4] + im->pos[1], im->item_mesh.ortho[5] + im->pos[2]},
+			{im->item_mesh.ortho[0] + im->pos[0], im->item_mesh.ortho[1] + im->pos[1], im->item_mesh.ortho[2] + im->pos[2]}
 		};
 		nl_vector3_t *v1 = &(aabb.min_position);
 		nl_vector3_t *v2 = &(aabb.max_position);
@@ -451,12 +451,12 @@ int Algo_GetItemTopCoordForAll(const GL_NETLizard_3D_Model *netlizard_3d_model, 
 		if(Math3D_PointInAABB2D(new_position, &aabb))
 		{
 			unsigned int j;
-			for(j = 0; j < im -> item_mesh.plane_count; j++)
+			for(j = 0; j < im->item_mesh.plane_count; j++)
 			{
 				if(planes[j].normal[2] > UP_NORMAL_LIMIT)
 				{
 					plane_t plane = {
-						{planes[j].position[0] + im -> pos[0], planes[j].position[1] + im -> pos[1], planes[j].position[2] + im -> pos[2]},
+						{planes[j].position[0] + im->pos[0], planes[j].position[1] + im->pos[1], planes[j].position[2] + im->pos[2]},
 						{planes[j].normal[0], planes[j].normal[1], planes[j].normal[2]}
 					};
 					nl_vector3_t point = {0.0, 0.0, 0.0};
@@ -473,14 +473,14 @@ int Algo_GetItemTopCoordForAll(const GL_NETLizard_3D_Model *netlizard_3d_model, 
 						{
 							final_z = point.z;
 							lamda = d;
-							height = v2 -> z - v1 -> z;
+							height = v2->z - v1->z;
 							ii = a;
 						}
 						if(lamda > d)
 						{
 							final_z = point.z;
 							lamda = d;
-							height = v2 -> z - v1 -> z;
+							height = v2->z - v1->z;
 							ii = a;
 						}
 					}
@@ -505,12 +505,12 @@ int Algo_PointInAABBInNETLizard3DMap(const nl_vector3_t *position, const GL_NETL
 {
 	if(!map_model || !position)
 		return 0;
-	if(scene >= map_model -> count)
+	if(scene >= map_model->count)
 		return 0;
-	const GL_NETLizard_3D_Mesh *mesh = map_model -> meshes + scene;
+	const GL_NETLizard_3D_Mesh *mesh = map_model->meshes + scene;
 	aabb_t aabb = {
-		{mesh -> ortho[3], mesh -> ortho[4], mesh -> ortho[5]},
-		{mesh -> ortho[0], mesh -> ortho[1], mesh -> ortho[2]}
+		{mesh->ortho[3], mesh->ortho[4], mesh->ortho[5]},
+		{mesh->ortho[0], mesh->ortho[1], mesh->ortho[2]}
 	};
 	return Math3D_PointInAABB(position, &aabb);
 }
@@ -519,42 +519,42 @@ int Algo_ComputeTopFloorCoord(const GL_NETLizard_3D_Model *netlizard_3d_model, c
 {
 	if(!netlizard_3d_model || !scene || !n_xyz)
 		return 0;
-	float nglx = n_xyz -> x;
-	float ngly = n_xyz -> y;
-	float nglz = n_xyz -> z;
-	const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model -> meshes + *scene;
+	float nglx = n_xyz->x;
+	float ngly = n_xyz->y;
+	float nglz = n_xyz->z;
+	const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model->meshes + *scene;
 
 	// 对于无地板的场景，如空中的场景，获取该场景下方的场景，直到获取有地板的场景，从而计算出地板坐标
 	// 获取该场景盒子最小z坐标
 	float nrglz = nglz;
 	const float y = nglz;
 	float delta = - FLT_MAX;
-	nglz = mesh -> ortho[2];
+	nglz = mesh->ortho[2];
 	int res = 0;
 	int s = *scene;
 	int i;
-	for(i = 0; i < (int)netlizard_3d_model -> count; i++)
+	for(i = 0; i < (int)netlizard_3d_model->count; i++)
 	{
 		if(i == *scene)
 			continue;
-		const GL_NETLizard_3D_Mesh *next_mesh = netlizard_3d_model -> meshes + i;
+		const GL_NETLizard_3D_Mesh *next_mesh = netlizard_3d_model->meshes + i;
 		nl_vector3_t new_position = {nglx, ngly, nglz};
 		aabb_t aabb = {
-			{next_mesh -> ortho[3], next_mesh -> ortho[4], next_mesh -> ortho[5]},
-			{next_mesh -> ortho[0], next_mesh -> ortho[1], next_mesh -> ortho[2]}
+			{next_mesh->ortho[3], next_mesh->ortho[4], next_mesh->ortho[5]},
+			{next_mesh->ortho[0], next_mesh->ortho[1], next_mesh->ortho[2]}
 		};
 		if(!Math3D_PointInAABB2D(&new_position, &aabb))
 			continue;
 
 		unsigned int k;
-		for(k = 0; k < next_mesh -> plane_count; k++)
+		for(k = 0; k < next_mesh->plane_count; k++)
 		{
 			// 计算当前位置的地板坐标
-			if(next_mesh -> plane[k].normal[2] > UP_NORMAL_LIMIT)
+			if(next_mesh->plane[k].normal[2] > UP_NORMAL_LIMIT)
 			{
 				plane_t pla = {
-					{next_mesh -> plane[k].position[0], next_mesh -> plane[k].position[1], next_mesh -> plane[k].position[2]},
-					{next_mesh -> plane[k].normal[0], next_mesh -> plane[k].normal[1], next_mesh -> plane[k].normal[2]}
+					{next_mesh->plane[k].position[0], next_mesh->plane[k].position[1], next_mesh->plane[k].position[2]},
+					{next_mesh->plane[k].normal[0], next_mesh->plane[k].normal[1], next_mesh->plane[k].normal[2]}
 				};
 				nl_vector3_t point = {0.0, 0.0, 0.0};
 				nl_vector3_t new_pos = {nglx, ngly, nglz};
@@ -574,7 +574,7 @@ int Algo_ComputeTopFloorCoord(const GL_NETLizard_3D_Model *netlizard_3d_model, c
 				}
 			}
 		}
-		ngly = next_mesh -> ortho[2];
+		ngly = next_mesh->ortho[2];
 	}
 	if(nrglz)
 	{
@@ -591,7 +591,7 @@ void Algo_GetNETLizard3DMapRange(const GL_NETLizard_3D_Model *model, int *scenes
 {
 	if(!model || !min || !max)
 		return;
-	if(model -> count == 0)
+	if(model->count == 0)
 		return;
 	float min_x = 0.0;
 	float min_y = 0.0;
@@ -604,7 +604,7 @@ void Algo_GetNETLizard3DMapRange(const GL_NETLizard_3D_Model *model, int *scenes
 	if(scenes)
 		c = count;
 	else
-		c = model -> count;
+		c = model->count;
 	for(i = 0; i < c; i++)
 	{
 		int s;
@@ -612,37 +612,37 @@ void Algo_GetNETLizard3DMapRange(const GL_NETLizard_3D_Model *model, int *scenes
 			s = scenes[i];
 		else
 			s = i;
-		const GL_NETLizard_3D_Mesh *mesh = model -> meshes + s;
+		const GL_NETLizard_3D_Mesh *mesh = model->meshes + s;
 		if(i == 0)
 		{
-			min_x = mesh -> ortho[3];
-			min_y = mesh -> ortho[4];
-			min_z = mesh -> ortho[5];
-			max_x = mesh -> ortho[0];
-			max_y = mesh -> ortho[1];
-			max_z = mesh -> ortho[2];
+			min_x = mesh->ortho[3];
+			min_y = mesh->ortho[4];
+			min_z = mesh->ortho[5];
+			max_x = mesh->ortho[0];
+			max_y = mesh->ortho[1];
+			max_z = mesh->ortho[2];
 			continue;
 		}
-		if(mesh -> ortho[3] < min_x)
-			min_x = mesh -> ortho[3];
-		if(mesh -> ortho[4] < min_y)
-			min_y = mesh -> ortho[4];
-		if(mesh -> ortho[5] < min_z)
-			min_z = mesh -> ortho[5];
+		if(mesh->ortho[3] < min_x)
+			min_x = mesh->ortho[3];
+		if(mesh->ortho[4] < min_y)
+			min_y = mesh->ortho[4];
+		if(mesh->ortho[5] < min_z)
+			min_z = mesh->ortho[5];
 
-		if(mesh -> ortho[0] > max_x)
-			max_x = mesh -> ortho[0];
-		if(mesh -> ortho[1] > max_y)
-			max_y = mesh -> ortho[1];
-		if(mesh -> ortho[2] > max_z)
-			max_z = mesh -> ortho[2];
+		if(mesh->ortho[0] > max_x)
+			max_x = mesh->ortho[0];
+		if(mesh->ortho[1] > max_y)
+			max_y = mesh->ortho[1];
+		if(mesh->ortho[2] > max_z)
+			max_z = mesh->ortho[2];
 	} 
-	min -> x = min_x;
-	min -> y = min_y;
-	min -> z = min_z;
-	max -> x = max_x;
-	max -> y = max_y;
-	max -> z = max_z;
+	min->x = min_x;
+	min->y = min_y;
+	min->z = min_z;
+	max->x = max_x;
+	max->y = max_y;
+	max->z = max_z;
 }
 
 int Algo_RayCollisionTestingInNETLizard3DMap(const GL_NETLizard_3D_Model *netlizard_3d_model, const nl_vector3_t *position, const nl_vector3_t *direction, float width, int *scene, float *distance, nl_vector3_t *c_point, nl_vector3_t *normal)
@@ -656,22 +656,22 @@ int Algo_RayCollisionTestingInNETLizard3DMap(const GL_NETLizard_3D_Model *netliz
 	float lamda = 0.0;
 	line_t line = {*position, *direction};
 	unsigned int i;
-	for(i = 0; i < netlizard_3d_model -> count; i++)
+	for(i = 0; i < netlizard_3d_model->count; i++)
 	{
-		const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model -> meshes + i;
+		const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model->meshes + i;
 		aabb_t aabb = {
-			{mesh -> ortho[3], mesh -> ortho[4], mesh -> ortho[5]},
-			{mesh -> ortho[0], mesh -> ortho[1], mesh -> ortho[2]}
+			{mesh->ortho[3], mesh->ortho[4], mesh->ortho[5]},
+			{mesh->ortho[0], mesh->ortho[1], mesh->ortho[2]}
 		};
 
-		if(mesh -> plane)
+		if(mesh->plane)
 		{
 			unsigned int j;
-			for(j = 0; j < mesh -> plane_count; j++)
+			for(j = 0; j < mesh->plane_count; j++)
 			{
 				plane_t plane = {
-					{mesh -> plane[j].position[0], mesh -> plane[j].position[1], mesh -> plane[j].position[2]},
-					{mesh -> plane[j].normal[0], mesh -> plane[j].normal[1], mesh -> plane[j].normal[2]}
+					{mesh->plane[j].position[0], mesh->plane[j].position[1], mesh->plane[j].position[2]},
+					{mesh->plane[j].normal[0], mesh->plane[j].normal[1], mesh->plane[j].normal[2]}
 				};
 				float l = 0.0;
 				nl_vector3_t nml = {0.0, 0.0, 0.0};
@@ -705,24 +705,24 @@ int Algo_RayCollisionTestingInNETLizard3DMap(const GL_NETLizard_3D_Model *netliz
 	}
 
 	int item = -1;
-	if(netlizard_3d_model -> item_meshes)
+	if(netlizard_3d_model->item_meshes)
 	{
 		unsigned int k;
-		for(k = 0; k < netlizard_3d_model -> item_count; k++)
+		for(k = 0; k < netlizard_3d_model->item_count; k++)
 		{
-			const GL_NETLizard_3D_Item_Mesh *im = netlizard_3d_model -> item_meshes + k;
-			if(im -> item_mesh.plane_count > 0)
+			const GL_NETLizard_3D_Item_Mesh *im = netlizard_3d_model->item_meshes + k;
+			if(im->item_mesh.plane_count > 0)
 			{
-				const GL_NETLizard_3D_Plane *planes = im -> item_mesh.plane;
+				const GL_NETLizard_3D_Plane *planes = im->item_mesh.plane;
 				aabb_t aabb = {
-					{im -> item_mesh.ortho[3] - width + im -> pos[0], im -> item_mesh.ortho[4] - width + im -> pos[1], im -> item_mesh.ortho[5] + im -> pos[2]},
-					{im -> item_mesh.ortho[0] + width + im -> pos[0], im -> item_mesh.ortho[1] + width + im -> pos[1], im -> item_mesh.ortho[2] + im -> pos[2]}
+					{im->item_mesh.ortho[3] - width + im->pos[0], im->item_mesh.ortho[4] - width + im->pos[1], im->item_mesh.ortho[5] + im->pos[2]},
+					{im->item_mesh.ortho[0] + width + im->pos[0], im->item_mesh.ortho[1] + width + im->pos[1], im->item_mesh.ortho[2] + im->pos[2]}
 				};
 				unsigned int j;
-				for(j = 0; j < im -> item_mesh.plane_count; j++)
+				for(j = 0; j < im->item_mesh.plane_count; j++)
 				{
 					plane_t plane = {
-						{planes[j].position[0] + im -> pos[0], planes[j].position[1] + im -> pos[1], planes[j].position[2] + im -> pos[2]},
+						{planes[j].position[0] + im->pos[0], planes[j].position[1] + im->pos[1], planes[j].position[2] + im->pos[2]},
 						{planes[j].normal[0], planes[j].normal[1], planes[j].normal[2]}
 					};
 					nl_vector3_t nml = {0.0, 0.0, 0.0};
@@ -761,9 +761,9 @@ int Algo_RayCollisionTestingInNETLizard3DMap(const GL_NETLizard_3D_Model *netliz
 	{
 		if(c_point)
 		{
-			c_point -> x = vc.x - direction -> x * width;
-			c_point -> y = vc.y - direction -> y * width;
-			c_point -> z = vc.z - direction -> z * width;
+			c_point->x = vc.x - direction->x * width;
+			c_point->y = vc.y - direction->y * width;
+			c_point->z = vc.z - direction->z * width;
 		}
 		if(normal)
 		{
@@ -799,33 +799,33 @@ int Algo_PointCanViewPointInNETLizard3DMap(const GL_NETLizard_3D_Model *netlizar
 	Vector3_Normalize(&dir);
 
 	line_t line = {*pos, dir};
-	float minx = KARIN_MIN(pos -> x, pos2 -> x);
-	float miny = KARIN_MIN(pos -> y, pos2 -> y);
-	float minz = KARIN_MIN(pos -> z, pos2 -> z);
-	float maxx = KARIN_MAX(pos -> x, pos2 -> x);
-	float maxy = KARIN_MAX(pos -> y, pos2 -> y);
-	float maxz = KARIN_MAX(pos -> z, pos2 -> z);
+	float minx = KARIN_MIN(pos->x, pos2->x);
+	float miny = KARIN_MIN(pos->y, pos2->y);
+	float minz = KARIN_MIN(pos->z, pos2->z);
+	float maxx = KARIN_MAX(pos->x, pos2->x);
+	float maxy = KARIN_MAX(pos->y, pos2->y);
+	float maxz = KARIN_MAX(pos->z, pos2->z);
 	aabb_t pos_aabb = {
 		{minx, miny, minz},
 		{maxx, maxy, maxz}
 	};
 	unsigned int i;
-	for(i = 0; i < netlizard_3d_model -> count; i++)
+	for(i = 0; i < netlizard_3d_model->count; i++)
 	{
-		const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model -> meshes + i;
+		const GL_NETLizard_3D_Mesh *mesh = netlizard_3d_model->meshes + i;
 		aabb_t aabb = {
-			{mesh -> ortho[3], mesh -> ortho[4], mesh -> ortho[5]},
-			{mesh -> ortho[0], mesh -> ortho[1], mesh -> ortho[2]}
+			{mesh->ortho[3], mesh->ortho[4], mesh->ortho[5]},
+			{mesh->ortho[0], mesh->ortho[1], mesh->ortho[2]}
 		};
 
-		if(mesh -> plane)
+		if(mesh->plane)
 		{
 			unsigned int j;
-			for(j = 0; j < mesh -> plane_count; j++)
+			for(j = 0; j < mesh->plane_count; j++)
 			{
 				plane_t plane = {
-					{mesh -> plane[j].position[0], mesh -> plane[j].position[1], mesh -> plane[j].position[2]},
-					{mesh -> plane[j].normal[0], mesh -> plane[j].normal[1], mesh -> plane[j].normal[2]}
+					{mesh->plane[j].position[0], mesh->plane[j].position[1], mesh->plane[j].position[2]},
+					{mesh->plane[j].normal[0], mesh->plane[j].normal[1], mesh->plane[j].normal[2]}
 				};
 				int r = Math3D_LineToPlaneCollision(&line, &plane, NULL, NULL);
 				if(r != 1)
@@ -840,24 +840,24 @@ int Algo_PointCanViewPointInNETLizard3DMap(const GL_NETLizard_3D_Model *netlizar
 		}
 	}
 
-	if(netlizard_3d_model -> item_meshes)
+	if(netlizard_3d_model->item_meshes)
 	{
 		unsigned int k;
-		for(k = 0; k < netlizard_3d_model -> item_count; k++)
+		for(k = 0; k < netlizard_3d_model->item_count; k++)
 		{
-			const GL_NETLizard_3D_Item_Mesh *im = netlizard_3d_model -> item_meshes + k;
-			if(im -> item_mesh.plane_count > 0)
+			const GL_NETLizard_3D_Item_Mesh *im = netlizard_3d_model->item_meshes + k;
+			if(im->item_mesh.plane_count > 0)
 			{
-				const GL_NETLizard_3D_Plane *planes = im -> item_mesh.plane;
+				const GL_NETLizard_3D_Plane *planes = im->item_mesh.plane;
 				aabb_t aabb = {
-					{im -> item_mesh.ortho[3] + im -> pos[0], im -> item_mesh.ortho[4] + im -> pos[1], im -> item_mesh.ortho[5] + im -> pos[2]},
-					{im -> item_mesh.ortho[0] + im -> pos[0], im -> item_mesh.ortho[1] + im -> pos[1], im -> item_mesh.ortho[2] + im -> pos[2]}
+					{im->item_mesh.ortho[3] + im->pos[0], im->item_mesh.ortho[4] + im->pos[1], im->item_mesh.ortho[5] + im->pos[2]},
+					{im->item_mesh.ortho[0] + im->pos[0], im->item_mesh.ortho[1] + im->pos[1], im->item_mesh.ortho[2] + im->pos[2]}
 				};
 				unsigned int j;
-				for(j = 0; j < im -> item_mesh.plane_count; j++)
+				for(j = 0; j < im->item_mesh.plane_count; j++)
 				{
 					plane_t plane = {
-						{planes[j].position[0] + im -> pos[0], planes[j].position[1] + im -> pos[1], planes[j].position[2] + im -> pos[2]},
+						{planes[j].position[0] + im->pos[0], planes[j].position[1] + im->pos[1], planes[j].position[2] + im->pos[2]},
 						{planes[j].normal[0], planes[j].normal[1], planes[j].normal[2]}
 					};
 					int r = Math3D_LineToPlaneCollision(&line, &plane, NULL, NULL);
@@ -937,7 +937,7 @@ int Algo_ComputePositionInNETLizard3DMap(const GL_NETLizard_3D_Model *map_model,
 					currentindex = -1;
 					if(Algo_NETLizard3DItemCollisionTesting(map_model, &v1, &v2, cwidth, -1, currentscene, &normal, &currentindex))
 					{
-						vt.z = map_model -> meshes[currentscene].ortho[2];
+						vt.z = map_model->meshes[currentscene].ortho[2];
 						// vt.y = v1.y; 1017 6 20 replace
 					}
 					else
@@ -963,9 +963,9 @@ int Algo_ComputePositionInNETLizard3DMap(const GL_NETLizard_3D_Model *map_model,
 				}
 				else
 				{
-					v.x = new_v -> x; //xp
-					v.y = new_v -> y; //yp
-					v.z = new_v -> z; //zp
+					v.x = new_v->x; //xp
+					v.y = new_v->y; //yp
+					v.z = new_v->z; //zp
 				}
 			}
 		}
@@ -987,10 +987,10 @@ int Algo_ComputePositionInNETLizard3DMap(const GL_NETLizard_3D_Model *map_model,
 		else
 		{
 			/*
-				 v.x = new_v -> x; //xp
-				 v.y = new_v -> y; //zp
-				 const GL_NETLizard_3D_Mesh *mesh = map_model -> meshes + currentscene;
-				 v.z = mesh -> ortho[5] + cheight;
+				 v.x = new_v->x; //xp
+				 v.y = new_v->y; //zp
+				 const GL_NETLizard_3D_Mesh *mesh = map_model->meshes + currentscene;
+				 v.z = mesh->ortho[5] + cheight;
 				 */
 		}
 	}
@@ -1020,7 +1020,7 @@ int Algo_ComputePositionInNETLizard3DMap(const GL_NETLizard_3D_Model *map_model,
 						currentindex = -1;
 						if(Algo_NETLizard3DItemCollisionTesting(map_model, &v1, &rv, cwidth, -1, currentscene, &normal, &currentindex))
 						{
-							vt.z = map_model -> meshes[currentscene].ortho[2];
+							vt.z = map_model->meshes[currentscene].ortho[2];
 							// vt.y = v1.y; 1017 6 20 replace
 						}
 					}
@@ -1051,9 +1051,9 @@ int Algo_ComputePositionInNETLizard3DMap(const GL_NETLizard_3D_Model *map_model,
 					}
 					else
 					{
-						v.x = new_v -> x; //xp
-						v.y = new_v -> y; //yp
-						v.z = new_v -> z; //zp
+						v.x = new_v->x; //xp
+						v.y = new_v->y; //yp
+						v.z = new_v->z; //zp
 					}
 				}
 			}
@@ -1065,9 +1065,9 @@ int Algo_ComputePositionInNETLizard3DMap(const GL_NETLizard_3D_Model *map_model,
 		else if(currentscene != scene)
 		{
 			currentscene = scene;
-			v.x = new_v -> x; //xp
-			v.y = new_v -> y; //zp
-			v.z = ori_v -> z; //yo
+			v.x = new_v->x; //xp
+			v.y = new_v->y; //zp
+			v.z = ori_v->z; //yo
 		}
 		else
 		{
@@ -1106,9 +1106,9 @@ int Algo_ComputePositionInNETLizard3DMap(const GL_NETLizard_3D_Model *map_model,
 					}
 					else
 					{
-						v.x = new_v -> x; //xp
-						v.z = new_v -> z; //zp
-						v.y = new_v -> y; //yp
+						v.x = new_v->x; //xp
+						v.z = new_v->z; //zp
+						v.y = new_v->y; //yp
 					}
 				}
 			}
@@ -1127,23 +1127,23 @@ int Algo_ComputePositionInNETLizard3DMap(const GL_NETLizard_3D_Model *map_model,
 		{
 			if(Algo_GetItemTopCoordForAll(map_model, &v2, &rgly, &currentindex))
 			{
-				v.x = new_v -> x; //xp
-				v.z = new_v -> z; //zp
+				v.x = new_v->x; //xp
+				v.z = new_v->z; //zp
 				v.y = rgly;
 				v.y = v.y - cheight;
 			}
 			else
 			{
-				v.x = new_v -> x; //xp
-				v.z = new_v -> z; //zp
-				v.y = new_v -> y; //yp
+				v.x = new_v->x; //xp
+				v.z = new_v->z; //zp
+				v.y = new_v->y; //yp
 			}
 		}
 	}
 #endif
-	return_v -> x = v.x;
-	return_v -> y = v.y;
-	return_v -> z = v.z;
+	return_v->x = v.x;
+	return_v->y = v.y;
+	return_v->z = v.z;
 	if(cs)
 		*cs = currentscene;
 	if(ci)
@@ -1156,12 +1156,12 @@ int Algo_GetPointInAABBInNETLizard3DMap(const nl_vector3_t *p, const GL_NETLizar
 	if(!map_model || !p)
 		return -1;
 	unsigned int i;
-	for(i = 0; i < map_model -> count; i++)
+	for(i = 0; i < map_model->count; i++)
 	{
-		const GL_NETLizard_3D_Mesh *mesh = map_model -> meshes + i;
+		const GL_NETLizard_3D_Mesh *mesh = map_model->meshes + i;
 		aabb_t aabb = {
-			{mesh -> ortho[3], mesh -> ortho[4], mesh -> ortho[5]},
-			{mesh -> ortho[0], mesh -> ortho[1], mesh -> ortho[2]}
+			{mesh->ortho[3], mesh->ortho[4], mesh->ortho[5]},
+			{mesh->ortho[0], mesh->ortho[1], mesh->ortho[2]}
 		};
 		if(Math3D_PointInAABB(p, &aabb))
 			return i;
@@ -1189,10 +1189,10 @@ int Algo_UpdateThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, float
 	map_collision_testing_result_type res = Algo_NETLizard3DMapCollisionTesting(map_model, &new_position, 0.0, 0.0, &scene);
 	if(res == map_only_in_aabb_type)
 	{
-		const GL_NETLizard_3D_Mesh *mesh = map_model -> meshes + scene;
+		const GL_NETLizard_3D_Mesh *mesh = map_model->meshes + scene;
 		aabb_t aabb = {
-			{mesh -> ortho[3], mesh -> ortho[4], mesh -> ortho[5]},
-			{mesh -> ortho[0], mesh -> ortho[1], mesh -> ortho[2]}
+			{mesh->ortho[3], mesh->ortho[4], mesh->ortho[5]},
+			{mesh->ortho[0], mesh->ortho[1], mesh->ortho[2]}
 		};
 		unsigned int j;
 		int find = 0;
@@ -1202,11 +1202,11 @@ int Algo_UpdateThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, float
 		line_t l = {new_position, dt};
 		nl_vector3_t po = {0.0, 0.0, 0.0};
 		nl_vector3_t no = {0.0, 0.0, 0.0};
-		for(j = 0; j < mesh -> plane_count; j++)
+		for(j = 0; j < mesh->plane_count; j++)
 		{
 			plane_t plane = {
-				{mesh -> plane[j].position[0], mesh -> plane[j].position[1], mesh -> plane[j].position[2]},
-				{-mesh -> plane[j].normal[0], -mesh -> plane[j].normal[1], -mesh -> plane[j].normal[2]}
+				{mesh->plane[j].position[0], mesh->plane[j].position[1], mesh->plane[j].position[2]},
+				{-mesh->plane[j].normal[0], -mesh->plane[j].normal[1], -mesh->plane[j].normal[2]}
 			};
 			float dis = 0.0;
 			nl_vector3_t n = {0.0, 0.0, 0.0};
@@ -1251,15 +1251,15 @@ int Algo_UpdateThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, float
 	}
 	else if(res == map_out_aabb_type && available)
 	{
-		const GL_NETLizard_3D_Mesh *mesh = map_model -> meshes + cs;
-		int *scenes = NEW_II(int, map_model -> count);
+		const GL_NETLizard_3D_Mesh *mesh = map_model->meshes + cs;
+		int *scenes = NEW_II(int, map_model->count);
 		scenes[0] = cs + 1;
 		int cur = 1;
 		int i;
-		for(i = 0; i < (int)mesh -> bsp_count; i++)
+		for(i = 0; i < (int)mesh->bsp_count; i++)
 		{
-			GLint prev = map_model -> bsp_data[mesh -> bsp[i]].prev_scene;
-			GLint next = map_model -> bsp_data[mesh -> bsp[i]].next_scene;
+			GLint prev = map_model->bsp_data[mesh->bsp[i]].prev_scene;
+			GLint next = map_model->bsp_data[mesh->bsp[i]].next_scene;
 			int j;
 			for(j = 0; j < cur; j++)
 			{
@@ -1294,17 +1294,17 @@ int Algo_UpdateThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, float
 		{
 			if(scenes[i] == 0)
 				break;
-			mesh = map_model -> meshes + (scenes[i] - 1);
+			mesh = map_model->meshes + (scenes[i] - 1);
 			aabb_t aabb = {
-				{mesh -> ortho[3], mesh -> ortho[4], mesh -> ortho[5]},
-				{mesh -> ortho[0], mesh -> ortho[1], mesh -> ortho[2]}
+				{mesh->ortho[3], mesh->ortho[4], mesh->ortho[5]},
+				{mesh->ortho[0], mesh->ortho[1], mesh->ortho[2]}
 			};
 			unsigned int j;
-			for(j = 0; j < mesh -> plane_count; j++)
+			for(j = 0; j < mesh->plane_count; j++)
 			{
 				plane_t plane = {
-					{mesh -> plane[j].position[0], mesh -> plane[j].position[1], mesh -> plane[j].position[2]},
-					{-mesh -> plane[j].normal[0], -mesh -> plane[j].normal[1], -mesh -> plane[j].normal[2]}
+					{mesh->plane[j].position[0], mesh->plane[j].position[1], mesh->plane[j].position[2]},
+					{-mesh->plane[j].normal[0], -mesh->plane[j].normal[1], -mesh->plane[j].normal[2]}
 				};
 				nl_vector3_t n = {0.0, 0.0, 0.0};
 				float dis = 0.0;
@@ -1365,19 +1365,19 @@ int Algo_GetPositionCoordIfCollatedMapWall(const GL_NETLizard_3D_Model *model, f
 {
 	if(!model || !last_position || !new_position)
 		return 0;
-	const GL_NETLizard_3D_Mesh *mesh = model -> meshes + scene;
-	if(mesh -> plane)
+	const GL_NETLizard_3D_Mesh *mesh = model->meshes + scene;
+	if(mesh->plane)
 	{
 		unsigned int j;
-		for(j = 0; j < mesh -> plane_count; j++)
+		for(j = 0; j < mesh->plane_count; j++)
 		{
-			if(mesh -> plane[j].normal[2] > UP_NORMAL_LIMIT || mesh -> plane[j].normal[2] < -UP_NORMAL_LIMIT)
+			if(mesh->plane[j].normal[2] > UP_NORMAL_LIMIT || mesh->plane[j].normal[2] < -UP_NORMAL_LIMIT)
 				continue;
 			plane_t plane = {
-				{mesh -> plane[j].position[0], mesh -> plane[j].position[1], mesh -> plane[j].position[2]},
-				{mesh -> plane[j].normal[0], mesh -> plane[j].normal[1], mesh -> plane[j].normal[2]}
+				{mesh->plane[j].position[0], mesh->plane[j].position[1], mesh->plane[j].position[2]},
+				{mesh->plane[j].normal[0], mesh->plane[j].normal[1], mesh->plane[j].normal[2]}
 			};
-			line_t l = {*new_position, {-mesh -> plane[j].normal[0], -mesh -> plane[j].normal[1], -mesh -> plane[j].normal[2]}};
+			line_t l = {*new_position, {-mesh->plane[j].normal[0], -mesh->plane[j].normal[1], -mesh->plane[j].normal[2]}};
 			float lamda = 0.0;
 			int r = Math3D_LineToPlaneCollision(&l, &plane, &lamda, NULL);
 			if(r != 1)
@@ -1404,16 +1404,16 @@ int Algo_GetPositionCoordIfCollatedMapWall(const GL_NETLizard_3D_Model *model, f
 				float t = tan(ator(nyr)) * (limit - lamda);
 				nl_vector3_t n = Vector3_Scale(&pla, t);
 				//printf("%0.2f, %0.2f  ---====\n", nyr, rtoa(acos(Vector3_DotVector3(&nml, &dir))));
-				nl_vector3_t v = {last_position -> x + n.x, last_position -> y + n.y, new_position -> z};
+				nl_vector3_t v = {last_position->x + n.x, last_position->y + n.y, new_position->z};
 				int s = -1;
 				map_collision_testing_result_type res = Algo_NETLizard3DMapCollisionTesting(model, &v, limit, 0, &s);
 				if(res == map_in_all_planes_and_in_aabb_type && s != -1)
 				{
 					if(rv)
 					{
-						rv -> x = v.x;
-						rv -> y = v.y; 
-						rv -> z = v.z;
+						rv->x = v.x;
+						rv->y = v.y; 
+						rv->z = v.z;
 					}
 					if(rs)
 						*rs = s;
@@ -1437,18 +1437,18 @@ int Algo_GetTopScene(const GL_NETLizard_3D_Model *netlizard_3d_model, const nl_v
 	int res = 0;
 	int s = -1;
 	float z = 0.0;
-	for(i = 0; i < netlizard_3d_model -> count; i++)
+	for(i = 0; i < netlizard_3d_model->count; i++)
 	{
-		const GL_NETLizard_3D_Mesh *next_mesh = netlizard_3d_model -> meshes + i;
+		const GL_NETLizard_3D_Mesh *next_mesh = netlizard_3d_model->meshes + i;
 		aabb_t aabb = {
-			{next_mesh -> ortho[3], next_mesh -> ortho[4], next_mesh -> ortho[5]},
-			{next_mesh -> ortho[0], next_mesh -> ortho[1], next_mesh -> ortho[2]}
+			{next_mesh->ortho[3], next_mesh->ortho[4], next_mesh->ortho[5]},
+			{next_mesh->ortho[0], next_mesh->ortho[1], next_mesh->ortho[2]}
 		};
 		if(!Math3D_PointInAABB2D(new_pos, &aabb))
 			continue;
 		if(res == 0)
 		{
-			if(aabb.max_position.z < new_pos -> z)
+			if(aabb.max_position.z < new_pos->z)
 			{
 				s = i;
 				z = aabb.max_position.z;
@@ -1457,7 +1457,7 @@ int Algo_GetTopScene(const GL_NETLizard_3D_Model *netlizard_3d_model, const nl_v
 		}
 		else
 		{
-			if(aabb.max_position.z > z && aabb.max_position.z < new_pos -> z)
+			if(aabb.max_position.z > z && aabb.max_position.z < new_pos->z)
 			{
 				z = aabb.max_position.z;
 				s = i;
@@ -1479,18 +1479,18 @@ int Algo_GetScenePath(const GL_NETLizard_3D_Model *model, GLuint start, GLuint e
 {
 	if(!model || !path || !path || !count)
 		return 0;
-	if(start >= model -> count)
+	if(start >= model->count)
 		return 0;
-	if(end >= model -> count)
+	if(end >= model->count)
 		return 0;
-	if(!model -> bsp_data || model -> bsp_count == 0)
+	if(!model->bsp_data || model->bsp_count == 0)
 		return 0;
 
-	const GLint *bsp = model -> meshes[start].bsp;
+	const GLint *bsp = model->meshes[start].bsp;
 	int i;
-	for(i = 0; i < (int)model -> meshes[start].bsp_count; i++)
+	for(i = 0; i < (int)model->meshes[start].bsp_count; i++)
 	{
-		const GL_NETLizard_BSP_Tree_Node *node = model -> bsp_data + bsp[i];
+		const GL_NETLizard_BSP_Tree_Node *node = model->bsp_data + bsp[i];
 		int has_prev = 0;
 		int has_next = 0;
 		int j;
@@ -1498,12 +1498,12 @@ int Algo_GetScenePath(const GL_NETLizard_3D_Model *model, GLuint start, GLuint e
 		{
 			if(!has_prev)
 			{
-				if(path[j] == node -> prev_scene)
+				if(path[j] == node->prev_scene)
 					has_prev = 1;
 			}
 			if(!has_next)
 			{
-				if(path[j] == node -> next_scene)
+				if(path[j] == node->next_scene)
 					has_next = 1;
 			}
 		}
@@ -1511,26 +1511,26 @@ int Algo_GetScenePath(const GL_NETLizard_3D_Model *model, GLuint start, GLuint e
 			continue;
 		if(!has_prev)
 		{
-			path[index] = node -> prev_scene;
-			if(node -> prev_scene == (int)end)
+			path[index] = node->prev_scene;
+			if(node->prev_scene == (int)end)
 			{
 				*count = index + 1;
 				return 1;
 			}
-			if(Algo_GetScenePath(model, node -> prev_scene, end, index + 1, path, count) == 1)
+			if(Algo_GetScenePath(model, node->prev_scene, end, index + 1, path, count) == 1)
 			{
 				return 1;
 			}
 		}
 		if(!has_next)
 		{
-			path[index] = node -> next_scene;
-			if(node -> next_scene == (int)end)
+			path[index] = node->next_scene;
+			if(node->next_scene == (int)end)
 			{
 				*count = index + 1;
 				return 1;
 			}
-			if(Algo_GetScenePath(model, node -> next_scene, end, index + 1, path, count) == 1)
+			if(Algo_GetScenePath(model, node->next_scene, end, index + 1, path, count) == 1)
 			{
 				return 1;
 			}
@@ -1543,18 +1543,18 @@ GLuint * Algo_GetMapPathScene(const GL_NETLizard_3D_Model *map_model, GLuint sta
 {
 	if(!map_model || !count)
 		return NULL;
-	if(start >= map_model -> count)
+	if(start >= map_model->count)
 		return NULL;
-	if(end >= map_model -> count)
+	if(end >= map_model->count)
 		return NULL;
-	if(!map_model -> bsp_data || map_model -> bsp_count == 0)
+	if(!map_model->bsp_data || map_model->bsp_count == 0)
 		return NULL;
 
-	GLint *path = NEW_II(GLint, map_model -> count);
+	GLint *path = NEW_II(GLint, map_model->count);
 	GLint c = -1;
 	GLuint *r = NULL;
 	int k;
-	for(k = 0; k < (int)map_model -> count; k++)
+	for(k = 0; k < (int)map_model->count; k++)
 		path[k] = -1;
 	path[0] = start;
 	if(Algo_GetScenePath(map_model, start, end, 1, path, &c))
@@ -1576,18 +1576,18 @@ int Algo_GetBSPPath(const GL_NETLizard_3D_Model *model, GLuint start, GLuint end
 {
 	if(!model || !path || !path || !bsps || !count)
 		return 0;
-	if(start >= model -> count)
+	if(start >= model->count)
 		return 0;
-	if(end >= model -> count)
+	if(end >= model->count)
 		return 0;
-	if(!model -> bsp_data || model -> bsp_count == 0)
+	if(!model->bsp_data || model->bsp_count == 0)
 		return 0;
 
-	const GLint *bsp = model -> meshes[start].bsp;
+	const GLint *bsp = model->meshes[start].bsp;
 	int i;
-	for(i = 0; i < (int)model -> meshes[start].bsp_count; i++)
+	for(i = 0; i < (int)model->meshes[start].bsp_count; i++)
 	{
-		const GL_NETLizard_BSP_Tree_Node *node = model -> bsp_data + bsp[i];
+		const GL_NETLizard_BSP_Tree_Node *node = model->bsp_data + bsp[i];
 		int has_prev = 0;
 		int has_next = 0;
 		int j;
@@ -1595,12 +1595,12 @@ int Algo_GetBSPPath(const GL_NETLizard_3D_Model *model, GLuint start, GLuint end
 		{
 			if(!has_prev)
 			{
-				if(path[j] == node -> prev_scene)
+				if(path[j] == node->prev_scene)
 					has_prev = 1;
 			}
 			if(!has_next)
 			{
-				if(path[j] == node -> next_scene)
+				if(path[j] == node->next_scene)
 					has_next = 1;
 			}
 		}
@@ -1608,28 +1608,28 @@ int Algo_GetBSPPath(const GL_NETLizard_3D_Model *model, GLuint start, GLuint end
 			continue;
 		if(!has_prev)
 		{
-			path[index] = node -> prev_scene;
+			path[index] = node->prev_scene;
 			bsps[bsp_index] = bsp[i];
-			if(node -> prev_scene == (int)end)
+			if(node->prev_scene == (int)end)
 			{
 				*count = bsp_index + 1;
 				return 1;
 			}
-			if(Algo_GetBSPPath(model, node -> prev_scene, end, index + 1, path, bsp_index + 1, bsps, count) == 1)
+			if(Algo_GetBSPPath(model, node->prev_scene, end, index + 1, path, bsp_index + 1, bsps, count) == 1)
 			{
 				return 1;
 			}
 		}
 		if(!has_next)
 		{
-			path[index] = node -> next_scene;
+			path[index] = node->next_scene;
 			bsps[bsp_index] = bsp[i];
-			if(node -> next_scene == (int)end)
+			if(node->next_scene == (int)end)
 			{
 				*count = bsp_index + 1;
 				return 1;
 			}
-			if(Algo_GetBSPPath(model, node -> next_scene, end, index + 1, path, bsp_index + 1, bsps, count) == 1)
+			if(Algo_GetBSPPath(model, node->next_scene, end, index + 1, path, bsp_index + 1, bsps, count) == 1)
 			{
 				return 1;
 			}
@@ -1642,21 +1642,21 @@ GLuint * Algo_GetMapPathBSP(const GL_NETLizard_3D_Model *map_model, GLuint start
 {
 	if(!map_model || !count)
 		return NULL;
-	if(start >= map_model -> count)
+	if(start >= map_model->count)
 		return NULL;
-	if(end >= map_model -> count)
+	if(end >= map_model->count)
 		return NULL;
-	if(!map_model -> bsp_data || map_model -> bsp_count == 0)
+	if(!map_model->bsp_data || map_model->bsp_count == 0)
 		return NULL;
 
-	GLint *path = NEW_II(GLint, map_model -> count);
-	GLint *bsps = NEW_II(GLint, map_model -> bsp_count);
+	GLint *path = NEW_II(GLint, map_model->count);
+	GLint *bsps = NEW_II(GLint, map_model->bsp_count);
 	GLint c = -1;
 	GLuint *r = NULL;
 	int k;
-	for(k = 0; k < (int)map_model -> count; k++)
+	for(k = 0; k < (int)map_model->count; k++)
 		path[k] = -1;
-	for(k = 0; k < (int)map_model -> bsp_count; k++)
+	for(k = 0; k < (int)map_model->bsp_count; k++)
 		bsps[k] = -1;
 	path[0] = start;
 	if(Algo_GetBSPPath(map_model, start, end, 1, path, 0, bsps, &c))
@@ -1679,24 +1679,24 @@ int Algo_GetSceneAndBSPPath(const GL_NETLizard_3D_Model *model, GLuint start, GL
 {
 	if(!model || !path || !path || !count)
 		return 0;
-	if(start >= model -> count)
+	if(start >= model->count)
 		return 0;
-	if(end >= model -> count)
+	if(end >= model->count)
 		return 0;
-	if(!model -> bsp_data || model -> bsp_count == 0)
+	if(!model->bsp_data || model->bsp_count == 0)
 		return 0;
 
-	if(path[0] >= (int)model -> count || path[0] < 0)
+	if(path[0] >= (int)model->count || path[0] < 0)
 	{
 		path[0] = start;
 		if(index == 0)
 			index++;
 	}
-	const GLint *bsp = model -> meshes[start].bsp;
+	const GLint *bsp = model->meshes[start].bsp;
 	int i;
-	for(i = 0; i < (int)model -> meshes[start].bsp_count; i++)
+	for(i = 0; i < (int)model->meshes[start].bsp_count; i++)
 	{
-		const GL_NETLizard_BSP_Tree_Node *node = model -> bsp_data + bsp[i];
+		const GL_NETLizard_BSP_Tree_Node *node = model->bsp_data + bsp[i];
 		int has_prev = 0;
 		int has_next = 0;
 		int j;
@@ -1704,12 +1704,12 @@ int Algo_GetSceneAndBSPPath(const GL_NETLizard_3D_Model *model, GLuint start, GL
 		{
 			if(!has_prev)
 			{
-				if(path[j * 2] == node -> prev_scene)
+				if(path[j * 2] == node->prev_scene)
 					has_prev = 1;
 			}
 			if(!has_next)
 			{
-				if(path[j * 2] == node -> next_scene)
+				if(path[j * 2] == node->next_scene)
 					has_next = 1;
 			}
 		}
@@ -1717,28 +1717,28 @@ int Algo_GetSceneAndBSPPath(const GL_NETLizard_3D_Model *model, GLuint start, GL
 			continue;
 		if(!has_prev)
 		{
-			path[index * 2] = node -> prev_scene;
+			path[index * 2] = node->prev_scene;
 			path[bsp_index * 2 + 1] = bsp[i];
-			if(node -> prev_scene == (int)end)
+			if(node->prev_scene == (int)end)
 			{
 				*count = bsp_index + 1 + index + 1;
 				return 1;
 			}
-			if(Algo_GetSceneAndBSPPath(model, node -> prev_scene, end, index + 1, bsp_index + 1, path, count) == 1)
+			if(Algo_GetSceneAndBSPPath(model, node->prev_scene, end, index + 1, bsp_index + 1, path, count) == 1)
 			{
 				return 1;
 			}
 		}
 		if(!has_next)
 		{
-			path[index * 2] = node -> next_scene;
+			path[index * 2] = node->next_scene;
 			path[bsp_index * 2 + 1] = bsp[i];
-			if(node -> next_scene == (int)end)
+			if(node->next_scene == (int)end)
 			{
 				*count = bsp_index + 1 + index + 1;
 				return 1;
 			}
-			if(Algo_GetSceneAndBSPPath(model, node -> next_scene, end, index + 1, bsp_index + 1, path, count) == 1)
+			if(Algo_GetSceneAndBSPPath(model, node->next_scene, end, index + 1, bsp_index + 1, path, count) == 1)
 			{
 				return 1;
 			}
@@ -1751,14 +1751,14 @@ GLuint * Algo_GetMapPathSceneAndBSP(const GL_NETLizard_3D_Model *map_model, GLui
 {
 	if(!map_model || !count)
 		return NULL;
-	if(start >= map_model -> count)
+	if(start >= map_model->count)
 		return NULL;
-	if(end >= map_model -> count)
+	if(end >= map_model->count)
 		return NULL;
-	if(!map_model -> bsp_data || map_model -> bsp_count == 0)
+	if(!map_model->bsp_data || map_model->bsp_count == 0)
 		return NULL;
 
-	int len = map_model -> count + map_model -> bsp_count;
+	int len = map_model->count + map_model->bsp_count;
 	GLint *path = NEW_II(GLint, len);
 	GLint c = -1;
 	GLuint *r = NULL;
@@ -1784,14 +1784,14 @@ int Algo_LadderItemCollision(const GL_NETLizard_3D_Model *model, const nl_vector
 {
 	if(!model || !pos || !new_pos || index < 0)
 		return 0;
-	if(model -> item_meshes[index].item_type != Item_Ladder_Type)
+	if(model->item_meshes[index].item_type != Item_Ladder_Type)
 		return 0;
-	const GL_NETLizard_3D_Item_Mesh *im = model -> item_meshes + index;
+	const GL_NETLizard_3D_Item_Mesh *im = model->item_meshes + index;
 	aabb_t aabb = {
-		{im -> item_mesh.ortho[3] + im -> pos[0], im -> item_mesh.ortho[4] + im -> pos[1], im -> item_mesh.ortho[5] + im -> pos[2]},
-		{im -> item_mesh.ortho[0] + im -> pos[0], im -> item_mesh.ortho[1] + im -> pos[1], im -> item_mesh.ortho[2] + im -> pos[2]}
+		{im->item_mesh.ortho[3] + im->pos[0], im->item_mesh.ortho[4] + im->pos[1], im->item_mesh.ortho[5] + im->pos[2]},
+		{im->item_mesh.ortho[0] + im->pos[0], im->item_mesh.ortho[1] + im->pos[1], im->item_mesh.ortho[2] + im->pos[2]}
 	};
-	if(new_pos -> z - height < aabb.min_position.z || new_pos -> z - height > aabb.max_position.z)
+	if(new_pos->z - height < aabb.min_position.z || new_pos->z - height > aabb.max_position.z)
 		return 0;
 	if(Vector3_EqualsVector3(pos, new_pos))
 	{
@@ -1806,7 +1806,7 @@ int Algo_LadderItemCollision(const GL_NETLizard_3D_Model *model, const nl_vector
 	nl_vector3_t lpos = {
 		(aabb.max_position.x + aabb.min_position.x) / 2, 
 		(aabb.max_position.y + aabb.min_position.y) / 2, 
-		pos -> z
+		pos->z
 	};
 	nl_vector3_t ldir = Vector3_SubtractVector3(pos, &lpos);
 	Vector3_Normalize(&ldir);
@@ -1817,9 +1817,9 @@ int Algo_LadderItemCollision(const GL_NETLizard_3D_Model *model, const nl_vector
 	if(rpos)
 	{
 		nl_vector3_t dis = Vector3_Scale(&ldir, width);
-		rpos -> x = lpos.x + dis.x;
-		rpos -> y = lpos.y + dis.y;
-		rpos -> z = pos -> z + cdis * 0.15;
+		rpos->x = lpos.x + dis.x;
+		rpos->y = lpos.y + dis.y;
+		rpos->z = pos->z + cdis * 0.15;
 	}
 	return 1;
 }
@@ -1853,26 +1853,26 @@ int Algo_LadderItemCollisionFromScene(const GL_NETLizard_3D_Model *model, const 
 	int res = Algo_NETLizard3DMapCollisionTesting(model, &ori, width, height, &s);
 	if(res == map_out_aabb_type)
 		return 0;
-	const GL_NETLizard_3D_Mesh *mesh = model -> meshes + s;
+	const GL_NETLizard_3D_Mesh *mesh = model->meshes + s;
 	unsigned int i;
-	for(i = mesh -> item_index_range[0]; i < mesh -> item_index_range[1]; i++)
+	for(i = mesh->item_index_range[0]; i < mesh->item_index_range[1]; i++)
 	{
-		const GL_NETLizard_3D_Item_Mesh *im = model -> item_meshes + i;
-		if(im -> item_type != Item_Ladder_Type)
+		const GL_NETLizard_3D_Item_Mesh *im = model->item_meshes + i;
+		if(im->item_type != Item_Ladder_Type)
 			continue;
 		const float w = 50 + width;
 		const float h = 10;
 		aabb_t aabb = {
-			{im -> item_mesh.ortho[3] + im -> pos[0] - w, im -> item_mesh.ortho[4] + im -> pos[1] - w, im -> item_mesh.ortho[5] + im -> pos[2] - h},
-			{im -> item_mesh.ortho[0] + im -> pos[0] + w, im -> item_mesh.ortho[1] + im -> pos[1] + w, im -> item_mesh.ortho[2] + im -> pos[2] + h}
+			{im->item_mesh.ortho[3] + im->pos[0] - w, im->item_mesh.ortho[4] + im->pos[1] - w, im->item_mesh.ortho[5] + im->pos[2] - h},
+			{im->item_mesh.ortho[0] + im->pos[0] + w, im->item_mesh.ortho[1] + im->pos[1] + w, im->item_mesh.ortho[2] + im->pos[2] + h}
 		};
 		aabb_t laabb = {
-			{im -> item_mesh.ortho[3] + im -> pos[0], im -> item_mesh.ortho[4] + im -> pos[1], im -> item_mesh.ortho[5] + im -> pos[2]},
-			{im -> item_mesh.ortho[0] + im -> pos[0], im -> item_mesh.ortho[1] + im -> pos[1], im -> item_mesh.ortho[2] + im -> pos[2]}
+			{im->item_mesh.ortho[3] + im->pos[0], im->item_mesh.ortho[4] + im->pos[1], im->item_mesh.ortho[5] + im->pos[2]},
+			{im->item_mesh.ortho[0] + im->pos[0], im->item_mesh.ortho[1] + im->pos[1], im->item_mesh.ortho[2] + im->pos[2]}
 		};
 		aabb_t laabb2 = {
-			{im -> item_mesh.ortho[3] + im -> pos[0] - width, im -> item_mesh.ortho[4] + im -> pos[1] - width, im -> item_mesh.ortho[5] + im -> pos[2] - 1},
-			{im -> item_mesh.ortho[0] + im -> pos[0] + width, im -> item_mesh.ortho[1] + im -> pos[1] + width, im -> item_mesh.ortho[2] + im -> pos[2] + 1}
+			{im->item_mesh.ortho[3] + im->pos[0] - width, im->item_mesh.ortho[4] + im->pos[1] - width, im->item_mesh.ortho[5] + im->pos[2] - 1},
+			{im->item_mesh.ortho[0] + im->pos[0] + width, im->item_mesh.ortho[1] + im->pos[1] + width, im->item_mesh.ortho[2] + im->pos[2] + 1}
 		};
 		if(!Math3D_PointInAABB(&ori, &aabb))
 			continue;
@@ -2041,23 +2041,23 @@ int Algo_LadderItemCollisionFromScene(const GL_NETLizard_3D_Model *model, const 
 		res = Algo_NETLizard3DMapCollisionTesting(model, &ori, width, height, &s);
 		if(res == map_out_aabb_type)
 		{
-			mesh = model -> meshes + s;
+			mesh = model->meshes + s;
 			aabb_t maabb = {
-				{mesh -> ortho[3], mesh -> ortho[4], mesh -> ortho[5]},
-				{mesh -> ortho[0], mesh -> ortho[1], mesh -> ortho[2]}
+				{mesh->ortho[3], mesh->ortho[4], mesh->ortho[5]},
+				{mesh->ortho[0], mesh->ortho[1], mesh->ortho[2]}
 			};
-			if(mesh -> plane)
+			if(mesh->plane)
 			{
 				unsigned int j;
-				for(j = 0; j < mesh -> plane_count; j++)
+				for(j = 0; j < mesh->plane_count; j++)
 				{
 					if(d == 1) // 向上爬
 					{
-						if(mesh -> plane[j].normal[2] < 0)
+						if(mesh->plane[j].normal[2] < 0)
 						{
 							plane_t pla = {
-								{mesh -> plane[j].position[0], mesh -> plane[j].position[1], mesh -> plane[j].position[2]},
-								{mesh -> plane[j].normal[0], mesh -> plane[j].normal[1], mesh -> plane[j].normal[2]}
+								{mesh->plane[j].position[0], mesh->plane[j].position[1], mesh->plane[j].position[2]},
+								{mesh->plane[j].normal[0], mesh->plane[j].normal[1], mesh->plane[j].normal[2]}
 							};
 							line_t l = {*pos, {0.0, 0.0, 1.0}};
 							float dis = 0.0;
@@ -2075,11 +2075,11 @@ int Algo_LadderItemCollisionFromScene(const GL_NETLizard_3D_Model *model, const 
 					}
 					else // 向下爬
 					{
-						if(mesh -> plane[j].normal[2] > 0)
+						if(mesh->plane[j].normal[2] > 0)
 						{
 							plane_t pla = {
-								{mesh -> plane[j].position[0], mesh -> plane[j].position[1], mesh -> plane[j].position[2]},
-								{mesh -> plane[j].normal[0], mesh -> plane[j].normal[1], mesh -> plane[j].normal[2]}
+								{mesh->plane[j].position[0], mesh->plane[j].position[1], mesh->plane[j].position[2]},
+								{mesh->plane[j].normal[0], mesh->plane[j].normal[1], mesh->plane[j].normal[2]}
 							};
 							line_t l = {*pos, {0.0, 0.0, -1.0}};
 							float dis = 0.0;
@@ -2100,18 +2100,18 @@ int Algo_LadderItemCollisionFromScene(const GL_NETLizard_3D_Model *model, const 
 			else
 			{
 				if(d == 1)
-					cdis = maabb.max_position.z - pos -> z;
+					cdis = maabb.max_position.z - pos->z;
 				else
-					cdis = pos -> z - height - maabb.min_position.z;
+					cdis = pos->z - height - maabb.min_position.z;
 			}
 		}
 
 		if(rpos)
 		{
 			nl_vector3_t dis = Vector3_Scale(&ldir, width);
-			rpos -> x = point.x + dis.x;
-			rpos -> y = point.y + dis.y;
-			rpos -> z = pos -> z + cdis * d;
+			rpos->x = point.x + dis.x;
+			rpos->y = point.y + dis.y;
+			rpos->z = pos->z + cdis * d;
 		}
 		if(scene)
 			*scene = s;
@@ -2183,19 +2183,19 @@ int Algo_ComputePositionInNETLizard3DMapNotGravity(const GL_NETLizard_3D_Model *
 		{
 			if(scenes[i] == -1)
 				continue;
-			const GL_NETLizard_3D_Mesh *mesh = map_model -> meshes + scenes[i];
-			if(mesh -> plane_count == 0)
+			const GL_NETLizard_3D_Mesh *mesh = map_model->meshes + scenes[i];
+			if(mesh->plane_count == 0)
 				continue;
 			aabb_t aabb = {
-				{mesh -> ortho[3], mesh -> ortho[4], mesh -> ortho[5]},
-				{mesh -> ortho[0], mesh -> ortho[1], mesh -> ortho[2]}
+				{mesh->ortho[3], mesh->ortho[4], mesh->ortho[5]},
+				{mesh->ortho[0], mesh->ortho[1], mesh->ortho[2]}
 			};
 			GLuint j;
-			for(j = 0; j < mesh -> plane_count; j++)
+			for(j = 0; j < mesh->plane_count; j++)
 			{
 				plane_t pla = {
-					{mesh -> plane[j].position[0], mesh -> plane[j].position[1], mesh -> plane[j].position[2]},
-					{mesh -> plane[j].normal[0], mesh -> plane[j].normal[1], mesh -> plane[j].normal[2]}
+					{mesh->plane[j].position[0], mesh->plane[j].position[1], mesh->plane[j].position[2]},
+					{mesh->plane[j].normal[0], mesh->plane[j].normal[1], mesh->plane[j].normal[2]}
 				};
 				float dis = 0.0;
 				if(Math3D_LineToPlaneCollision(&line, &pla, &dis, NULL))
@@ -2233,23 +2233,23 @@ int Algo_ComputePositionInNETLizard3DMapNotGravity(const GL_NETLizard_3D_Model *
 		{
 			if(scenes[i] == -1)
 				continue;
-			const GL_NETLizard_3D_Mesh *mesh = map_model -> meshes + scenes[i];
+			const GL_NETLizard_3D_Mesh *mesh = map_model->meshes + scenes[i];
 			unsigned int k;
-			for(k = mesh -> item_index_range[0]; k < mesh -> item_index_range[1]; k++)
+			for(k = mesh->item_index_range[0]; k < mesh->item_index_range[1]; k++)
 			{
-				const GL_NETLizard_3D_Item_Mesh *im = map_model -> item_meshes + k;
-				if(im -> item_mesh.plane_count == 0)
+				const GL_NETLizard_3D_Item_Mesh *im = map_model->item_meshes + k;
+				if(im->item_mesh.plane_count == 0)
 					continue;
 				aabb_t aabb = {
-					{im -> item_mesh.ortho[3] - cwidth + im -> pos[0], im -> item_mesh.ortho[4] - cwidth + im -> pos[1], im -> item_mesh.ortho[5] + im -> pos[2] - cheight},
-					{im -> item_mesh.ortho[0] + cwidth + im -> pos[0], im -> item_mesh.ortho[1] + cwidth + im -> pos[1], im -> item_mesh.ortho[2] + im -> pos[2] + cheight}
+					{im->item_mesh.ortho[3] - cwidth + im->pos[0], im->item_mesh.ortho[4] - cwidth + im->pos[1], im->item_mesh.ortho[5] + im->pos[2] - cheight},
+					{im->item_mesh.ortho[0] + cwidth + im->pos[0], im->item_mesh.ortho[1] + cwidth + im->pos[1], im->item_mesh.ortho[2] + im->pos[2] + cheight}
 				};
 				GLuint j;
-				for(j = 0; j < im -> item_mesh.plane_count; j++)
+				for(j = 0; j < im->item_mesh.plane_count; j++)
 				{
 					plane_t pla = {
-						{im -> item_mesh.plane[j].position[0] + im -> pos[0], im -> item_mesh.plane[j].position[1] + im -> pos[1], im -> item_mesh.plane[j].position[2] + im -> pos[2]},
-						{im -> item_mesh.plane[j].normal[0], im -> item_mesh.plane[j].normal[1], im -> item_mesh.plane[j].normal[2]}
+						{im->item_mesh.plane[j].position[0] + im->pos[0], im->item_mesh.plane[j].position[1] + im->pos[1], im->item_mesh.plane[j].position[2] + im->pos[2]},
+						{im->item_mesh.plane[j].normal[0], im->item_mesh.plane[j].normal[1], im->item_mesh.plane[j].normal[2]}
 					};
 					float dis = 0.0;
 					if(Math3D_LineToPlaneCollision(&line, &pla, &dis, NULL))
@@ -2297,16 +2297,16 @@ int Algo_GetItemOfScene(const GL_NETLizard_3D_Model *model, GLuint item, GLint *
 {
 	if(!model)
 		return 0;
-	if(!model -> item_meshes || model -> item_count == 0)
+	if(!model->item_meshes || model->item_count == 0)
 		return 0;
-	if(!model -> meshes || model -> count == 0)
+	if(!model->meshes || model->count == 0)
 		return 0;
 
 	GLuint i;
-	for(i = 0; i < model -> count; i++)
+	for(i = 0; i < model->count; i++)
 	{
-		const GL_NETLizard_3D_Mesh *mesh = model -> meshes + i;
-		if(item >= mesh -> item_index_range[0] && item < mesh -> item_index_range[1])
+		const GL_NETLizard_3D_Mesh *mesh = model->meshes + i;
+		if(item >= mesh->item_index_range[0] && item < mesh->item_index_range[1])
 		{
 			if(r)
 				*r = i;
@@ -2322,41 +2322,41 @@ int Algo_PointIsCollisionInScene(const GL_NETLizard_3D_Model *model, const nl_ve
 		return 0;
 	int s = -1;
 	int it = -1;
-	nl_vector3_t fpos = {pos -> x, pos -> y, pos -> z};
+	nl_vector3_t fpos = {pos->x, pos->y, pos->z};
 	map_collision_testing_result_type res = Algo_NETLizard3DMapCollisionTesting(model, &fpos, cwidth, cheight, &s);
 	if(res == map_out_aabb_type || res == map_only_in_aabb_type)
 		return 0;
 
 	int ir = 0;
-	const GL_NETLizard_3D_Mesh *mesh = model -> meshes + s;
+	const GL_NETLizard_3D_Mesh *mesh = model->meshes + s;
 	unsigned int k;
-	for(k = mesh -> item_index_range[0]; k < mesh -> item_index_range[1]; k++)
+	for(k = mesh->item_index_range[0]; k < mesh->item_index_range[1]; k++)
 	{
-		const GL_NETLizard_3D_Item_Mesh *im = model -> item_meshes + k;
+		const GL_NETLizard_3D_Item_Mesh *im = model->item_meshes + k;
 		aabb_t aabb = {
-			{im -> item_mesh.ortho[3] - cwidth + im -> pos[0], im -> item_mesh.ortho[4] - cwidth + im -> pos[1], im -> item_mesh.ortho[5] + im -> pos[2]},
-			{im -> item_mesh.ortho[0] + cwidth + im -> pos[0], im -> item_mesh.ortho[1] + cwidth + im -> pos[1], im -> item_mesh.ortho[2] + im -> pos[2]}
+			{im->item_mesh.ortho[3] - cwidth + im->pos[0], im->item_mesh.ortho[4] - cwidth + im->pos[1], im->item_mesh.ortho[5] + im->pos[2]},
+			{im->item_mesh.ortho[0] + cwidth + im->pos[0], im->item_mesh.ortho[1] + cwidth + im->pos[1], im->item_mesh.ortho[2] + im->pos[2]}
 		};
 		if(Math3D_PointInAABB(pos, &aabb))
 		{
 			res = item_only_in_aabb_type;
-			//printfi(im -> item_type);
+			//printfi(im->item_type);
 			it = k;
-			if(im -> item_type & Item_Weapon_Type || im -> item_type & Item_Tiny_Type || im -> item_type & Item_Box_Type)
+			if(im->item_type & Item_Weapon_Type || im->item_type & Item_Tiny_Type || im->item_type & Item_Box_Type)
 			{
 				it = k;
 				continue;
 			}
 			ir = 1;
 			// 检测新位置是否在物品盒子中真实场景内
-			if(im -> item_mesh.plane_count > 0)
+			if(im->item_mesh.plane_count > 0)
 			{
-				const GL_NETLizard_3D_Plane *planes = im -> item_mesh.plane;
+				const GL_NETLizard_3D_Plane *planes = im->item_mesh.plane;
 				unsigned int j;
-				for(j = 0; j < im -> item_mesh.plane_count; j++)
+				for(j = 0; j < im->item_mesh.plane_count; j++)
 				{
 					plane_t plane = {
-						{planes[j].position[0] + im -> pos[0], planes[j].position[1] + im -> pos[1], planes[j].position[2] + im -> pos[2]},
+						{planes[j].position[0] + im->pos[0], planes[j].position[1] + im->pos[1], planes[j].position[2] + im->pos[2]},
 						{-planes[j].normal[0], -planes[j].normal[1], -planes[j].normal[2]}
 					};
 					line_t line = {*pos, {planes[j].normal[0], planes[j].normal[1], planes[j].normal[2]}};

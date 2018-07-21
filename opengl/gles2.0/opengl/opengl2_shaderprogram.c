@@ -9,6 +9,8 @@ char * gl2LoadShaderSource(const char *file)
 	if(!file)
 		return NULL;
 	FILE *in = fopen(file, "r");
+	if(!in)
+		return NULL;
 	fseek(in, 0, SEEK_END);
 	long len = ftell(in);
 	fseek(in, 0, SEEK_SET);

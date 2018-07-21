@@ -209,38 +209,38 @@ scene_2d * new_scene_2d(scene_2d *scene, GLfloat x, GLfloat y, GLfloat width, GL
 {
 	RETURN_PTR(s, scene, scene_2d)
 
-		s -> x = x;
-	s -> y = y;
-	s -> z = 0.0;
-	s -> scale = scale;
-	s -> align = a;
+		s->x = x;
+	s->y = y;
+	s->z = 0.0;
+	s->scale = scale;
+	s->align = a;
 	if(file)
-		s -> tex = new_OpenGL_texture_2d(file);
+		s->tex = new_OpenGL_texture_2d(file);
 	GLfloat w = width;
 	GLfloat h = height;
 	if(w <= 0.0)
 	{
-		if(s -> tex)
-			w = s -> tex -> width;
+		if(s->tex)
+			w = s->tex->width;
 		else
 			w = 1.0;
 	}
 	if(h <= 0.0)
 	{
-		if(s -> tex)
-			h = s -> tex -> height;
+		if(s->tex)
+			h = s->tex->height;
 		else
 			h = 1.0;
 	}
-	s -> width = w;
-	s -> height = h;
-	COPY_COLOR4(s -> color, color)
+	s->width = w;
+	s->height = h;
+	COPY_COLOR4(s->color, color)
 
 	GLfloat scene_vertex[8] = {
 		0.0, 0.0,
-		s -> width, 0.0,
-		0.0, s -> height,
-		s -> width, s -> height
+		s->width, 0.0,
+		0.0, s->height,
+		s->width, s->height
 	};
 
 	GLfloat scene_texcoord[8] = {
@@ -249,8 +249,8 @@ scene_2d * new_scene_2d(scene_2d *scene, GLfloat x, GLfloat y, GLfloat width, GL
 		0.0, 0.0,
 		1.0, 0.0,
 	};
-	s -> buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, scene_vertex, GL_DYNAMIC_DRAW);
-	s -> buffers[texcoord_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, scene_texcoord, GL_STATIC_DRAW);
+	s->buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, scene_vertex, GL_DYNAMIC_DRAW);
+	s->buffers[texcoord_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, scene_texcoord, GL_STATIC_DRAW);
 
 	return s;
 }
@@ -261,20 +261,20 @@ void UI_ResizeScene2D(scene_2d *s, GLfloat w, GLfloat h)
 		return;
 	if(w < 0.0 && h < 0.0)
 		return;
-	if(w == s -> width && h == s -> height)
+	if(w == s->width && h == s->height)
 		return;
 	if(w > 0)
-		s -> width = w;
+		s->width = w;
 	if(h > 0)
-		s -> height = h;
+		s->height = h;
 	GLfloat scene_vertex[8] = {
 		0.0, 0.0,
-		s -> width, 0.0,
-		0.0, s -> height,
-		s -> width, s -> height
+		s->width, 0.0,
+		0.0, s->height,
+		s->width, s->height
 	};
 
-	glBindBuffer(GL_ARRAY_BUFFER, s -> buffers[vertex_buffer_type]);
+	glBindBuffer(GL_ARRAY_BUFFER, s->buffers[vertex_buffer_type]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * 8, scene_vertex);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -285,33 +285,33 @@ void UI_RenderScene2D(const scene_2d *scene)
 		return;
 	glPushMatrix();
 	{
-		if(scene -> align == left_bottom_anchor_type)
-			glTranslatef(scene -> x, scene -> y, 0);
-		else if(scene -> align == left_top_anchor_type)
-			glTranslatef(scene -> x, scene -> y - scene -> height, 0);
-		else if(scene -> align == right_bottom_anchor_type)
-			glTranslatef(scene -> x - scene -> width, scene -> y, 0);
-		else if(scene -> align == right_top_anchor_type)
-			glTranslatef(scene -> x - scene -> width, scene -> y - scene -> height, 0);
+		if(scene->align == left_bottom_anchor_type)
+			glTranslatef(scene->x, scene->y, 0);
+		else if(scene->align == left_top_anchor_type)
+			glTranslatef(scene->x, scene->y - scene->height, 0);
+		else if(scene->align == right_bottom_anchor_type)
+			glTranslatef(scene->x - scene->width, scene->y, 0);
+		else if(scene->align == right_top_anchor_type)
+			glTranslatef(scene->x - scene->width, scene->y - scene->height, 0);
 		else
-			glTranslatef(scene -> x - scene -> width / 2, scene -> y - scene -> height / 2, 0);
+			glTranslatef(scene->x - scene->width / 2, scene->y - scene->height / 2, 0);
 
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glPushAttrib(GL_CURRENT_BIT);
 		{
-			if(scene -> tex)
-				oglBindTexture(GL_TEXTURE_2D, scene -> tex -> texid);
+			if(scene->tex)
+				oglBindTexture(GL_TEXTURE_2D, scene->tex->texid);
 			else
-				glColor4fv(scene -> color);
+				glColor4fv(scene->color);
 
-			glBindBuffer(GL_ARRAY_BUFFER, scene -> buffers[texcoord_buffer_type]);
+			glBindBuffer(GL_ARRAY_BUFFER, scene->buffers[texcoord_buffer_type]);
 			glTexCoordPointer(2, GL_FLOAT, 0, NULL);
-			glBindBuffer(GL_ARRAY_BUFFER, scene -> buffers[vertex_buffer_type]);
+			glBindBuffer(GL_ARRAY_BUFFER, scene->buffers[vertex_buffer_type]);
 			glVertexPointer(2, GL_FLOAT, 0, NULL);
 			oglDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-			if(scene -> tex)
+			if(scene->tex)
 				oglBindTexture(GL_TEXTURE_2D, 0);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
@@ -352,16 +352,16 @@ void delete_scene_2d(scene_2d *s)
 {
 	if(!s)
 		return;
-	if(s -> tex)
+	if(s->tex)
 	{
-		if(glIsTexture(s -> tex -> texid))
-			glDeleteTextures(1, &(s -> tex -> texid));
+		if(glIsTexture(s->tex->texid))
+			glDeleteTextures(1, &(s->tex->texid));
 	}
 	GLuint i;
 	for(i = 0; i < total_buffer_type; i++)
 	{
-		glIsBuffer(s -> buffers[i]);
-		glDeleteBuffers(1, s -> buffers + i);
+		glIsBuffer(s->buffers[i]);
+		glDeleteBuffers(1, s->buffers + i);
 	}
 }
 
@@ -369,9 +369,9 @@ void Algo_TransformPositionAndAngle(position_type p, const nl_vector3_t *ov, flo
 {
 	if(!ov)
 		return;
-	float xp = ov -> x;
-	float yp = ov -> y;
-	float zp = ov -> z;
+	float xp = ov->x;
+	float yp = ov->y;
+	float zp = ov->z;
 	float xrp = oxr;
 	float yrp = oyr;
 
@@ -473,9 +473,9 @@ void Algo_TransformPositionAndAngle(position_type p, const nl_vector3_t *ov, flo
 
 		if(rv)
 		{
-			rv -> x = xp;
-			rv -> y = yp;
-			rv -> z = zp;
+			rv->x = xp;
+			rv->y = yp;
+			rv->z = zp;
 		}
 	}
 }
@@ -484,9 +484,9 @@ void Algo_GLTransformPositionAndAngle(position_type p, const gl_vector3_t *ov, f
 {
 	if(!ov)
 		return;
-	float xp = ov -> x;
-	float yp = ov -> y;
-	float zp = ov -> z;
+	float xp = ov->x;
+	float yp = ov->y;
+	float zp = ov->z;
 	float xrp = oxr;
 	float yrp = oyr;
 
@@ -588,9 +588,9 @@ void Algo_GLTransformPositionAndAngle(position_type p, const gl_vector3_t *ov, f
 
 		if(rv)
 		{
-			rv -> x = xp;
-			rv -> y = yp;
-			rv -> z = zp;
+			rv->x = xp;
+			rv->y = yp;
+			rv->z = zp;
 		}
 	}
 }
@@ -599,8 +599,8 @@ void Algo_GetNormalAngle2D(const vector2_t *normal, float *yr)
 {
 	if(!normal)
 		return;
-	float xl = normal -> x;
-	float yl = normal -> y;
+	float xl = normal->x;
+	float yl = normal->y;
 	if(yr)
 		*yr = Algo_FormatAngle(rtoa(atan2(yl, xl)) - 90.0);
 }
@@ -626,14 +626,14 @@ void Algo_GetNormalAngle(const nl_vector3_t *normal, float *yr, float *xr)
 {
 	if(!normal)
 		return;
-	float xl = normal -> x;
-	float yl = normal -> y;
+	float xl = normal->x;
+	float yl = normal->y;
 	if(yr)
 		*yr = Algo_FormatAngle(rtoa(atan2(yl, xl)) - 90.0);
 	if(xr)
 	{
 		float xyl = sqrt(xl * xl + yl * yl);
-		float zl = normal -> z;
+		float zl = normal->z;
 		*xr = Algo_FormatAngle(rtoa(atan2(zl, xyl)));
 	}
 }
@@ -642,37 +642,37 @@ scene_3d * new_scene_3d(scene_3d *scene, GLfloat x, GLfloat y, GLfloat z, GLfloa
 {
 	RETURN_PTR(s, scene, scene_3d)
 
-		s -> x = x;
-	s -> y = y;
-	s -> z = z;
-	s -> align = a;
+		s->x = x;
+	s->y = y;
+	s->z = z;
+	s->align = a;
 	if(file)
-		s -> tex = new_OpenGL_texture_2d(file);
+		s->tex = new_OpenGL_texture_2d(file);
 	GLfloat w = width;
 	GLfloat h = height;
 	if(w <= 0.0)
 	{
-		if(s -> tex)
-			w = s -> tex -> width;
+		if(s->tex)
+			w = s->tex->width;
 		else
 			w = 1.0;
 	}
 	if(h <= 0.0)
 	{
-		if(s -> tex)
-			h = s -> tex -> height;
+		if(s->tex)
+			h = s->tex->height;
 		else
 			h = 1.0;
 	}
-	s -> width = w;
-	s -> height = h;
-	COPY_COLOR4(s -> color, color)
+	s->width = w;
+	s->height = h;
+	COPY_COLOR4(s->color, color)
 
 	GLfloat scene_vertex[8] = {
 		0.0, 0.0,
-		s -> width, 0.0,
-		0.0, s -> height,
-		s -> width, s -> height
+		s->width, 0.0,
+		0.0, s->height,
+		s->width, s->height
 	};
 
 	GLfloat scene_texcoord[8] = {
@@ -681,19 +681,19 @@ scene_3d * new_scene_3d(scene_3d *scene, GLfloat x, GLfloat y, GLfloat z, GLfloa
 		0.0, 0.0,
 		1.0, 0.0,
 	};
-	s -> buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, scene_vertex, GL_DYNAMIC_DRAW);
-	s -> buffers[texcoord_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, scene_texcoord, GL_STATIC_DRAW);
+	s->buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, scene_vertex, GL_DYNAMIC_DRAW);
+	s->buffers[texcoord_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, scene_texcoord, GL_STATIC_DRAW);
 
-	s -> translate.xt = s -> translate.yt = s -> translate.zt = 0;
-	s -> scale.xs = s -> scale.ys = s -> scale.zs = 0;
-	s -> rotate.xr = s -> rotate.yr = s -> rotate.zr = 0;
+	s->translate.xt = s->translate.yt = s->translate.zt = 0;
+	s->scale.xs = s->scale.ys = s->scale.zs = 0;
+	s->rotate.xr = s->rotate.yr = s->rotate.zr = 0;
 
-	s -> draw_func = df; 
-	s -> foxy = foxy;
-	s -> near = near;
-	s -> far = far;
-	s -> frustum_width = fw;
-	s -> frustum_height = fh;
+	s->draw_func = df; 
+	s->foxy = foxy;
+	s->near = near;
+	s->far = far;
+	s->frustum_width = fw;
+	s->frustum_height = fh;
 
 	return s;
 }
@@ -705,38 +705,38 @@ void UI_RenderScene3D(const scene_3d *scene)
 	glPushAttrib(GL_SCISSOR_BIT);
 	{
 		oglEnable(GL_SCISSOR_TEST);
-		glScissor((GLint)scene -> x, (GLint)scene -> y, (GLsizei)scene -> width, (GLsizei)scene -> height);
-		OpenGL_Render2D(0.0, scene -> frustum_width, 0.0, scene -> frustum_height);
+		glScissor((GLint)scene->x, (GLint)scene->y, (GLsizei)scene->width, (GLsizei)scene->height);
+		OpenGL_Render2D(0.0, scene->frustum_width, 0.0, scene->frustum_height);
 		{
 			glPushMatrix();
 			{
-				if(scene -> align == left_bottom_anchor_type)
-					glTranslatef(scene -> x, scene -> y, 0);
-				else if(scene -> align == left_top_anchor_type)
-					glTranslatef(scene -> x, scene -> y - scene -> height, 0);
-				else if(scene -> align == right_bottom_anchor_type)
-					glTranslatef(scene -> x - scene -> width, scene -> y, 0);
-				else if(scene -> align == right_top_anchor_type)
-					glTranslatef(scene -> x - scene -> width, scene -> y - scene -> height, 0);
+				if(scene->align == left_bottom_anchor_type)
+					glTranslatef(scene->x, scene->y, 0);
+				else if(scene->align == left_top_anchor_type)
+					glTranslatef(scene->x, scene->y - scene->height, 0);
+				else if(scene->align == right_bottom_anchor_type)
+					glTranslatef(scene->x - scene->width, scene->y, 0);
+				else if(scene->align == right_top_anchor_type)
+					glTranslatef(scene->x - scene->width, scene->y - scene->height, 0);
 				else
-					glTranslatef(scene -> x - scene -> width / 2, scene -> y - scene -> height / 2, 0);
+					glTranslatef(scene->x - scene->width / 2, scene->y - scene->height / 2, 0);
 
 				glEnableClientState(GL_VERTEX_ARRAY);
 				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 				glPushAttrib(GL_CURRENT_BIT);
 				{
-					if(scene -> tex)
-						oglBindTexture(GL_TEXTURE_2D, scene -> tex -> texid);
+					if(scene->tex)
+						oglBindTexture(GL_TEXTURE_2D, scene->tex->texid);
 					else
-						glColor4fv(scene -> color);
+						glColor4fv(scene->color);
 
-					glBindBuffer(GL_ARRAY_BUFFER, scene -> buffers[texcoord_buffer_type]);
+					glBindBuffer(GL_ARRAY_BUFFER, scene->buffers[texcoord_buffer_type]);
 					glTexCoordPointer(2, GL_FLOAT, 0, NULL);
-					glBindBuffer(GL_ARRAY_BUFFER, scene -> buffers[vertex_buffer_type]);
+					glBindBuffer(GL_ARRAY_BUFFER, scene->buffers[vertex_buffer_type]);
 					glVertexPointer(2, GL_FLOAT, 0, NULL);
 					oglDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-					if(scene -> tex)
+					if(scene->tex)
 						oglBindTexture(GL_TEXTURE_2D, 0);
 					glBindBuffer(GL_ARRAY_BUFFER, 0);
 				}
@@ -746,30 +746,32 @@ void UI_RenderScene3D(const scene_3d *scene)
 			}
 			glPopMatrix();
 		}
-		if(scene -> draw_func)
+		if(scene->draw_func)
 		{
-			OpenGL_Render3D(scene -> foxy, scene -> frustum_width, scene -> frustum_height, scene -> near, scene -> far);
+			OpenGL_Render3D(scene->foxy, scene->frustum_width, scene->frustum_height, scene->near, scene->far);
 			{
-				double f = (scene -> frustum_height / 2) / tan(ator(scene -> foxy / 2));
-				glTranslatef(-scene -> frustum_width / 2 + scene -> x + scene -> width / 2, -scene -> frustum_height / 2 + scene -> y + scene -> height / 2, -f);
+				double f = (scene->frustum_height / 2) / tan(ator(scene->foxy / 2));
 
-				if(scene -> rotate.xr != 0.0)
-					glRotatef(scene -> rotate.xr, 1.0, 0.0, 0.0);
-				if(scene -> rotate.yr != 0.0)
-					glRotatef(scene -> rotate.yr, 0.0, 1.0, 0.0);
-				if(scene -> rotate.zr != 0.0)
-					glRotatef(scene -> rotate.zr, 0.0, 0.0, 1.0);
+				glTranslatef(-scene->frustum_width / 2 + scene->x + scene->width / 2, -scene->frustum_height / 2 + scene->y + scene->height / 2, -f);
 
-				glTranslatef(scene -> translate.xt, scene -> translate.yt, scene -> translate.zt);
+				glTranslatef(scene->translate.xt, scene->translate.yt, scene->translate.zt);
 
-				if(scene -> scale.xs != 0.0 && scene -> scale.xs != 1.0)
-					glScalef(scene -> scale.xs, 0.0, 0.0);
-				if(scene -> scale.ys != 0.0 && scene -> scale.ys != 1.0)
-					glScalef(0.0, scene -> scale.ys, 0.0);
-				if(scene -> scale.zs != 0.0 && scene -> scale.zs != 1.0)
-					glScalef(0.0, 0.0, scene -> scale.zs);
+				{
+					if(scene->rotate.xr != 0.0)
+						glRotatef(scene->rotate.xr, 1.0, 0.0, 0.0);
+					if(scene->rotate.yr != 0.0)
+						glRotatef(scene->rotate.yr, 0.0, 1.0, 0.0);
+					if(scene->rotate.zr != 0.0)
+						glRotatef(scene->rotate.zr, 0.0, 0.0, 1.0);
+				}
 
-				scene -> draw_func();
+				glScalef(
+						(scene->scale.xs != 0.0 && scene->scale.xs != 1.0) ? scene->scale.xs : 1.0,
+						(scene->scale.ys != 0.0 && scene->scale.ys != 1.0) ? scene->scale.ys : 1.0,
+						(scene->scale.zs != 0.0 && scene->scale.zs != 1.0) ? scene->scale.zs : 1.0
+						);
+
+				scene->draw_func();
 			}
 		}
 	}
@@ -780,16 +782,16 @@ void delete_scene_3d(scene_3d *s)
 {
 	if(!s)
 		return;
-	if(s -> tex)
+	if(s->tex)
 	{
-		if(glIsTexture(s -> tex -> texid))
-			glDeleteTextures(1, &(s -> tex -> texid));
+		if(glIsTexture(s->tex->texid))
+			glDeleteTextures(1, &(s->tex->texid));
 	}
 	GLuint i;
 	for(i = 0; i < total_buffer_type; i++)
 	{
-		glIsBuffer(s -> buffers[i]);
-		glDeleteBuffers(1, s -> buffers + i);
+		glIsBuffer(s->buffers[i]);
+		glDeleteBuffers(1, s->buffers + i);
 	}
 }
 
@@ -799,24 +801,24 @@ void UI_ResizeScene3D(scene_3d *s, GLfloat w, GLfloat h, GLfloat fw, GLfloat fh)
 		return;
 	if(w < 0.0 && h < 0.0)
 		return;
-	if(w == s -> width && h == s -> height)
+	if(w == s->width && h == s->height)
 		return;
 	if(w > 0)
-		s -> width = w;
+		s->width = w;
 	if(h > 0)
-		s -> height = h;
+		s->height = h;
 	GLfloat scene_vertex[8] = {
 		0.0, 0.0,
-		s -> width, 0.0,
-		0.0, s -> height,
-		s -> width, s -> height
+		s->width, 0.0,
+		0.0, s->height,
+		s->width, s->height
 	};
 
-	glBindBuffer(GL_ARRAY_BUFFER, s -> buffers[vertex_buffer_type]);
+	glBindBuffer(GL_ARRAY_BUFFER, s->buffers[vertex_buffer_type]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * 8, scene_vertex);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	s -> frustum_width = fw;
-	s -> frustum_height = fh;
+	s->frustum_width = fw;
+	s->frustum_height = fh;
 }
 

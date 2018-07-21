@@ -3,14 +3,14 @@
 ######################################################################
 
 TEMPLATE = app
-DEPENDPATH += . .. ../glk ../SOIL ../netlizard ../math3d ../bio ../lolking game game/component template sound local physics game/page ../opengl
+DEPENDPATH += . .. ../glk ../SOIL ../netlizard ../math3d ../bio ../lolking game game/component template sound local physics game/page ../opengl ../csol
 
-INCLUDEPATH += . .. ../SOIL ../glk ../netlizard ../math3d ../bio ../lolking game game/component template sound local physics game/page ../opengl
+INCLUDEPATH += . .. ../SOIL ../glk ../netlizard ../math3d ../bio ../lolking game game/component template sound local physics game/page ../opengl ../csol
 
 include(../netlizard-game.pri)
 
-LIBS += -L../librelease.so -lnetlizard -lSOIL -lglk -llolking -lmath3d -lbio -lopengl
-PRE_TARGETDEPS += ../librelease.so/libnetlizard.so ../librelease.so/libSOIL.so ../librelease.so/liblolking.so ../librelease.so/libmath3d.so ../librelease.so/libglk.so ../librelease.so/libbio.so ../librelease.so/libopengl.so
+LIBS += -L../librelease.so -lnetlizard -lSOIL -lglk -llolking -lmath3d -lbio -lopengl -lcsol
+PRE_TARGETDEPS += ../librelease.so/libnetlizard.so ../librelease.so/libSOIL.so ../librelease.so/liblolking.so ../librelease.so/libmath3d.so ../librelease.so/libglk.so ../librelease.so/libbio.so ../librelease.so/libopengl.so ../librelease.so/libcsol.so
 LIBS += -lSDL -lSDL_mixer
 
 #QMAKE_CXXFLAGS += -std=c++0x
@@ -76,6 +76,7 @@ HEADERS += netlizard3d_viewer.h \
 					 game/page/keymap_setting.h \
 					 game/page/weapon_chooser.h \
 					 game/page/character_model_chooser.h \
+					 game/page/mdl_viewer.h \
 					 game/component/text_browser.h \
 					 game/component/button.h \
 					 game/component/progress_bar.h \
@@ -151,6 +152,7 @@ SOURCES += ../main.c \
 					 game/page/keymap_setting.c \
 					 game/page/weapon_chooser.c \
 					 game/page/character_model_chooser.c \
+					 game/page/mdl_viewer.c \
 					 game/component/button.c \
 					 game/component/text_browser.c \
 					 game/component/progress_bar.c \

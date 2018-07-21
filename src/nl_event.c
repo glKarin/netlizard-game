@@ -13,16 +13,16 @@ GLvoid NETLizard_HandleDoorEvent(GL_NETLizard_3D_Model *map_model, DoorV_Event *
 {
 	if(!map_model || !event)
 		return;
-	if(event -> handle)
+	if(event->handle)
 		return;
-	if(event -> item_id >= (GLint)map_model -> item_count)
+	if(event->item_id >= (GLint)map_model->item_count)
 		return;
-	if(state == 1 && event -> progress == 100)
+	if(state == 1 && event->progress == 100)
 		return;
-	if(state == 0 && event -> progress == 0)
+	if(state == 0 && event->progress == 0)
 		return;
-	GLfloat unit = event -> unit * per;
-	GLfloat progress = state ? event -> progress + 100.0 * unit : event -> progress - 100.0 * unit;
+	GLfloat unit = event->unit * per;
+	GLfloat progress = state ? event->progress + 100.0 * unit : event->progress - 100.0 * unit;
 	if(progress < 0.0)
 	{
 		progress = 0.0;
@@ -31,38 +31,38 @@ GLvoid NETLizard_HandleDoorEvent(GL_NETLizard_3D_Model *map_model, DoorV_Event *
 	{
 		progress = 100.0;
 	}
-	if(progress == event -> progress)
+	if(progress == event->progress)
 		return;
-	GL_NETLizard_3D_Item_Mesh *model = map_model -> item_meshes + (event -> item_id);
+	GL_NETLizard_3D_Item_Mesh *model = map_model->item_meshes + (event->item_id);
 	if(!model)
 	{
-		event -> progress = progress;
+		event->progress = progress;
 		return;
 	}
-	GLfloat h = model -> item_mesh.ortho[2] - model -> item_mesh.ortho[5];
-	h *= ((progress - event -> progress) / 100.0);
-	event -> progress = progress;
-	model -> pos[2] += h;
+	GLfloat h = model->item_mesh.ortho[2] - model->item_mesh.ortho[5];
+	h *= ((progress - event->progress) / 100.0);
+	event->progress = progress;
+	model->pos[2] += h;
 }
 
 GLvoid NETLizard_HandleDoubleVDoorEvent(GL_NETLizard_3D_Model *map_model, Double_DoorV_Event *event, GLint state, GLfloat per)
 {
 	if(!map_model || !event)
 		return;
-	if(event -> handle)
+	if(event->handle)
 		return;
-	GLint i = event -> invert ? event -> item_id_pair : event -> item_id;
-	GLint j = event -> invert ? event -> item_id : event -> item_id_pair;
-	if(i >= (GLint)map_model -> item_count)
+	GLint i = event->invert ? event->item_id_pair : event->item_id;
+	GLint j = event->invert ? event->item_id : event->item_id_pair;
+	if(i >= (GLint)map_model->item_count)
 		return;
-	if(j >= (GLint)map_model -> item_count)
+	if(j >= (GLint)map_model->item_count)
 		return;
-	if(state == 1 && event -> progress == 100)
+	if(state == 1 && event->progress == 100)
 		return;
-	if(state == 0 && event -> progress == 0)
+	if(state == 0 && event->progress == 0)
 		return;
-	GLfloat unit = event -> unit * per;
-	GLfloat progress = state ? event -> progress + 100.0 * unit : event -> progress - 100.0 * unit;
+	GLfloat unit = event->unit * per;
+	GLfloat progress = state ? event->progress + 100.0 * unit : event->progress - 100.0 * unit;
 	if(progress < 0.0)
 	{
 		progress = 0.0;
@@ -71,47 +71,47 @@ GLvoid NETLizard_HandleDoubleVDoorEvent(GL_NETLizard_3D_Model *map_model, Double
 	{
 		progress = 100.0;
 	}
-	if(progress == event -> progress)
+	if(progress == event->progress)
 		return;
-	GL_NETLizard_3D_Item_Mesh *model = map_model -> item_meshes + i;
+	GL_NETLizard_3D_Item_Mesh *model = map_model->item_meshes + i;
 	if(!model)
 	{
-		event -> progress = progress;
+		event->progress = progress;
 		return;
 	}
-	GLfloat h = model -> item_mesh.ortho[2] - model -> item_mesh.ortho[5];
-	h *= ((progress - event -> progress) / 100.0);
-	model -> pos[2] -= h;
-	model = map_model -> item_meshes + j;
+	GLfloat h = model->item_mesh.ortho[2] - model->item_mesh.ortho[5];
+	h *= ((progress - event->progress) / 100.0);
+	model->pos[2] -= h;
+	model = map_model->item_meshes + j;
 	if(!model)
 	{
-		event -> progress = progress;
+		event->progress = progress;
 		return;
 	}
-	h = model -> item_mesh.ortho[2] - model -> item_mesh.ortho[5];
-	h *= ((progress - event -> progress) / 100.0);
-	model -> pos[2] += h;
-	event -> progress = progress;
+	h = model->item_mesh.ortho[2] - model->item_mesh.ortho[5];
+	h *= ((progress - event->progress) / 100.0);
+	model->pos[2] += h;
+	event->progress = progress;
 }
 
 GLvoid NETLizard_HandleDoubleHDoorEvent(GL_NETLizard_3D_Model *map_model, Double_DoorH_Event *event, GLint state, GLfloat per)
 {
 	if(!map_model || !event)
 		return;
-	if(event -> handle)
+	if(event->handle)
 		return;
-	GLint i = event -> invert ? event -> item_id_pair : event -> item_id;
-	GLint j = event -> invert ? event -> item_id : event -> item_id_pair;
-	if(i >= (GLint)map_model -> item_count)
+	GLint i = event->invert ? event->item_id_pair : event->item_id;
+	GLint j = event->invert ? event->item_id : event->item_id_pair;
+	if(i >= (GLint)map_model->item_count)
 		return;
-	if(j >= (GLint)map_model -> item_count)
+	if(j >= (GLint)map_model->item_count)
 		return;
-	if(state == 1 && event -> progress == 100)
+	if(state == 1 && event->progress == 100)
 		return;
-	if(state == 0 && event -> progress == 0)
+	if(state == 0 && event->progress == 0)
 		return;
-	GLfloat unit = event -> unit * per;
-	GLfloat progress = state ? event -> progress + 100.0 * unit : event -> progress - 100.0 * unit;
+	GLfloat unit = event->unit * per;
+	GLfloat progress = state ? event->progress + 100.0 * unit : event->progress - 100.0 * unit;
 	if(progress < 0.0)
 	{
 		progress = 0.0;
@@ -120,52 +120,52 @@ GLvoid NETLizard_HandleDoubleHDoorEvent(GL_NETLizard_3D_Model *map_model, Double
 	{
 		progress = 100.0;
 	}
-	if(progress == event -> progress)
+	if(progress == event->progress)
 		return;
-	GLuint x1 = event -> orientation == 1 ? 1 : 0;
-	GLuint x2 = event -> orientation == 1 ? 4 : 3;
-	GLuint y = event -> orientation == 1 ? 1 : 0;
-	GLint z = event -> orientation == 1 ? 1 : -1;
-	GL_NETLizard_3D_Item_Mesh *model = map_model -> item_meshes + i;
+	GLuint x1 = event->orientation == 1 ? 1 : 0;
+	GLuint x2 = event->orientation == 1 ? 4 : 3;
+	GLuint y = event->orientation == 1 ? 1 : 0;
+	GLint z = event->orientation == 1 ? 1 : -1;
+	GL_NETLizard_3D_Item_Mesh *model = map_model->item_meshes + i;
 	if(!model)
 	{
-		event -> progress = progress;
+		event->progress = progress;
 		return;
 	}
-	GLfloat w = model -> item_mesh.ortho[x1] - model -> item_mesh.ortho[x2];
-	w *= ((progress - event -> progress) / 100.0);
-	model -> pos[y] -= w * z;
-	model = map_model -> item_meshes + j;
+	GLfloat w = model->item_mesh.ortho[x1] - model->item_mesh.ortho[x2];
+	w *= ((progress - event->progress) / 100.0);
+	model->pos[y] -= w * z;
+	model = map_model->item_meshes + j;
 	if(!model)
 	{
-		event -> progress = progress;
+		event->progress = progress;
 		return;
 	}
-	w = model -> item_mesh.ortho[x1] - model -> item_mesh.ortho[x2];
-	w *= ((progress - event -> progress) / 100.0);
-	model -> pos[y] += w * z;
-	event -> progress = progress;
+	w = model->item_mesh.ortho[x1] - model->item_mesh.ortho[x2];
+	w *= ((progress - event->progress) / 100.0);
+	model->pos[y] += w * z;
+	event->progress = progress;
 }
 
 GLvoid NETLizard_HandleElevatorEvent(GL_NETLizard_3D_Model *map_model, Elevator_Event *event, GLint state, GLfloat per)
 {
 	if(!map_model || !event)
 		return;
-	if(event -> handle)
+	if(event->handle)
 		return;
-	if(event -> item_id >= (GLint)map_model -> item_count)
+	if(event->item_id >= (GLint)map_model->item_count)
 		return;
-	if(event -> state == 3 && event -> progress == 100 && state == 0)
-		event -> state = 1;
-	else if(event -> state == 0 && event -> progress == 0 && state == 0)
-		event -> state = 2;
-	if(event -> state == 0 && event -> progress == 0 && state == 1)
-		event -> state = 2;
-	else if(event -> state == 3 && event -> progress == 100 && state == 1)
-		event -> state = 1;
-	GLfloat unit = event -> unit * per;
-	GLfloat progress = event -> state == 2 ? event -> progress + 100.0 * unit : event -> progress - 100.0 * unit;
-	//event -> progress = event -> state == 2 ? event -> progress + 100 * event -> unit : event -> progress - 100 * event -> unit;
+	if(event->state == 3 && event->progress == 100 && state == 0)
+		event->state = 1;
+	else if(event->state == 0 && event->progress == 0 && state == 0)
+		event->state = 2;
+	if(event->state == 0 && event->progress == 0 && state == 1)
+		event->state = 2;
+	else if(event->state == 3 && event->progress == 100 && state == 1)
+		event->state = 1;
+	GLfloat unit = event->unit * per;
+	GLfloat progress = event->state == 2 ? event->progress + 100.0 * unit : event->progress - 100.0 * unit;
+	//event->progress = event->state == 2 ? event->progress + 100 * event->unit : event->progress - 100 * event->unit;
 	if(progress < 0.0)
 	{
 		progress = 0.0;
@@ -176,70 +176,70 @@ GLvoid NETLizard_HandleElevatorEvent(GL_NETLizard_3D_Model *map_model, Elevator_
 	}
 	if(progress == 0)
 	{
-		event -> state = 0;
+		event->state = 0;
 	}
 	else if(progress == 100)
 	{
-		event -> state = 3;
+		event->state = 3;
 	}
-	if(progress == event -> progress)
+	if(progress == event->progress)
 		return;
-	GL_NETLizard_3D_Item_Mesh *model = map_model -> item_meshes + (event -> item_id);
+	GL_NETLizard_3D_Item_Mesh *model = map_model->item_meshes + (event->item_id);
 	if(!model)
 	{
-		event -> progress = progress;
+		event->progress = progress;
 		return;
 	}
-	GLfloat h = event -> max_z - event -> min_z;
-	h *= ((progress - event -> progress) / 100.0);
-	if(event -> state == 2 || event -> state == 1)
+	GLfloat h = event->max_z - event->min_z;
+	h *= ((progress - event->progress) / 100.0);
+	if(event->state == 2 || event->state == 1)
 	{
-		model -> pos[2] += h;
+		model->pos[2] += h;
 	}
-	event -> progress = progress;
+	event->progress = progress;
 }
 
 GLvoid NETLizard_HandleFanEvent(GL_NETLizard_3D_Model *map_model, Fan_Event *event, GLint state, GLfloat per)
 {
 	if(!map_model || !event)
 		return;
-	if(event -> handle)
+	if(event->handle)
 		return;
-	if(event -> item_id >= (GLint)map_model -> item_count)
+	if(event->item_id >= (GLint)map_model->item_count)
 		return;
-	GL_NETLizard_3D_Item_Mesh *model = map_model -> item_meshes + (event -> item_id);
+	GL_NETLizard_3D_Item_Mesh *model = map_model->item_meshes + (event->item_id);
 	if(!model)
 		return;
-	GLuint x = event -> orientation == 0 ? 1 : 0;
-	GLfloat u = event -> unit * per;
-	GLfloat angle = event -> wise == 0 ? -u : u;
-	GLfloat f = Algo_FormatAngle(model -> angle[x] + angle);
-	model -> angle[x] = f;
+	GLuint x = event->orientation == 0 ? 1 : 0;
+	GLfloat u = event->unit * per;
+	GLfloat angle = event->wise == 0 ? -u : u;
+	GLfloat f = Algo_FormatAngle(model->angle[x] + angle);
+	model->angle[x] = f;
 }
 
 GLvoid NETLizard_HandlePropEvent(GL_NETLizard_3D_Model *map_model, Prop_Event *event, GLint state, GLfloat per)
 {
 	if(!map_model || !event)
 		return;
-	if(event -> handle)
+	if(event->handle)
 		return;
-	if(event -> item_id >= (GLint)map_model -> item_count)
+	if(event->item_id >= (GLint)map_model->item_count)
 		return;
-	GL_NETLizard_3D_Item_Mesh *model = map_model -> item_meshes + (event -> item_id);
+	GL_NETLizard_3D_Item_Mesh *model = map_model->item_meshes + (event->item_id);
 	if(!model)
 		return;
-	GLfloat h = event -> prop_move_event.max_z - event -> prop_move_event.min_z;
+	GLfloat h = event->prop_move_event.max_z - event->prop_move_event.min_z;
 	{
-		if(event -> prop_move_event.state == 3 && event -> prop_move_event.progress == 100 && state == 0)
-			event -> prop_move_event.state = 1;
-		else if(event -> prop_move_event.state == 0 && event -> prop_move_event.progress == 0 && state == 0)
-			event -> prop_move_event.state = 2;
-		if(event -> prop_move_event.state == 0 && event -> prop_move_event.progress == 0 && state == 1)
-			event -> prop_move_event.state = 2;
-		else if(event -> prop_move_event.state == 3 && event -> prop_move_event.progress == 100 && state == 1)
-			event -> prop_move_event.state = 1;
-		GLfloat unit = event -> prop_move_event.unit * per;
-		GLfloat progress = event -> prop_move_event.state == 2 ? event -> prop_move_event.progress + 100.0 * unit : event -> prop_move_event.progress - 100.0 * unit;
+		if(event->prop_move_event.state == 3 && event->prop_move_event.progress == 100 && state == 0)
+			event->prop_move_event.state = 1;
+		else if(event->prop_move_event.state == 0 && event->prop_move_event.progress == 0 && state == 0)
+			event->prop_move_event.state = 2;
+		if(event->prop_move_event.state == 0 && event->prop_move_event.progress == 0 && state == 1)
+			event->prop_move_event.state = 2;
+		else if(event->prop_move_event.state == 3 && event->prop_move_event.progress == 100 && state == 1)
+			event->prop_move_event.state = 1;
+		GLfloat unit = event->prop_move_event.unit * per;
+		GLfloat progress = event->prop_move_event.state == 2 ? event->prop_move_event.progress + 100.0 * unit : event->prop_move_event.progress - 100.0 * unit;
 		if(progress < 0.0)
 		{
 			progress = 0.0;
@@ -250,28 +250,28 @@ GLvoid NETLizard_HandlePropEvent(GL_NETLizard_3D_Model *map_model, Prop_Event *e
 		}
 		if(progress == 0)
 		{
-			event -> prop_move_event.state = 0;
+			event->prop_move_event.state = 0;
 		}
 		else if(progress == 100)
 		{
-			event -> prop_move_event.state = 3;
+			event->prop_move_event.state = 3;
 		}
-		if(progress == event -> prop_move_event.progress)
+		if(progress == event->prop_move_event.progress)
 			return;
-		h *= ((progress - event -> prop_move_event.progress) / 100.0);
-		if(event -> prop_move_event.state == 2 || event -> prop_move_event.state == 1)
+		h *= ((progress - event->prop_move_event.progress) / 100.0);
+		if(event->prop_move_event.state == 2 || event->prop_move_event.state == 1)
 		{
-			model -> pos[2] -= h;
+			model->pos[2] -= h;
 		}
-		event -> prop_move_event.progress = progress;
+		event->prop_move_event.progress = progress;
 	}
 
 	{
-		GLuint x = event -> prop_fan_event.orientation == 0 ? 1 : 0;
-		GLfloat u = event -> prop_fan_event.unit > 0.0 ? event -> prop_fan_event.unit * per : -event -> prop_fan_event.unit * per;
-		GLfloat angle = event -> prop_fan_event.wise == 0 ? -u : u;
-		GLfloat f = Algo_FormatAngle(model -> angle[x] + angle);
-		model -> angle[x] = f;
+		GLuint x = event->prop_fan_event.orientation == 0 ? 1 : 0;
+		GLfloat u = event->prop_fan_event.unit > 0.0 ? event->prop_fan_event.unit * per : -event->prop_fan_event.unit * per;
+		GLfloat angle = event->prop_fan_event.wise == 0 ? -u : u;
+		GLfloat f = Algo_FormatAngle(model->angle[x] + angle);
+		model->angle[x] = f;
 	}
 }
 
@@ -279,24 +279,24 @@ GLvoid NETLizard_HandleMachineEvent(GL_NETLizard_3D_Model *map_model, Machine_Ev
 {
 	if(!map_model || !event)
 		return;
-	if(event -> handle)
+	if(event->handle)
 		return;
-	if(((event -> sync == 0) && (state == 0 && event -> machine_gun_event.machine_gun_move_event.state == 0)) || event -> sync || state)
+	if(((event->sync == 0) && (state == 0 && event->machine_gun_event.machine_gun_move_event.state == 0)) || event->sync || state)
 	{
-		if(state == 0 && event -> machine_window_event.progress == 0)
-			event -> machine_window_event.state = 0;
-		else if(state == 1 && event -> machine_window_event.progress == 100)
-			event -> machine_window_event.state = 1;
+		if(state == 0 && event->machine_window_event.progress == 0)
+			event->machine_window_event.state = 0;
+		else if(state == 1 && event->machine_window_event.progress == 100)
+			event->machine_window_event.state = 1;
 		else
 		{
-			GLint i = event -> machine_window_event.invert ? event -> machine_window_event.item_id_pair : event -> machine_window_event.item_id;
-			GLint j = event -> machine_window_event.invert ? event -> machine_window_event.item_id : event -> machine_window_event.item_id_pair;
-			if(i >= (GLint)map_model -> item_count)
+			GLint i = event->machine_window_event.invert ? event->machine_window_event.item_id_pair : event->machine_window_event.item_id;
+			GLint j = event->machine_window_event.invert ? event->machine_window_event.item_id : event->machine_window_event.item_id_pair;
+			if(i >= (GLint)map_model->item_count)
 				return;
-			if(j >= (GLint)map_model -> item_count)
+			if(j >= (GLint)map_model->item_count)
 				return;
-			GLfloat unit = event -> machine_window_event.unit * per;
-			GLfloat progress = state ? event -> machine_window_event.progress + 100.0 * unit : event -> machine_window_event.progress - 100.0 * unit;
+			GLfloat unit = event->machine_window_event.unit * per;
+			GLfloat progress = state ? event->machine_window_event.progress + 100.0 * unit : event->machine_window_event.progress - 100.0 * unit;
 			if(progress < 0.0)
 			{
 				progress = 0.0;
@@ -305,51 +305,51 @@ GLvoid NETLizard_HandleMachineEvent(GL_NETLizard_3D_Model *map_model, Machine_Ev
 			{
 				progress = 100.0;
 			}
-			if(progress != event -> machine_window_event.progress)
+			if(progress != event->machine_window_event.progress)
 			{
-				GL_NETLizard_3D_Item_Mesh *model = map_model -> item_meshes + i;
+				GL_NETLizard_3D_Item_Mesh *model = map_model->item_meshes + i;
 				if(!model)
 				{
-					event -> machine_window_event.progress = progress;
+					event->machine_window_event.progress = progress;
 					return;
 				}
-				GLfloat w = event -> machine_window_event.width;
-				w *= ((progress - event -> machine_window_event.progress) / 100.0);
-				model -> pos[1] -= w;
-				model = map_model -> item_meshes + j;
+				GLfloat w = event->machine_window_event.width;
+				w *= ((progress - event->machine_window_event.progress) / 100.0);
+				model->pos[1] -= w;
+				model = map_model->item_meshes + j;
 				if(!model)
 				{
-					event -> machine_window_event.progress = progress;
+					event->machine_window_event.progress = progress;
 					return;
 				}
-				w = event -> machine_window_event.width;
-				w *= ((progress - event -> machine_window_event.progress) / 100.0);
-				model -> pos[1] += w;
-				event -> machine_window_event.progress = progress;
+				w = event->machine_window_event.width;
+				w *= ((progress - event->machine_window_event.progress) / 100.0);
+				model->pos[1] += w;
+				event->machine_window_event.progress = progress;
 			}
 		}
 	}
 
-	GLuint state2 = event -> machine_window_event.state;
-	if(state2 == 0 && event -> sync == 0)
+	GLuint state2 = event->machine_window_event.state;
+	if(state2 == 0 && event->sync == 0)
 		return;
 
 	{
-		if(event -> machine_gun_event.item_id >= (GLint)map_model -> item_count)
+		if(event->machine_gun_event.item_id >= (GLint)map_model->item_count)
 			return;
-		GL_NETLizard_3D_Item_Mesh *model = map_model -> item_meshes + (event -> machine_gun_event.item_id);
+		GL_NETLizard_3D_Item_Mesh *model = map_model->item_meshes + (event->machine_gun_event.item_id);
 		if(!model)
 			return;
-		GLfloat h = event -> machine_gun_event.machine_gun_move_event.max_z - event -> machine_gun_event.machine_gun_move_event.min_z;
+		GLfloat h = event->machine_gun_event.machine_gun_move_event.max_z - event->machine_gun_event.machine_gun_move_event.min_z;
 		{
-			if(state == 1 && event -> machine_gun_event.machine_gun_move_event.progress == 100)
-				event -> machine_gun_event.machine_gun_move_event.state = 1;
-			else if(state == 0 && event -> machine_gun_event.machine_gun_move_event.progress == 0)
-				event -> machine_gun_event.machine_gun_move_event.state = 0;
+			if(state == 1 && event->machine_gun_event.machine_gun_move_event.progress == 100)
+				event->machine_gun_event.machine_gun_move_event.state = 1;
+			else if(state == 0 && event->machine_gun_event.machine_gun_move_event.progress == 0)
+				event->machine_gun_event.machine_gun_move_event.state = 0;
 			else
 			{
-				GLfloat unit = event -> machine_gun_event.machine_gun_move_event.unit * per;
-				GLfloat progress = state ? event -> machine_gun_event.machine_gun_move_event.progress + 100.0 * unit : event -> machine_gun_event.machine_gun_move_event.progress - 100.0 * unit;
+				GLfloat unit = event->machine_gun_event.machine_gun_move_event.unit * per;
+				GLfloat progress = state ? event->machine_gun_event.machine_gun_move_event.progress + 100.0 * unit : event->machine_gun_event.machine_gun_move_event.progress - 100.0 * unit;
 				if(progress < 0.0)
 				{
 					progress = 0.0;
@@ -358,38 +358,38 @@ GLvoid NETLizard_HandleMachineEvent(GL_NETLizard_3D_Model *map_model, Machine_Ev
 				{
 					progress = 100.0;
 				}
-				if(progress != event -> machine_gun_event.machine_gun_move_event.progress)
+				if(progress != event->machine_gun_event.machine_gun_move_event.progress)
 				{
-					h *= ((progress - event -> machine_gun_event.machine_gun_move_event.progress) / 100.0);
-					model -> pos[2] -= h;
-					event -> machine_gun_event.machine_gun_move_event.progress  = progress;
+					h *= ((progress - event->machine_gun_event.machine_gun_move_event.progress) / 100.0);
+					model->pos[2] -= h;
+					event->machine_gun_event.machine_gun_move_event.progress  = progress;
 				}
 			}
 		}
 
-		GLuint state3 = event -> machine_gun_event.machine_gun_move_event.state;
+		GLuint state3 = event->machine_gun_event.machine_gun_move_event.state;
 		if(state3 == 0 || state == 0)
 			return;
 
 		{
 			if(mode)
 			{
-				nl_vector3_t vp = {event -> target_x, event -> target_y, event -> target_z};
-				nl_vector3_t vg = {model -> pos[0], model -> pos[1], model -> pos[2]};
+				nl_vector3_t vp = {event->target_x, event->target_y, event->target_z};
+				nl_vector3_t vg = {model->pos[0], model->pos[1], model->pos[2]};
 				nl_vector3_t v = Vector3_SubtractVector3(&vg, &vp);
 				float xl = v.x;
 				float yl = v.y;
 				GLfloat f = Algo_FormatAngle(rtoa(atan2(yl, xl)) - 90.0);
 				GLuint x = 1;
-				model -> angle[x] = f;
+				model->angle[x] = f;
 			}
 			else
 			{
 				GLuint x = 1;
-				GLfloat u = event -> machine_gun_event.machine_gun_fan_event.unit > 0.0 ? event -> machine_gun_event.machine_gun_fan_event.unit * per : -event -> machine_gun_event.machine_gun_fan_event.unit * per;
-				GLfloat angle = event -> machine_gun_event.machine_gun_fan_event.wise == 0 ? -u : u;
-				GLfloat f = Algo_FormatAngle(model -> angle[x] + angle);
-				model -> angle[x] = f;
+				GLfloat u = event->machine_gun_event.machine_gun_fan_event.unit > 0.0 ? event->machine_gun_event.machine_gun_fan_event.unit * per : -event->machine_gun_event.machine_gun_fan_event.unit * per;
+				GLfloat angle = event->machine_gun_event.machine_gun_fan_event.wise == 0 ? -u : u;
+				GLfloat f = Algo_FormatAngle(model->angle[x] + angle);
+				model->angle[x] = f;
 			}
 		}
 	}
@@ -404,7 +404,7 @@ NETLizard_Event * NETLizard_LoadEventFile(const char *file, game_name g, int lvl
 	if(!arr)
 		return NULL;
 	printf("Read NETLizard map item event file: %s\n", file);
-	char *data = (char *)(arr -> array);
+	char *data = (char *)(arr->array);
 	char ch;
 	int i = 0;
 	int game = -1;
@@ -412,14 +412,14 @@ NETLizard_Event * NETLizard_LoadEventFile(const char *file, game_name g, int lvl
 	int count = -1;
 	int index = 0;
 	NETLizard_Event *event = NULL;
-	while(i < arr -> length)
+	while(i < arr->length)
 	{
 		while(isspace((ch = data[i]))) i++;
 		if(game == -1 && ch == 'g')
 		{
 			i += 2;
 			int j = 0;
-			while(data[i + j] != '\n' && i + j < arr -> length)
+			while(data[i + j] != '\n' && i + j < arr->length)
 				j++;
 			char *str = NEW_II(char, j + 1);
 			memcpy(str, data + i, sizeof(char) * (j + 1));
@@ -438,7 +438,7 @@ NETLizard_Event * NETLizard_LoadEventFile(const char *file, game_name g, int lvl
 		{
 			i += 2;
 			int j = 0;
-			while(data[i + j] != '\n' && i + j < arr -> length)
+			while(data[i + j] != '\n' && i + j < arr->length)
 				j++;
 			char *str = NEW_II(char, j + 1);
 			memcpy(str, data + i, sizeof(char) * (j + 1));
@@ -472,7 +472,7 @@ NETLizard_Event * NETLizard_LoadEventFile(const char *file, game_name g, int lvl
 		{
 			i += 2;
 			int j = 0;
-			while(data[i + j] != '\n' && i + j < arr -> length)
+			while(data[i + j] != '\n' && i + j < arr->length)
 				j++;
 			char *str = NEW_II(char, j + 1);
 			memcpy(str, data + i, sizeof(char) * (j + 1));

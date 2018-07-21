@@ -12,23 +12,24 @@
 #define LIST_VIEW_H 300
 #define LIST_BUTTON_W 400
 #define LIST_BUTTON_H 50
-#define BUTTON_SURE_X 60
-#define BUTTON_SURE_Y 10
-#define BUTTON_BACK_X 300
-#define BUTTON_BACK_Y 10
-#define BUTTON_W 200
-#define BUTTON_H 60
+#define BTN_W 180
+#define BTN_H 60
 #define ACTION_LIST_VIEW_X 550
-#define ACTION_LIST_VIEW_Y 100
+#define ACTION_LIST_VIEW_Y 40
 #define ACTION_LIST_VIEW_W 304
-#define ACTION_LIST_VIEW_H 300
+#define ACTION_LIST_VIEW_H 360
 #define ACTION_BUTTON_W 280
 #define ACTION_BUTTON_H 50
 #define LABEL_H 80
 
-#define ACTION_MENU_COUNT 7
-
 #define IDLE_TIME_DELAY 0.4
+
+typedef enum _menu_action
+{
+	enter_action = 0,
+	back_action,
+	total_action_type
+} menu_action;
 
 static const struct _game_menu_action
 {
@@ -39,6 +40,7 @@ static const struct _game_menu_action
 	{"Weapon Chooser", OPEN_WEAPON_CHOOSER},
 	{"Key Map Setting", OPEN_KEYMAP_SETTING},
 	{"Setting", OPEN_SETTING},
+	{"MDL Viewer", OPEN_MDL_VIEWER},
 	{"Help", OPEN_HELP},
 	{"About", OPEN_ABOUT},
 	{"Quit", QUIT}
@@ -64,9 +66,13 @@ static void Menu_QuitAction(void);
 static void Menu_OpenAbout(void);
 static void Menu_SetPageSize(GLsizei w, GLsizei h);
 
+static const button_initilizer Btn_Infos[] = {
+	{60, 10, BTN_W, BTN_H, "Sure", Menu_EnterSubMenu, NULL},
+	{280, 10, BTN_W, BTN_H, "Back", Menu_BackAction, NULL},
+};
+
 static button btn;
-static button sure_btn;
-static button back_btn;
+static button btns[total_action_type];
 static button action_btn;
 static list_view lst;
 static list_view action_lst;
@@ -101,12 +107,13 @@ void Menu_SetPageSize(GLsizei w, GLsizei h)
 	if(has_init)
 	{
 		UI_ResizeButton(&btn, LIST_BUTTON_W, LIST_BUTTON_H);
-		UI_ResetButtonGeometry(&sure_btn, BUTTON_SURE_X, BUTTON_SURE_Y, BUTTON_W, BUTTON_H);
-		UI_ResetButtonGeometry(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, BUTTON_W, BUTTON_H);
 		UI_ResizeButton(&action_btn, ACTION_BUTTON_W, ACTION_BUTTON_H);
 		UI_ResetListViewGeometry(&lst, LIST_VIEW_X, LIST_VIEW_Y, LIST_VIEW_W, LIST_VIEW_H);
 		UI_ResetListViewGeometry(&action_lst, ACTION_LIST_VIEW_X, ACTION_LIST_VIEW_Y, ACTION_LIST_VIEW_W, ACTION_LIST_VIEW_H);
 		UI_ResetLabelGeometry(&lb, 0.0, page_height - LABEL_H, page_width, LABEL_H);
+		int i;
+		for(i = 0; i < total_action_type; i++)
+			UI_ResetButtonGeometry(btns + i, Btn_Infos[i].x, Btn_Infos[i].y, Btn_Infos[i].w, Btn_Infos[i].h);
 	}
 }
 
@@ -140,6 +147,10 @@ void Menu_InitFunc(void)
 	oglEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.1);
 	oglEnable(GL_TEXTURE_2D);
+#ifndef _HARMATTAN_OPENGLES2
+	oglDisable(GL_LIGHTING);
+#endif
+	oglDisable(GL_FOG);
 }
 
 void Menu_DrawFunc(void)
@@ -151,35 +162,29 @@ void Menu_DrawFunc(void)
 	OpenGL_Render3DOrtho(0.0, width, 0.0, height);
 	{
 		//glPolygonMode(GL_FRONT, GL_LINE);
-		oglEnable(GL_SCISSOR_TEST);
-		glScissor(lst.base.x, lst.base.y, lst.base.width, lst.base.height);
 		glPushMatrix();
 		{
 			glTranslatef(lst.base.x, lst.base.y, lst.base.z);
 			UI_RenderListView(&lst);
 		}
 		glPopMatrix();
-		glScissor(action_lst.base.x, action_lst.base.y, action_lst.base.width, action_lst.base.height);
 		glPushMatrix();
 		{
 			glTranslatef(action_lst.base.x, action_lst.base.y, action_lst.base.z);
 			UI_RenderListView(&action_lst);
 		}
 		glPopMatrix();
-		oglDisable(GL_SCISSOR_TEST);
 
-		glPushMatrix();
+		int i;
+		for(i = 0; i < total_action_type; i++)
 		{
-			glTranslatef(sure_btn.base.x, sure_btn.base.y, sure_btn.base.z);
-			UI_RenderButton(&sure_btn);
+			glPushMatrix();
+			{
+				glTranslatef(btns[i].base.x, btns[i].base.y, btns[i].base.z);
+				UI_RenderButton(btns + i);
+			}
+			glPopMatrix();
 		}
-		glPopMatrix();
-		glPushMatrix();
-		{
-			glTranslatef(back_btn.base.x, back_btn.base.y, back_btn.base.z);
-			UI_RenderButton(&back_btn);
-		}
-		glPopMatrix();
 
 		glPushMatrix();
 		{
@@ -218,8 +223,9 @@ void Menu_FreeFunc(void)
 	}
 
 	delete_button(&btn);
-	delete_button(&sure_btn);
-	delete_button(&back_btn);
+	int m;
+	for(m = 0; m < total_action_type; m++)
+		delete_button(btns + m);
 	delete_button(&action_btn);
 	delete_label(&lb);
 	delete_list_view(&lst);
@@ -310,15 +316,14 @@ int Menu_MouseEventFunc(int button, int pressed, int x, int y)
 	if(!has_init)
 		return 0;
 	int gl_y = height - y;
-	if(UI_PointInWidget(&sure_btn.base, x, gl_y))
+	int i;
+	for(i = 0; i < total_action_type; i++)
 	{
-		sure_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
-	}
-	else if(UI_PointInWidget(&back_btn.base, x, gl_y))
-	{
-		back_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
+		if(UI_PointInWidget(&btns[i].base, x, gl_y))
+		{
+			btns[i].highlight = pressed ? GL_TRUE : GL_FALSE;
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -341,25 +346,19 @@ int Menu_MouseMotionEventFunc(int button, int pressed, int x, int y, int dx, int
 		{
 			res |= UI_SlideListView(&action_lst, -dy);
 		}
-		if(UI_PointInWidget(&back_btn.base, x, gl_y) && !UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
+		int i;
+		for(i = 0; i < total_action_type; i++)
 		{
-			back_btn.highlight = GL_TRUE;
-			res |= 1;
-		}
-		else if(!UI_PointInWidget(&back_btn.base, x, gl_y) && UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
-		{
-			back_btn.highlight = GL_FALSE;
-			res |= 1;
-		}
-		if(UI_PointInWidget(&sure_btn.base, x, gl_y) && !UI_PointInWidget(&sure_btn.base, last_x, last_gl_y))
-		{
-			sure_btn.highlight = GL_TRUE;
-			res |= 1;
-		}
-		else if(!UI_PointInWidget(&sure_btn.base, x, gl_y) && UI_PointInWidget(&sure_btn.base, last_x, last_gl_y))
-		{
-			sure_btn.highlight = GL_FALSE;
-			res |= 1;
+			if(UI_PointInWidget(&btns[i].base, x, gl_y) && !UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+			{
+				btns[i].highlight = GL_TRUE;
+				res |= 1;
+			}
+			else if(!UI_PointInWidget(&btns[i].base, x, gl_y) && UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+			{
+				btns[i].highlight = GL_FALSE;
+				res |= 1;
+			}
 		}
 	}
 
@@ -488,20 +487,22 @@ int Menu_MouseClickEventFunc(int button, int x, int y)
 		UI_ClickListView(&lst, x - lst.base.x, gl_y - lst.base.y);
 		return 1;
 	}
-	else if(UI_PointInWidget(&sure_btn.base, x, gl_y))
-	{
-		Menu_EnterSubMenu(NULL);
-		return 1;
-	}
-	else if(UI_PointInWidget(&back_btn.base, x, gl_y))
-	{
-		Menu_BackAction(NULL);
-		return 1;
-	}
 	else if(UI_PointInWidget(&action_lst.base, x, gl_y))
 	{
 		UI_ClickListView(&action_lst, x - action_lst.base.x, gl_y - action_lst.base.y);
 		return 1;
+	}
+	int i;
+	for(i = 0; i < total_action_type; i++)
+	{
+		if(UI_PointInWidget(&btns[i].base, x, gl_y))
+		{
+			if(Btn_Infos[i].func)
+			{
+				Btn_Infos[i].func(Btn_Infos[i].data);
+			}
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -538,13 +539,17 @@ void Menu_InitMenu(void)
 	if(loading_progress_func)
 		loading_progress_func(0, 25, "Create menu component");
 	new_button(&btn, 0.0, 0.0, 0.0, LIST_BUTTON_W, LIST_BUTTON_H, 2.0, X11_COLOR(lightskyblue), X11_COLOR(green), X11_COLOR(lightseagreen), X11_COLOR(pink), X11_COLOR(darkgreen), X11_COLOR(seagreen), NULL);
-	new_button(&sure_btn, BUTTON_SURE_X, BUTTON_SURE_Y, 0.3, BUTTON_W, BUTTON_H, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), "Sure");
-	new_button(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, 0.3, BUTTON_W, BUTTON_H, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), "Back");
+	btn.base.clip = GL_FALSE;
 	new_button(&action_btn, 0.0, 0.0, 0.0, ACTION_BUTTON_W, ACTION_BUTTON_H, 2.0, X11_COLOR(lightskyblue), X11_COLOR(green), X11_COLOR(lightsteelblue), X11_COLOR(skyblue), X11_COLOR(darkgreen), X11_COLOR(steelblue), NULL);
+	action_btn.base.clip = GL_FALSE;
 	btn.fnt = &fnt;
-	sure_btn.fnt = &fnt;
-	back_btn.fnt = &fnt;
 	action_btn.fnt = &fnt;
+	int m;
+	for(m = 0; m < total_action_type; m++)
+	{
+		new_button(btns + m, Btn_Infos[m].x, Btn_Infos[m].y, 0.3, Btn_Infos[m].w, Btn_Infos[m].h, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), Btn_Infos[m].label);
+		btns[m].fnt = &fnt;
+	}
 	new_list_view(&lst, LIST_VIEW_X, LIST_VIEW_Y, 0.0, LIST_VIEW_W, LIST_VIEW_H, 10, 20, 15, Color_GetColor(black_color, 0.0), X11_COLOR(lightgreen), X11_COLOR(darkgreen));
 	lst.delegate.component = &btn;
 	lst.delegate.update_func = UI_ButtonUpdateText;
@@ -566,7 +571,7 @@ void Menu_InitMenu(void)
 		}
 		free(action_data);
 	}
-	action_data_count = ACTION_MENU_COUNT;
+	action_data_count = countof(Menu_Action);
 	action_data = NEW_II(list_view_data, action_data_count);
 	GLuint i;
 	for(i = 0; i < action_data_count; i++)

@@ -74,6 +74,10 @@
 #define GL_FLAT GL2_FLAT
 #define GL_SMOOTH GL2_SMOOTH
 #define GL_ALPHA_TEST GL2_ALPHA_TEST
+#define GL_ALPHA_TEST_REF GL2_ALPHA_TEST_REF
+#define GL_ALPHA_TEST_FUNC GL2_ALPHA_TEST_FUNC
+#define GL_BLEND_SRC GL2_BLEND_SRC
+#define GL_BLEND_DST GL2_BLEND_DST
 
 // alias for gles1
 #define glTranslatef(x, y, z) gl2Translate(x, y, z)

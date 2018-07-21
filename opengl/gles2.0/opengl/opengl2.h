@@ -93,6 +93,10 @@
 #define GL2_FLAT					0x1D00
 #define GL2_SMOOTH				0x1D01
 #define GL2_ALPHA_TEST				0x0BC0
+#define GL2_ALPHA_TEST_REF			0x0BC2
+#define GL2_ALPHA_TEST_FUNC			0x0BC1
+#define GL2_BLEND_SRC GL_BLEND_SRC_RGB
+#define GL2_BLEND_DST GL_BLEND_DST_RGB
 
 // fog
 #define GL2_FOG                            0x0B60

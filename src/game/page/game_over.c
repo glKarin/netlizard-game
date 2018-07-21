@@ -6,13 +6,10 @@
 #include "action_signal_slot.h"
 #include "score_table.h"
 #include "component/text_browser.h"
+#include "component/comp_util.h"
 
-#define BUTTON_REPLAY_X 700
-#define BUTTON_REPLAY_Y 100
-#define BUTTON_BACK_X 700
-#define BUTTON_BACK_Y 0
-#define BUTTON_W 120
-#define BUTTON_H 60
+#define BTN_W 120
+#define BTN_H 60
 #define TABLE_X 0
 #define TABLE_Y 0
 #define TABLE_W 650
@@ -23,6 +20,13 @@
 #define TEXT_H 200
 #define LABEL_H 80
 
+typedef enum _menu_action
+{
+	replay_action = 0,
+	back_action,
+	total_action_type
+} menu_action;
+
 static int GameMenu_GameOverIdleEventFunc(void);
 static int GameMenu_GameOverKeyEventFunc(int k, int a, int p, int x, int y);
 static int GameMenu_GameOverMouseEventFunc(int b, int p, int x, int y);
@@ -32,12 +36,16 @@ static void GameMenu_GameOverDrawFunc(void);
 static void GameMenu_GameOverReshapeFunc(int w, int h);
 static void GameMenu_GameOverInitFunc(void);
 static void GameMenu_GameOverFreeFunc(void);
-static void GameMenu_GameOverEnterAction(const char *func);
+static void GameMenu_GameOverEnterAction(void *func);
 static void GameMenu_SetGameOverPageSize(GLsizei w, GLsizei h);
 static void GameMenu_ResetGameOver(void);
 
-static button replay_btn;
-static button back_btn;
+static const button_initilizer Btn_Infos[] = {
+	{700, 100, BTN_W, BTN_H, "Replay", GameMenu_GameOverEnterAction, REPLAY_GAME},
+	{700, 0, BTN_W, BTN_H, "Back", GameMenu_GameOverEnterAction, OPEN_MAIN_MENU},
+};
+
+static button btns[total_action_type];
 static label lb;
 static text_browser tb;
 static scene_2d bg;
@@ -58,8 +66,9 @@ void GameMenu_SetGameOverPageSize(GLsizei w, GLsizei h)
 	{
 		UI_ResizeScene2D(&bg, page_width, page_height);
 		UI_ResizeScene2D(&fg, page_width, page_height);
-		UI_ResetButtonGeometry(&replay_btn, BUTTON_REPLAY_X, BUTTON_REPLAY_Y, BUTTON_W, BUTTON_H);
-		UI_ResetButtonGeometry(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, BUTTON_W, BUTTON_H);
+		int i;
+		for(i = 0; i < total_action_type; i++)
+			UI_ResetButtonGeometry(btns + i, Btn_Infos[i].x, Btn_Infos[i].y, Btn_Infos[i].w, Btn_Infos[i].h);
 		//UI_SetWidgetGeometry(&score_tb.base, TABLE_X, TABLE_Y, 0.0, TABLE_W, TABLE_H, geometry_xyzwh_mask);
 		UI_ResetLabelGeometry(&lb, 0.0, page_height - LABEL_H, page_width, LABEL_H);
 		UI_ResetTextBrowserGeometry(&tb, TEXT_X, TEXT_Y, TEXT_W, TEXT_H);
@@ -86,13 +95,19 @@ void GameMenu_GameOverInitFunc(void)
 	oglEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.1);
 	oglEnable(GL_TEXTURE_2D);
+#ifndef _HARMATTAN_OPENGLES2
+	oglDisable(GL_LIGHTING);
+#endif
+	oglDisable(GL_FOG);
 
 	if(has_init)
 		return;
-	new_button(&replay_btn, BUTTON_REPLAY_X, BUTTON_REPLAY_Y, 0.1, BUTTON_W, BUTTON_H,  2.0, Color_GetColor(black_color, 0.4), Color_GetColor(green_color, 0.4), Color_GetColor(black_color, 0.4), Color_GetColor(gray_color, 0.4), Color_GetColor(darkgreen_color, 0.4), Color_GetColor(black_color, 0.4), "Replay");
-	new_button(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, 0.1, BUTTON_W, BUTTON_H, 2.0, Color_GetColor(black_color, 0.4), Color_GetColor(green_color, 0.4), Color_GetColor(black_color, 0.4), Color_GetColor(gray_color, 0.4), Color_GetColor(darkgreen_color, 0.4), Color_GetColor(black_color, 0.4), "Back");
-	replay_btn.fnt = &fnt;
-	back_btn.fnt = &fnt;
+	int m;
+	for(m = 0; m < total_action_type; m++)
+	{
+		new_button(btns + m, Btn_Infos[m].x, Btn_Infos[m].y, 0.3, Btn_Infos[m].w, Btn_Infos[m].h, 2.0, Color_GetColor(black_color, 0.4), Color_GetColor(green_color, 0.4), Color_GetColor(black_color, 0.4), Color_GetColor(gray_color, 0.4), Color_GetColor(darkgreen_color, 0.4), Color_GetColor(black_color, 0.4), Btn_Infos[m].label);
+		btns[m].fnt = &fnt;
+	}
 	new_label(&lb, 0.0, page_height - LABEL_H, 0.2, page_width, LABEL_H, 0, Color_GetColor(white_color, 0.4), Color_GetColor(green_color, 0.4), Color_GetColor(white_color, 0.0), "Game Over", NULL);
 	new_scene_2d(&bg, 0.0f, 0.0f, page_width, page_height, 1.0, left_bottom_anchor_type, Color_GetColor(white_color, 0.0), NULL);
 	new_scene_2d(&fg, 0.0f, 0.0f, page_width, page_height, 1.0, left_orientation_type | down_orientation_type, Color_GetColor(black_color, 0.1), NULL);
@@ -128,18 +143,16 @@ void GameMenu_GameOverDrawFunc(void)
 			UI_RenderTextBrowser(&tb);
 		}
 		glPopMatrix();
-		glPushMatrix();
+		int i;
+		for(i = 0; i < total_action_type; i++)
 		{
-			glTranslatef(replay_btn.base.x, replay_btn.base.y, replay_btn.base.z);
-			UI_RenderButton(&replay_btn);
+			glPushMatrix();
+			{
+				glTranslatef(btns[i].base.x, btns[i].base.y, btns[i].base.z);
+				UI_RenderButton(btns + i);
+			}
+			glPopMatrix();
 		}
-		glPopMatrix();
-		glPushMatrix();
-		{
-			glTranslatef(back_btn.base.x, back_btn.base.y, back_btn.base.z);
-			UI_RenderButton(&back_btn);
-		}
-		glPopMatrix();
 		glPushMatrix();
 		{
 			glTranslatef(lb.base.x, lb.base.y, lb.base.z);
@@ -163,13 +176,14 @@ void GameMenu_GameOverFreeFunc(void)
 		return;
 	if(bg.tex)
 	{
-		if(glIsTexture(bg.tex -> texid))
-			glDeleteTextures(1, &bg.tex -> texid);
+		if(glIsTexture(bg.tex->texid))
+			glDeleteTextures(1, &bg.tex->texid);
 		free(bg.tex);
 		bg.tex = NULL;
 	}
-	delete_button(&replay_btn);
-	delete_button(&back_btn);
+	int m;
+	for(m = 0; m < total_action_type; m++)
+		delete_button(btns + m);
 	delete_text_browser(&tb);
 	delete_label(&lb);
 	delete_score_table(&score_tb);
@@ -219,15 +233,14 @@ int GameMenu_GameOverMouseEventFunc(int button, int pressed, int x, int gl_y)
 {
 	if(!has_init)
 		return 0;
-	if(UI_PointInWidget(&replay_btn.base, x, gl_y))
+	int i;
+	for(i = 0; i < total_action_type; i++)
 	{
-		replay_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
-	}
-	else if(UI_PointInWidget(&back_btn.base, x, gl_y))
-	{
-		back_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
+		if(UI_PointInWidget(&btns[i].base, x, gl_y))
+		{
+			btns[i].highlight = pressed ? GL_TRUE : GL_FALSE;
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -241,33 +254,30 @@ int GameMenu_GameOverMouseMotionEventFunc(int button, int pressed, int x, int gl
 	{
 		int last_x = x - dx;
 		int last_gl_y = gl_y - dy;
-		if(UI_PointInWidget(&back_btn.base, x, gl_y) && !UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
+		int i;
+		for(i = 0; i < total_action_type; i++)
 		{
-			back_btn.highlight = GL_TRUE;
-			res |= 1;
-		}
-		else if(!UI_PointInWidget(&back_btn.base, x, gl_y) && UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
-		{
-			back_btn.highlight = GL_FALSE;
-			res |= 1;
-		}
-		if(UI_PointInWidget(&replay_btn.base, x, gl_y) && !UI_PointInWidget(&replay_btn.base, last_x, last_gl_y))
-		{
-			replay_btn.highlight = GL_TRUE;
-			res |= 1;
-		}
-		else if(!UI_PointInWidget(&replay_btn.base, x, gl_y) && UI_PointInWidget(&replay_btn.base, last_x, last_gl_y))
-		{
-			replay_btn.highlight = GL_FALSE;
-			res |= 1;
+			if(UI_PointInWidget(&btns[i].base, x, gl_y) && !UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+			{
+				btns[i].highlight = GL_TRUE;
+				res |= 1;
+			}
+			else if(!UI_PointInWidget(&btns[i].base, x, gl_y) && UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+			{
+				btns[i].highlight = GL_FALSE;
+				res |= 1;
+			}
 		}
 	}
 
 	return res;
 }
 
-void GameMenu_GameOverEnterAction(const char *func)
+void GameMenu_GameOverEnterAction(void *data)
 {
+	if(!data)
+		return;
+	const char *func = (const char *)data;
 	const void *slot = SignalSlot_GetAction(func);
 	if(slot)
 		((void__func__void)slot)();
@@ -277,15 +287,17 @@ int GameMenu_GameOverMouseClickEventFunc(int button, int x, int gl_y)
 {
 	if(!has_init)
 		return 0;
-	if(UI_PointInWidget(&replay_btn.base, x, gl_y))
+	int i;
+	for(i = 0; i < total_action_type; i++)
 	{
-		GameMenu_GameOverEnterAction(REPLAY_GAME);
-		return 1;
-	}
-	else if(UI_PointInWidget(&back_btn.base, x, gl_y))
-	{
-		GameMenu_GameOverEnterAction(OPEN_MAIN_MENU);
-		return 1;
+		if(UI_PointInWidget(&btns[i].base, x, gl_y))
+		{
+			if(Btn_Infos[i].func)
+			{
+				Btn_Infos[i].func(Btn_Infos[i].data);
+			}
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -296,33 +308,33 @@ void GameMenu_OpenGameOver(death_game_mode *m)
 		return;
 	if(bg.tex)
 	{
-		if(glIsTexture(bg.tex -> texid))
-			glDeleteTextures(1, &bg.tex -> texid);
+		if(glIsTexture(bg.tex->texid))
+			glDeleteTextures(1, &bg.tex->texid);
 		free(bg.tex);
 		bg.tex = NULL;
 	}
 	bg.tex = new_OpenGL_texture_2d_from_buffer_with_glReadPixels(0, 0, width, height, GL_RGBA);
 	game_mode = m;
 	score_tb.game_mode = game_mode;
-	if(game_mode && game_mode -> state == finish_game_type)
+	if(game_mode && game_mode->state == finish_game_type)
 	{
-		int *group = NEW_II(int, game_mode -> group_count);
-		int *character = NEW_II(int, game_mode -> group_count);
+		int *group = NEW_II(int, game_mode->group_count);
+		int *character = NEW_II(int, game_mode->group_count);
 		int i;
-		for(i = 0; i < game_mode -> group_count; i++)
+		for(i = 0; i < game_mode->group_count; i++)
 		{
 			group[i] = -1;
 			character[i] = -1;
 		}
 		int point = 0;
-		for(i = 0; i < game_mode -> group_count; i++)
+		for(i = 0; i < game_mode->group_count; i++)
 		{
-			point = KARIN_MAX(game_mode -> group_point[i], point);
+			point = KARIN_MAX(game_mode->group_point[i], point);
 		}
 		int index = 0;
-		for(i = 0; i < game_mode -> group_count; i++)
+		for(i = 0; i < game_mode->group_count; i++)
 		{
-			if(game_mode -> group_point[i] == point)
+			if(game_mode->group_point[i] == point)
 			{
 				group[index] = i;
 				index++;
@@ -333,20 +345,20 @@ void GameMenu_OpenGameOver(death_game_mode *m)
 		for(i = 0; i < index; i++)
 		{
 			int j;
-			for(j = 0; j < game_mode -> group_person_count[group[i]]; j++)
+			for(j = 0; j < game_mode->group_person_count[group[i]]; j++)
 			{
-				kill = KARIN_MAX(game_mode -> group_character[group[i]][j] -> score.kill, kill);
+				kill = KARIN_MAX(game_mode->group_character[group[i]][j]->score.kill, kill);
 			}
 		}
 		int index2 = 0;
 		for(i = 0; i < index; i++)
 		{
 			int j;
-			for(j = 0; j < game_mode -> group_person_count[group[i]]; j++)
+			for(j = 0; j < game_mode->group_person_count[group[i]]; j++)
 			{
-				if(game_mode -> group_character[group[i]][j] -> score.kill == kill)
+				if(game_mode->group_character[group[i]][j]->score.kill == kill)
 				{
-					character[index2] = game_mode -> group_character[group[i]][j] -> index;
+					character[index2] = game_mode->group_character[group[i]][j]->index;
 					index2++;
 				}
 			}
@@ -354,14 +366,14 @@ void GameMenu_OpenGameOver(death_game_mode *m)
 		for(i = 0; i < index2; i++)
 		{
 			if(death == -1)
-				death = game_mode -> characters[character[i]].score.death;
+				death = game_mode->characters[character[i]].score.death;
 			else
-				death = KARIN_MIN(game_mode -> characters[character[i]].score.death, death);
+				death = KARIN_MIN(game_mode->characters[character[i]].score.death, death);
 		}
 		int index3 = 0;
 		for(i = 0; i < index2; i++)
 		{
-			if(game_mode -> characters[character[i]].score.death != death)
+			if(game_mode->characters[character[i]].score.death != death)
 				character[i] = -1;
 			else
 				index3++;
@@ -370,7 +382,7 @@ void GameMenu_OpenGameOver(death_game_mode *m)
 		int *character_name = NEW_II(int, index3);
 		for(i = 0; i < index; i++)
 		{
-			group_name[i] = itostr(game_mode -> group_id[group[i]]);
+			group_name[i] = itostr(game_mode->group_id[group[i]]);
 		}
 		int index4 = 0;
 		for(i = 0; i < index2; i++)
@@ -401,8 +413,8 @@ void GameMenu_OpenGameOver(death_game_mode *m)
 		p += strlen("MVP : \n");
 		for(i = 0; i < index4; i++)
 		{
-			strcat(p, game_mode -> characters[character_name[i]].name);
-			p += strlen(game_mode -> characters[character_name[i]].name);
+			strcat(p, game_mode->characters[character_name[i]].name);
+			p += strlen(game_mode->characters[character_name[i]].name);
 			strcat(p, "\n");
 			p += 1;
 		}
@@ -422,15 +434,15 @@ void GameMenu_OpenGameOver(death_game_mode *m)
 glk_function * new_game_over(glk_function *men)
 {
 	RETURN_PTR(m, men, glk_function)
-		m -> init_func = GameMenu_GameOverInitFunc;
-	m -> draw_func = GameMenu_GameOverDrawFunc;
-	m -> free_func = GameMenu_GameOverFreeFunc;
-	m -> idle_func = GameMenu_GameOverIdleEventFunc;
-	m -> key_func = GameMenu_GameOverKeyEventFunc;
-	m -> motion_func = GameMenu_GameOverMouseMotionEventFunc;
-	m -> reshape_func = GameMenu_GameOverReshapeFunc;
-	m -> mouse_func = GameMenu_GameOverMouseEventFunc;
-	m -> click_func = GameMenu_GameOverMouseClickEventFunc;
+		m->init_func = GameMenu_GameOverInitFunc;
+	m->draw_func = GameMenu_GameOverDrawFunc;
+	m->free_func = GameMenu_GameOverFreeFunc;
+	m->idle_func = GameMenu_GameOverIdleEventFunc;
+	m->key_func = GameMenu_GameOverKeyEventFunc;
+	m->motion_func = GameMenu_GameOverMouseMotionEventFunc;
+	m->reshape_func = GameMenu_GameOverReshapeFunc;
+	m->mouse_func = GameMenu_GameOverMouseEventFunc;
+	m->click_func = GameMenu_GameOverMouseClickEventFunc;
 	return m;
 }
 

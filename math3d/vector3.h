@@ -3,7 +3,7 @@
 
 #include "math3d_std.h"
 
-#define printfv3(x) printf(#x" -> "); Vector3_Print(&(x));
+#define printfv3(x) printf(#x"->"); Vector3_Print(&(x));
 
 typedef struct _vector3_t
 {

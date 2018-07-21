@@ -28,27 +28,27 @@ font * new_netlizard_font(font *fnt, const char *mapf, const char *texf)
 		GLfloat w = 0;
 		GLfloat h = 0;
 		GLuint i;
-		for(i = 0; i < nf -> char_map_count; i++)
+		for(i = 0; i < nf->char_map_count; i++)
 		{
 			if(i == 0)
 			{
-				w = nf -> char_map[i].width;
-				h = nf -> char_map[i].height;
+				w = nf->char_map[i].width;
+				h = nf->char_map[i].height;
 			}
 			else
 			{
-				if(w < nf -> char_map[i].width)
-					w = nf -> char_map[i].width;
-				if(h < nf -> char_map[i].height)
-					h = nf -> char_map[i].height;
+				if(w < nf->char_map[i].width)
+					w = nf->char_map[i].width;
+				if(h < nf->char_map[i].height)
+					h = nf->char_map[i].height;
 			}
 		}
-		f -> width = (GLuint)w;
-		f -> height = (GLuint)h;
+		f->width = (GLuint)w;
+		f->height = (GLuint)h;
 	}
 
-	f -> type = netlizard_font_type;
-	f -> fnt.netlizard = nf;
+	f->type = netlizard_font_type;
+	f->fnt.netlizard = nf;
 	return f;
 }
 
@@ -66,14 +66,14 @@ font * new_x_font(font *fnt, const char *name, GLuint b, GLuint e)
 			b = e;
 			e = tmp;
 		}
-	f -> fnt.x.begin = b;
-	f -> fnt.x.end = e;
+	f->fnt.x.begin = b;
+	f->fnt.x.end = e;
 	unsigned int w = 0;
 	unsigned int h = 0;
 	karinUseXFont(name, b, e, b, &w, &h);
-	f -> width = w;
-	f -> height = h;
-	f -> type = x11_font_type;
+	f->width = w;
+	f->height = h;
+	f->type = x11_font_type;
 	return f;
 #endif
 }
@@ -82,17 +82,17 @@ void delete_font(font *f)
 {
 	if(!f)
 		return;
-	if(f -> type == netlizard_font_type)
+	if(f->type == netlizard_font_type)
 	{
-		if(f -> fnt.netlizard)
+		if(f->fnt.netlizard)
 		{
-			delete_GL_NETLizard_Font(f -> fnt.netlizard);
-			free(f -> fnt.netlizard);
+			delete_GL_NETLizard_Font(f->fnt.netlizard);
+			free(f->fnt.netlizard);
 		}
 	}
 #ifdef _HARMATTAN_OPENGL
 	else
-		glDeleteLists(f -> fnt.x.begin, f -> fnt.x.end - f -> fnt.x.begin);
+		glDeleteLists(f->fnt.x.begin, f->fnt.x.end - f->fnt.x.begin);
 #endif
 }
 
@@ -101,10 +101,10 @@ void Font_RenderString(const font *f, GLfloat x, GLfloat y, GLfloat r, GLfloat g
 	if(!f || !str)
 		return;
 
-	if(f -> type == netlizard_font_type)
-		Font_RenderNETLizardFontString(f -> fnt.netlizard, x, y, r, g, b, a, str);
+	if(f->type == netlizard_font_type)
+		Font_RenderNETLizardFontString(f->fnt.netlizard, x, y, r, g, b, a, str);
 	else
-		Font_RenderXFontString(&f -> fnt.x, x, y, r, g, b, a, str);
+		Font_RenderXFontString(&f->fnt.x, x, y, r, g, b, a, str);
 }
 
 void Font_RenderDigit(const font *f, GLfloat x, GLfloat y, GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLint num)
@@ -112,10 +112,10 @@ void Font_RenderDigit(const font *f, GLfloat x, GLfloat y, GLfloat r, GLfloat g,
 	if(!f)
 		return;
 
-	if(f -> type == netlizard_font_type)
-		Font_RenderNETLizardFontDigit(f -> fnt.netlizard, x, y, r, g, b, a, num);
+	if(f->type == netlizard_font_type)
+		Font_RenderNETLizardFontDigit(f->fnt.netlizard, x, y, r, g, b, a, num);
 	else
-		Font_RenderXFontDigit(&f -> fnt.x, x, y, r, g, b, a, num);
+		Font_RenderXFontDigit(&f->fnt.x, x, y, r, g, b, a, num);
 }
 
 void Font_RenderChar(const font *f, GLfloat x, GLfloat y, GLfloat r, GLfloat g, GLfloat b, GLfloat a, char ch)
@@ -123,10 +123,10 @@ void Font_RenderChar(const font *f, GLfloat x, GLfloat y, GLfloat r, GLfloat g, 
 	if(!f)
 		return;
 
-	if(f -> type == netlizard_font_type)
-		Font_RenderNETLizardFontChar(f -> fnt.netlizard, x, y, r, g, b, a, ch);
+	if(f->type == netlizard_font_type)
+		Font_RenderNETLizardFontChar(f->fnt.netlizard, x, y, r, g, b, a, ch);
 	else
-		Font_RenderXFontChar(&f -> fnt.x, x, y, r, g, b, a, ch);
+		Font_RenderXFontChar(&f->fnt.x, x, y, r, g, b, a, ch);
 }
 
 void Font_RenderXFontString(const x_font *f, GLfloat x, GLfloat y, GLfloat r, GLfloat g, GLfloat b, GLfloat a, const char *str)
@@ -143,7 +143,7 @@ void Font_RenderXFontString(const x_font *f, GLfloat x, GLfloat y, GLfloat r, GL
 			glRasterPos2f(x, y);
 			for(; *str; str++)
 			{
-				if(*str >= f -> begin && *str <= f -> end)
+				if(*str >= f->begin && *str <= f->end)
 					glCallList(*str);
 				else
 					glCallList('?');
@@ -153,7 +153,7 @@ void Font_RenderXFontString(const x_font *f, GLfloat x, GLfloat y, GLfloat r, GL
 		{
 			for(; *str; str++)
 			{
-				if(*str >= f -> begin && *str <= f -> end)
+				if(*str >= f->begin && *str <= f->end)
 					glCallList(*str);
 				else
 					glCallList('?');
@@ -216,7 +216,7 @@ void Font_RenderNETLizardFontString(const GL_NETLizard_Font *f, GLfloat x, GLflo
 				if(index == -1)
 					index = 0;
 				NETLizard_RenderFontChar(f, index);
-				glTranslatef(f -> char_map[index].width + f -> char_map[index].x_strip, 0.0, 0.0);
+				glTranslatef(f->char_map[index].width + f->char_map[index].x_strip, 0.0, 0.0);
 			}
 		}
 		glPopMatrix();
@@ -259,20 +259,20 @@ GLfloat Font_GetStringWidth(const font *f, const char *str)
 	if(!f || !str)
 		return 0;
 	size_t len = strlen(str);
-	if(f -> type == x11_font_type)
-		return (GLfloat)(len * f -> width);
+	if(f->type == x11_font_type)
+		return (GLfloat)(len * f->width);
 	else
 	{
 		GLfloat w = 0.0;
 		size_t i;
 		for(i = 0; i < len; i++)
 		{
-			GLint index = NETLizard_GetFontIndex(f -> fnt.netlizard, str[i]);
+			GLint index = NETLizard_GetFontIndex(f->fnt.netlizard, str[i]);
 			if(index == -1)
 				index = 0;
-			w += f -> fnt.netlizard -> char_map[index].width;
+			w += f->fnt.netlizard->char_map[index].width;
 			if(i < len - 1)
-				w += f -> fnt.netlizard -> char_map[index].x_strip;
+				w += f->fnt.netlizard->char_map[index].x_strip;
 		}
 		return w;
 	}
@@ -285,20 +285,20 @@ GLint Font_GetCharCountOfWidth(const font *f, GLfloat width, const char *str)
 	if(width <= 0.0)
 		return -1;
 	size_t len = strlen(str);
-	if(f -> type == x11_font_type)
-		return(KARIN_MIN((GLuint)(width / f -> width), len));
+	if(f->type == x11_font_type)
+		return(KARIN_MIN((GLuint)(width / f->width), len));
 	else
 	{
 		GLfloat w = 0.0;
 		size_t i;
 		for(i = 0; i < len; i++)
 		{
-			GLint index = NETLizard_GetFontIndex(f -> fnt.netlizard, str[i]);
+			GLint index = NETLizard_GetFontIndex(f->fnt.netlizard, str[i]);
 			if(index == -1)
 				index = 0;
-			w += f -> fnt.netlizard -> char_map[index].width;
+			w += f->fnt.netlizard->char_map[index].width;
 			if(i < len - 1)
-				w += f -> fnt.netlizard -> char_map[index].x_strip;
+				w += f->fnt.netlizard->char_map[index].x_strip;
 			if(w >= width)
 				break;
 		}
@@ -326,6 +326,6 @@ int Font_GetStringCenterPosition(const font *fnt, GLfloat x, GLfloat y, GLfloat 
 	if(rx)
 		*rx = x + (w / 2 - len / 2);
 	if(ry)
-		*ry = y + (h / 2 - fnt -> height / 2);
+		*ry = y + (h / 2 - fnt->height / 2);
 	return 1;
 }

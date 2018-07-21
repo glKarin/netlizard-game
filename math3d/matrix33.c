@@ -19,15 +19,15 @@ matrix33_t Matrix33_Make_With_Value(NLfloat a, NLfloat b, NLfloat c, NLfloat d, 
 
 void Matrix33_Identity(matrix33_t *m)
 {
-	m -> x[0][0] = 1;
-	m -> x[0][1] = 0;
-	m -> x[0][2] = 0;
-	m -> x[1][0] = 0;
-	m -> x[1][1] = 1;
-	m -> x[1][2] = 0;
-	m -> x[2][0] = 0;
-	m -> x[2][1] = 0;
-	m -> x[2][2] = 1;
+	m->x[0][0] = 1;
+	m->x[0][1] = 0;
+	m->x[0][2] = 0;
+	m->x[1][0] = 0;
+	m->x[1][1] = 1;
+	m->x[1][2] = 0;
+	m->x[2][0] = 0;
+	m->x[2][1] = 0;
+	m->x[2][2] = 1;
 }
 
 matrix33_t Matrix33_Make()
@@ -56,7 +56,7 @@ void Matrix33_Print(const matrix33_t *m)
 		int j;
 		for(j = 0; j < 3; j++)
 		{
-			printf("  %f", m -> x[i][j]);
+			printf("  %f", m->x[i][j]);
 		}
 		printf("\n");
 	}

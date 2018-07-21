@@ -113,10 +113,10 @@ LOL_Model * new_LOL_Model(const char *meshf, const char *animf, const char *texf
 	}
 
 	LOL_Model *model = malloc(sizeof(LOL_Model));
-	model -> mesh = mesh;
-	model -> anim = anim;
-	model -> tex = t;
-	model -> tex_count = texc;
+	model->mesh = mesh;
+	model->anim = anim;
+	model->tex = t;
+	model->tex_count = texc;
 	return model;
 }
 
@@ -125,17 +125,17 @@ void LOL_RenderModel(const LOL_Model *model, int animation, int animi, int frame
 	if(!model)
 		return;
 	if(!animation)
-		LOL_RenderStaticModel(model -> mesh, model -> tex, model -> tex_count);
+		LOL_RenderStaticModel(model->mesh, model->tex, model->tex_count);
 	else
 	{
-		if(!model -> anim)
+		if(!model->anim)
 			return;
-		if(animi < 0 || animi >= (int)model -> anim -> animation_count)
+		if(animi < 0 || animi >= (int)model->anim->animation_count)
 			return;
-		if(framei < 0 || framei >= (int)model -> anim -> animation[animi].animation_bone[0].frame_count)
+		if(framei < 0 || framei >= (int)model->anim->animation[animi].animation_bone[0].frame_count)
 			return;
-		LOL_UpdateBone(&(model -> mesh -> bone_data), model -> anim -> animation + animi, framei);
-		LOL_RenderAnimationModel(model -> mesh, model -> tex, model -> tex_count);
+		LOL_UpdateBone(&(model->mesh->bone_data), model->anim->animation + animi, framei);
+		LOL_RenderAnimationModel(model->mesh, model->tex, model->tex_count);
 	}
 }
 
@@ -143,41 +143,41 @@ void delete_LOL_Model(LOL_Model *model)
 {
 	if(!model)
 		return;
-	delete_LOL_Mesh(model -> mesh);
-	delete_LOL_Anim(model -> anim);
-	if(model -> tex && model -> tex_count)
+	delete_LOL_Mesh(model->mesh);
+	delete_LOL_Anim(model->anim);
+	if(model->tex && model->tex_count)
 	{
 		unsigned int i;
-		for(i = 0; i < model -> tex_count; i++)
+		for(i = 0; i < model->tex_count; i++)
 		{
-			glIsTexture(model -> tex[i]);
-			glDeleteTextures(1, model -> tex + i);
+			glIsTexture(model->tex[i]);
+			glDeleteTextures(1, model->tex + i);
 		}
-		free(model -> tex);
+		free(model->tex);
 	}
-	free(model -> mesh);
-	free(model -> anim);
+	free(model->mesh);
+	free(model->anim);
 }
 
 int LOL_GetAnimationRangeByName(const LOL_Model *model, const char *name, int *anim, int *count)
 {
-	if(!model || !name || !model -> anim)
+	if(!model || !name || !model->anim)
 		return -1;
 
 	unsigned int i;
-	for(i = 0; i < model -> anim -> animation_count; i++)
+	for(i = 0; i < model->anim->animation_count; i++)
 	{
-		LOL_Animation *animation = model -> anim -> animation + i;
-		if(animation -> name && strlen(animation -> name))
+		LOL_Animation *animation = model->anim->animation + i;
+		if(animation->name && strlen(animation->name))
 		{
-			if(strcasecmp(animation -> name, name) == 0)
+			if(strcasecmp(animation->name, name) == 0)
 			{
 				if(anim)
 					*anim = i;
-				if(animation -> animation_bone && animation -> bone_count)
+				if(animation->animation_bone && animation->bone_count)
 				{
 					if(count)
-						*count = animation -> animation_bone[0].frame_count;
+						*count = animation->animation_bone[0].frame_count;
 				}
 				int j;
 				for(j = LOL_Idle1_Type; j < LOL_Total_Type; j++)
@@ -203,32 +203,32 @@ int LOL_GetAnimationRangeByName(const LOL_Model *model, const char *name, int *a
 
 const char * LOL_GetAnimationRangeByType(const LOL_Model *model, LOL_Animation_Type type, int *anim, int *count)
 {
-	if(!model || !model -> anim)
+	if(!model || !model->anim)
 		return NULL;
 
 	if(type >= LOL_Total_Type)
 		return NULL;
 	unsigned int i;
-	for(i = 0; i < model -> anim -> animation_count; i++)
+	for(i = 0; i < model->anim->animation_count; i++)
 	{
-		LOL_Animation *animation = model -> anim -> animation + i;
-		if(animation -> name && strlen(animation -> name))
+		LOL_Animation *animation = model->anim->animation + i;
+		if(animation->name && strlen(animation->name))
 		{
 			char *name = strdup(lol_animation_type_name[type]);
 			char *ptr = strtok(name, ",");
 			do
 			{
-				if(strncmp(ptr, animation -> name, strlen(ptr)) == 0)
+				if(strncmp(ptr, animation->name, strlen(ptr)) == 0)
 				{
 					if(anim)
 						*anim = i;
-					if(animation -> animation_bone && animation -> bone_count)
+					if(animation->animation_bone && animation->bone_count)
 					{
 						if(count)
-							*count = animation -> animation_bone[0].frame_count;
+							*count = animation->animation_bone[0].frame_count;
 					}
 					free(name);
-					return animation -> name;
+					return animation->name;
 				}
 			}while((ptr = strtok(NULL, ",")) != NULL);
 			free(name);

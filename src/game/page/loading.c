@@ -150,6 +150,10 @@ void Menu_LoadingInitFunc(void)
 	oglEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.1);
 	oglEnable(GL_TEXTURE_2D);
+#ifndef _HARMATTAN_OPENGLES2
+	oglDisable(GL_LIGHTING);
+#endif
+	oglDisable(GL_FOG);
 
 	if(has_init)
 		return;

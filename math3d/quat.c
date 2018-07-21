@@ -15,5 +15,5 @@ void Quat_Print(const quat_t *q)
 {
 	if(!q)
 		return;
-	printf("quat (r = %f, v = %f, %f, %f)\n", q -> r, q -> v.x, q -> v.y, q -> v.z);
+	printf("quat (r = %f, v = %f, %f, %f)\n", q->r, q->v.x, q->v.y, q->v.z);
 }

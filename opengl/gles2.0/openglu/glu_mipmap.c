@@ -614,21 +614,21 @@ static void retrieveStoreModes(PixelStorageModes *psm)
     glGetIntegerv(GL_UNPACK_ALIGNMENT, &psm->unpack_alignment);
 
     glGetIntegerv(GL_PACK_ALIGNMENT, &psm->pack_alignment);
-   psm -> pack_row_length = 0;
-   psm -> pack_skip_rows = 0;
-   psm -> pack_skip_pixels = 0;
-   psm -> pack_lsb_first = 0;
-   psm -> pack_swap_bytes = 0;
-   psm -> pack_skip_images = 0;
-   psm -> pack_image_height = 0;
+   psm->pack_row_length = 0;
+   psm->pack_skip_rows = 0;
+   psm->pack_skip_pixels = 0;
+   psm->pack_lsb_first = 0;
+   psm->pack_swap_bytes = 0;
+   psm->pack_skip_images = 0;
+   psm->pack_image_height = 0;
 
-   psm -> unpack_row_length = 0;
-   psm -> unpack_skip_rows = 0;
-   psm -> unpack_skip_pixels = 0;
-   psm -> unpack_lsb_first = 0;
-   psm -> unpack_swap_bytes = 0;
-   psm -> unpack_skip_images = 0;
-   psm -> unpack_image_height = 0;
+   psm->unpack_row_length = 0;
+   psm->unpack_skip_rows = 0;
+   psm->unpack_skip_pixels = 0;
+   psm->unpack_lsb_first = 0;
+   psm->unpack_swap_bytes = 0;
+   psm->unpack_skip_images = 0;
+   psm->unpack_image_height = 0;
 }
 
 static void scale_internal(GLint components, GLint widthin, GLint heightin,

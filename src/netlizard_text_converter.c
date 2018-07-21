@@ -15,11 +15,11 @@ int Converter_DecodeTextFile(const char *name, const char *to, int save)
 		return 0;
 	src_text_file = strdup(name);
 	array *data = nlHandleText_File2Memory(name);
-	if(!data || data -> length == 0)
+	if(!data || data->length == 0)
 		return 0;
 
-	decode_text = NEW_II(char, data -> length);
-	memcpy(decode_text, data -> array, sizeof(char) * data -> length);
+	decode_text = NEW_II(char, data->length);
+	memcpy(decode_text, data->array, sizeof(char) * data->length);
 
 	printfs(src_text_file);
 	int res = 1;
@@ -55,7 +55,7 @@ int Converter_DecodeTextFile(const char *name, const char *to, int save)
 			res = 0;
 		else
 		{
-			res = (fprintf(file, "%s", ((byte *)(data -> array))) == data -> length - 1) ? 1 : 0;
+			res = (fprintf(file, "%s", ((byte *)(data->array))) == data->length - 1) ? 1 : 0;
 			fflush(file);
 			fclose(file);
 		}

@@ -26,9 +26,9 @@ int Game_GetStatusPriority(character_status_type status)
 		case runreload_status_type:
 			return 2;
 		case reload_status_type:
-			return 1;
+			return 2;
 		case death_status_type:
-			return 0;
+			return 1;
 		default:
 			return INT_MAX;
 	}
@@ -55,3 +55,11 @@ animation_loop_type Game_GetStatusAniamtionLoop(character_status_type status)
 	}
 }
 
+unsigned Game_ChangeStatus(unsigned olds, unsigned news)
+{
+	int priority = Game_GetStatusPriority(olds);
+	int priority_new = Game_GetStatusPriority(news);
+	if(priority_new <= priority)
+		return 1;
+	return 0;
+}

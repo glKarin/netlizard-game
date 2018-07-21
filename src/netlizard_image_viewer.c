@@ -67,7 +67,7 @@ int Viewer_ImageIdleEventFunc(void)
 //OpenGL Init
 void Viewer_ImageInitBufferObject(void)
 {
-	GLfloat per = (GLfloat)image_texture -> width / (GLfloat)image_texture -> height;
+	GLfloat per = (GLfloat)image_texture->width / (GLfloat)image_texture->height;
 	GLdouble ortho_per = (GLdouble)height / (GLdouble)width;
 	GLfloat vertex[] = {
 		-per / 2, -ortho_per,
@@ -170,7 +170,7 @@ void Viewer_ImageDrawFunc(void)
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glPushMatrix();
 	{
-		oglBindTexture(GL_TEXTURE_2D, image_texture -> texid);
+		oglBindTexture(GL_TEXTURE_2D, image_texture->texid);
 
 		glBindBuffer(GL_ARRAY_BUFFER, bufferIDs[texcoord_buffer_type]);
 		glTexCoordPointer(2, GL_FLOAT, 0, NULL);
@@ -212,7 +212,7 @@ void Viewer_ImageFreeFunc(void)
 	}
 	if(image_texture)
 	{
-		glDeleteTextures(1, &image_texture -> texid);
+		glDeleteTextures(1, &image_texture->texid);
 		free(image_texture);
 	}
 	if(image_file)

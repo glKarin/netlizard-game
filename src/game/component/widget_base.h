@@ -18,6 +18,34 @@
 	} \
 }
 
+#define WIDGETPTR_CLIP_RENDER_BEGIN(w) \
+	if((w)->base.clip) \
+{ \
+		glPushAttrib(GL_SCISSOR_BIT); \
+		oglEnable(GL_SCISSOR_TEST);\
+		glScissor((w)->base.x, (w)->base.y, (w)->base.width, (w)->base.height);\
+	}
+
+#define WIDGETPTR_CLIP_RENDER_END(w) \
+	if((w)->base.clip) \
+{ \
+	glPopAttrib(); \
+}
+
+#define WIDGET_CLIP_RENDER_BEGIN(w) \
+	if((w).base.clip) \
+{ \
+		glPushAttrib(GL_SCISSOR_BIT); \
+		oglEnable(GL_SCISSOR_TEST);\
+		glScissor((w).base.x, (w).base.y, (w).base.width, (w).base.height);\
+	}
+
+#define WIDGET_CLIP_RENDER_END(w) \
+	if((w).base.clip) \
+{ \
+	glPopAttrib(); \
+}
+
 typedef enum _widget_geometry_mask
 {
 	geometry_x_mask = 1,
@@ -41,6 +69,9 @@ typedef struct _base_widget
 	GLfloat height;
 	GLboolean visible;
 	GLfloat scale;
+	GLboolean clip;
+	GLboolean focus;
+	GLboolean enabled;
 } base_widget;
 
 typedef struct _rect1

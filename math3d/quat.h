@@ -5,7 +5,7 @@
 #include "vector3.h"
 #include "matrix44.h"
 
-#define printfqt(x) printf(#x" -> "); Quat_Print(&(x));
+#define printfqt(x) printf(#x"->"); Quat_Print(&(x));
 
 typedef struct _quat_t
 {

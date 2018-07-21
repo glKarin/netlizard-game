@@ -15,6 +15,7 @@
 #define A_POSITION "vPosition"
 #define A_NORMAL "vNormal"
 #define A_TEXCOORD "vTexcoord"
+#define A_COLOR "vColor"
 
 // uniform
 // vertex shader
@@ -45,6 +46,7 @@ typedef enum _Shader_Attribute_Name
 	vPosition = 0,
 	vNormal,
 	vTexcoord,
+	vColor,
 	Total_Attribute_Name
 } Shader_Attribute_Name;
 
@@ -74,7 +76,8 @@ static GLuint uniform_locations[Total_Uniform_Name];
 static const char *Attribute_Names[Total_Attribute_Name] = {
 	A_POSITION,
 	A_NORMAL,
-	A_TEXCOORD
+	A_TEXCOORD,
+	A_COLOR
 };
 static const char *Uniform_Names[Total_Uniform_Name] = {
 	U_MODELVIEW_MATRIX,
@@ -212,12 +215,12 @@ GLvoid gl2Render(GLvoid)
 
 	modelview_matrix = gl2GetTopMatrixByMode(GL2_MODELVIEW);
 	projection_matrix = gl2GetTopMatrixByMode(GL2_PROJECTION);
-	arrcpy16(modelview_projection_matrix.m, projection_matrix -> m);
-	Mesa_glMultMatrix(&modelview_projection_matrix, modelview_matrix -> m);
+	arrcpy16(modelview_projection_matrix.m, projection_matrix->m);
+	Mesa_glMultMatrix(&modelview_projection_matrix, modelview_matrix->m);
 
 	// matrix
-	glUniformMatrix4fv(uniform_locations[vModelviewMatrix], 1, GL_FALSE, modelview_matrix -> m);
-	glUniformMatrix4fv(uniform_locations[vProjectionMatrix], 1, GL_FALSE, projection_matrix -> m);
+	glUniformMatrix4fv(uniform_locations[vModelviewMatrix], 1, GL_FALSE, modelview_matrix->m);
+	glUniformMatrix4fv(uniform_locations[vProjectionMatrix], 1, GL_FALSE, projection_matrix->m);
 	glUniformMatrix4fv(uniform_locations[vModelviewProjectionMatrix], 1, GL_FALSE, modelview_projection_matrix.m);
 
 	// current
@@ -268,7 +271,7 @@ GLvoid gl2EnableClientState(GLenum cap)
 			glEnableVertexAttribArray(attribute_locations[vNormal]);
 			break;
 		case GL2_COLOR_ARRAY:
-			//glEnableVertexAttribArray(attribute_locations[vColor]);
+			glEnableVertexAttribArray(attribute_locations[vColor]);
 			break;
 		case GL2_TEXTURE_COORD_ARRAY:
 			glEnableVertexAttribArray(attribute_locations[vTexcoord]);
@@ -290,7 +293,7 @@ GLvoid gl2DisableClientState(GLenum cap)
 			glDisableVertexAttribArray(attribute_locations[vNormal]);
 			break;
 		case GL2_COLOR_ARRAY:
-			//glDisableVertexAttribArray(attribute_locations[vColor]);
+			glDisableVertexAttribArray(attribute_locations[vColor]);
 			break;
 		case GL2_TEXTURE_COORD_ARRAY:
 			glDisableVertexAttribArray(attribute_locations[vTexcoord]);
@@ -313,7 +316,7 @@ GLvoid gl2NormalPointer(GLenum type, GLsizei stride, const GLvoid *ptr)
 
 GLvoid gl2ColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr)
 {
-	//glVertexAttribPointer(attribute_locations[vColor], 3, type, GL_FALSE, stride, ptr);
+	glVertexAttribPointer(attribute_locations[vColor], size, type, GL_FALSE, stride, ptr);
 }
 
 GLvoid gl2TexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid *ptr)

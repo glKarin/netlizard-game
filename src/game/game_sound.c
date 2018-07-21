@@ -199,7 +199,7 @@ void Sound_PlayGameSound(const sound_effect *e)
 	if(channel != -2)
 	{
 		Mix_HaltChannel(sounds[channel].channel);
-		Mix_Volume(sounds[channel].channel, e -> volumn);
+		Mix_Volume(sounds[channel].channel, e->volumn);
 		SDLK_PlaySound(sounds[channel].channel, sounds[channel].chunk);
 		/*
 			 if(SDLK_SoundIsPlaying(sounds[channel].channel))
@@ -225,15 +225,15 @@ int Sound_GetSoundChannel(const sound_effect *s)
 {
 	if(!s)
 		return -2;
-	if(s -> type >= total_sound_source_type)
+	if(s->type >= total_sound_source_type)
 		return -2;
-	if(s -> source < 0 || s -> source >= Channel_Count[s -> type])
+	if(s->source < 0 || s->source >= Channel_Count[s->type])
 		return -2;
 	int r = 0;
 	int i;
-	for(i = 0; i < (int)s -> type; i++)
+	for(i = 0; i < (int)s->type; i++)
 		r += Channel_Count[i];
-	return(r + s -> source);
+	return(r + s->source);
 }
 
 sound_effect * Sound_MakeWeaponFireSound(sound_effect *s, weapon *w, float dis, float range)
@@ -245,10 +245,10 @@ sound_effect * Sound_MakeWeaponFireSound(sound_effect *s, weapon *w, float dis, 
 
 	RETURN_PTR(e, s, sound_effect)
 
-		COPY_VERTEX3(s -> position, w -> position)
-		e -> type = gun_fire_sound_type;
-	e -> source = (weapon_sound_type)w -> weapon_index;
-	e -> volumn = (int)ceil((float)(MIX_MAX_VOLUME) * (1.0 - dis / range));
+		COPY_VERTEX3(s->position, w->position)
+		e->type = gun_fire_sound_type;
+	e->source = (weapon_sound_type)w->weapon_index;
+	e->volumn = (int)ceil((float)(MIX_MAX_VOLUME) * (1.0 - dis / range));
 	return e;
 }
 
@@ -262,7 +262,7 @@ void Sound_ContinueGameSound(const sound_effect *e)
 
 	if(channel != -2)
 	{
-		Mix_Volume(sounds[channel].channel, e -> volumn);
+		Mix_Volume(sounds[channel].channel, e->volumn);
 		SDLK_PlaySound(sounds[channel].channel, sounds[channel].chunk);
 	}
 }

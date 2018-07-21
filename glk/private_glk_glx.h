@@ -79,7 +79,7 @@ unsigned karinCreateGLContext(const char* title)
 	xev.xclient.data.l[1] = 0;
 	XSendEvent (dpy,DefaultRootWindow ( dpy ),0,SubstructureNotifyMask,&xev );
 	*/
-	//XMoveResizeWindow(dpy, win, 0, 0, esContext -> width, esContext -> height);
+	//XMoveResizeWindow(dpy, win, 0, 0, esContext->width, esContext->height);
 
 	int numConfigs;
 	GLXFBConfig *config = NULL;
@@ -109,7 +109,7 @@ unsigned karinCreateGLContext(const char* title)
 		return 0;
 	}
 	int i;
-	printf("glX config -> %d\n", numConfigs);
+	printf("glX config->%d\n", numConfigs);
 	for(i = 0; i < numConfigs; i++)
 	{
 		xvi = glXGetVisualFromFBConfig (dpy, config[i]);
@@ -121,15 +121,15 @@ unsigned karinCreateGLContext(const char* title)
 		else
 			break;
 	}
-	cmap = XCreateColormap(dpy, root, xvi -> visual,AllocNone);
+	cmap = XCreateColormap(dpy, root, xvi->visual,AllocNone);
 	swa.colormap = cmap;
-	win = XCreateWindow(dpy, RootWindow(dpy, xvi -> screen),0, 0, width, height, 0, xvi -> depth, InputOutput,xvi -> visual, CWEventMask,&swa );
+	win = XCreateWindow(dpy, RootWindow(dpy, xvi->screen),0, 0, width, height, 0, xvi->depth, InputOutput,xvi->visual, CWEventMask,&swa );
 	XMapWindow (dpy, win);
 	XStoreName (dpy, win, title);
 	XFlush(dpy);
 	glw = glXCreateWindow (dpy, config[i], win, NULL);
 	glc = glXCreateNewContext (dpy, config[i], GLX_RGBA_TYPE, NULL, GL_TRUE);
-	printf("glX window -> %x\nglX context -> %ld\n", glw, glc);
+	printf("glX window->%x\nglX context->%ld\n", glw, glc);
 	glXMakeContextCurrent (dpy, win, win, glc);
 
 	return 1;
@@ -168,12 +168,12 @@ unsigned karinUseXFont(const char *name, int start, int size, unsigned int list_
 		if(!fontStruct)
 			return 0;
 		if(w)
-			*w = fontStruct -> max_bounds.rbearing - fontStruct -> max_bounds.lbearing;
+			*w = fontStruct->max_bounds.rbearing - fontStruct->max_bounds.lbearing;
 		if(h)
-			*h = fontStruct -> max_bounds.ascent - fontStruct -> max_bounds.descent;
-		//printf("%d %d %d %d %d\n", fontStruct -> min_bounds.lbearing, fontStruct -> min_bounds.rbearing, fontStruct -> min_bounds.width, fontStruct -> min_bounds.ascent, fontStruct -> min_bounds.descent);
-		//printf("%d %d %d %d %d\n", fontStruct -> max_bounds.lbearing, fontStruct -> max_bounds.rbearing, fontStruct -> max_bounds.width, fontStruct -> max_bounds.ascent, fontStruct -> max_bounds.descent);
-		glXUseXFont(fontStruct -> fid, start, size, list_start);
+			*h = fontStruct->max_bounds.ascent - fontStruct->max_bounds.descent;
+		//printf("%d %d %d %d %d\n", fontStruct->min_bounds.lbearing, fontStruct->min_bounds.rbearing, fontStruct->min_bounds.width, fontStruct->min_bounds.ascent, fontStruct->min_bounds.descent);
+		//printf("%d %d %d %d %d\n", fontStruct->max_bounds.lbearing, fontStruct->max_bounds.rbearing, fontStruct->max_bounds.width, fontStruct->max_bounds.ascent, fontStruct->max_bounds.descent);
+		glXUseXFont(fontStruct->fid, start, size, list_start);
 		XFreeFont(dpy, fontStruct);
 		return 1;
 	}

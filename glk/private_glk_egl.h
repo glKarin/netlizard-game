@@ -99,8 +99,8 @@ unsigned karinCreateGLContext(const char* title)
 	xev.xclient.data.l[1] = 0;
 	XSendEvent (dpy,DefaultRootWindow ( dpy ),0,SubstructureNotifyMask,&xev );
 	*/
-	//XMoveResizeWindow(dpy, win, 0, 0, esContext -> width, esContext -> height);
-	//cmap = XCreateColormap(dpy, root, xvi -> visual,AllocNone);
+	//XMoveResizeWindow(dpy, win, 0, 0, esContext->width, esContext->height);
+	//cmap = XCreateColormap(dpy, root, xvi->visual,AllocNone);
 	//swa.colormap = cmap;
 	//win = XCreateWindow(dpy, root,0, 0, width, height, 0, 24, InputOutput, CopyFromParent, CWEventMask,&swa );
 	XMapWindow (dpy, win);

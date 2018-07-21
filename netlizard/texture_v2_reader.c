@@ -34,9 +34,9 @@ png_texture * nlReadTextureV2_Memory(const array *arr)
 		return NULL;
 	png_texture *tex = NEW(png_texture);
 	ZERO(tex, png_texture);
-	tex -> color_map = class_h__function_b_1byte_array__color_map(arr -> array, &tex -> format);
-	tex -> color_index = class_h__function_a_1byte_array_2bool_3int_4int_5int_6int__color_index(arr, 0, 0, 0, 0, 0, &tex -> width, &tex -> height);
-	//class_h__function_a_1byte_array__swap((byte *)(tex -> color_index));
+	tex->color_map = class_h__function_b_1byte_array__color_map(arr->array, &tex->format);
+	tex->color_index = class_h__function_a_1byte_array_2bool_3int_4int_5int_6int__color_index(arr, 0, 0, 0, 0, 0, &tex->width, &tex->height);
+	//class_h__function_a_1byte_array__swap((byte *)(tex->color_index));
 	return tex;
 }
 
@@ -58,10 +58,10 @@ int nlSaveImage_V2Memory(const png_texture *tex, const char *to, int img_type)
 	if(!tex || !to)
 		return 0;
 	unsigned char *data = nlMakeOpenGLTextureDataRGBA(tex);
-	int channel = tex -> format != nl_rgb ? SOIL_LOAD_RGBA : SOIL_LOAD_RGBA;
+	int channel = tex->format != nl_rgb ? SOIL_LOAD_RGBA : SOIL_LOAD_RGBA;
 	if(data)
 	{
-		int res = SOIL_save_image(to, img_type, tex -> width, tex -> height, channel, data);
+		int res = SOIL_save_image(to, img_type, tex->width, tex->height, channel, data);
 		free(data);
 		return res;
 	}
@@ -204,7 +204,7 @@ int nlSaveTextureV2_Memory(const unsigned char *data,  int width, int height, pn
 
 	//class_h__function_a_1byte_array__swap(index);
 
-	nlprintf("Make v2 PNG Color map'size -> %d\n", len);
+	nlprintf("Make v2 PNG Color map'size->%d\n", len);
 	int i2 = 3; // 3
 	int i3 = format != nl_rgb ? 1 : 0; // 4
 	char c;
@@ -263,7 +263,7 @@ int nlSaveTextureV2_Memory(const unsigned char *data,  int width, int height, pn
 	// 2 index
 	unsigned int i5 = width;
 	unsigned int i6 = height;
-	nlprintf("Make v2 PNG -> width: %d, height: %d\n", i5, i6);
+	nlprintf("Make v2 PNG->width: %d, height: %d\n", i5, i6);
 	c = (unsigned char)(i5);
 	fwrite(&c, sizeof(unsigned char), 1, file);
 	c = (unsigned char)(i6);
@@ -292,7 +292,7 @@ int nlSaveTextureV2_File(const char *from, const char *to)
 	int height;
 	png_texture_format format;
 	unsigned char *data = SOIL_load_image(from, &width, &height, &channel, SOIL_LOAD_AUTO);
-	nlprintf("Read image -> width: %d, height: %d\n", width, height);
+	nlprintf("Read image->width: %d, height: %d\n", width, height);
 	if(!data)
 		return 0;
 	if(channel == SOIL_LOAD_RGB)
@@ -327,9 +327,9 @@ array * class_h__function_b_1byte_array__color_map(const byte paramArrayOfByte[]
 	if ((i1 = paramArrayOfByte[4]) < 0) {
 		i1 += 256;
 	}
-	nlprintf("NETLizard 3D engine v2 texture color map'size -> %d\n", i1);
+	nlprintf("NETLizard 3D engine v2 texture color map'size->%d\n", i1);
 	array *arr = new_array(nl_int, i1, NULL, 0);
-	int *arrayOfInt = (int *)(arr -> array);
+	int *arrayOfInt = (int *)(arr->array);
 	if (i3 == 0)
 	{
 		int i4 = 0;
@@ -371,7 +371,7 @@ array * class_h__function_a_1byte_array_2bool_3int_4int_5int_6int__color_index(c
 		return NULL;
 	int i2 = 0;
 	int i3 = 0;
-	byte *paramArrayOfByte = (byte *)(data -> array);
+	byte *paramArrayOfByte = (byte *)(data->array);
 	if (paramArrayOfByte[3] == 1) {
 		i3 = 1;
 	}
@@ -410,7 +410,7 @@ array * class_h__function_a_1byte_array_2bool_3int_4int_5int_6int__color_index(c
 		}
 		int i1;
 		arrayOfByte = NEW_II(byte, (i1 = i5 * i6));
-		nlprintf("NETLizard 3D engine v2 texture -> width: %d, height: %d\n", i5, i6);
+		nlprintf("NETLizard 3D engine v2 texture->width: %d, height: %d\n", i5, i6);
 		for (i7 = 0; i7 < i1; i7++) {
 			arrayOfByte[i7] = paramArrayOfByte[(++i2)];
 		}

@@ -12,15 +12,18 @@
 #define LIST_VIEW_H 300
 #define LIST_BUTTON_W 400
 #define LIST_BUTTON_H 50
-#define BUTTON_SURE_X 100
-#define BUTTON_SURE_Y 40
-#define BUTTON_BACK_X 555
-#define BUTTON_BACK_Y 40
-#define BUTTON_W 200
-#define BUTTON_H 60
+#define BTN_W 200
+#define BTN_H 60
 #define LABEL_H 80
 
 #define IDLE_TIME_DELAY 0.4
+
+typedef enum _menu_action
+{
+	enter_action = 0,
+	back_action,
+	total_action_type
+} menu_action;
 
 static const struct _game_menu_action
 {
@@ -45,13 +48,17 @@ static void GameMenu_ResetGameMenu(void);
 
 static void GameMenu_MakeListViewData(void);
 static void GameMenu_InitListView(void);
-static void GameMenu_EnterAction(void *);
-static void GameMenu_BackAction(void);
+static void GameMenu_EnterAction(void *data);
+static void GameMenu_BackAction(void *data);
 static void GameMenu_SetPageSize(GLsizei w, GLsizei h);
 
+static const button_initilizer Btn_Infos[] = {
+	{100, 40, BTN_W, BTN_H, "Sure", GameMenu_EnterAction, NULL},
+	{555, 40, BTN_W, BTN_H, "Back", GameMenu_BackAction, NULL},
+};
+
 static button btn;
-static button sure_btn;
-static button back_btn;
+static button btns[total_action_type];
 static list_view lst;
 static label lb;
 static scene_2d bg;
@@ -76,8 +83,9 @@ void GameMenu_SetPageSize(GLsizei w, GLsizei h)
 		UI_ResizeScene2D(&bg, page_width, page_height);
 		UI_ResizeScene2D(&fg, page_width, page_height);
 		UI_ResizeButton(&btn, LIST_BUTTON_W, LIST_BUTTON_H);
-		UI_ResetButtonGeometry(&sure_btn, BUTTON_SURE_X, BUTTON_SURE_Y, BUTTON_W, BUTTON_H);
-		UI_ResetButtonGeometry(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, BUTTON_W, BUTTON_H);
+		int i;
+		for(i = 0; i < total_action_type; i++)
+			UI_ResetButtonGeometry(btns + i, Btn_Infos[i].x, Btn_Infos[i].y, Btn_Infos[i].w, Btn_Infos[i].h);
 		UI_ResetListViewGeometry(&lst, LIST_VIEW_X, LIST_VIEW_Y, LIST_VIEW_W, LIST_VIEW_H);
 		UI_ResetLabelGeometry(&lb, 0.0, page_height - LABEL_H, page_width, LABEL_H);
 	}
@@ -114,15 +122,22 @@ void GameMenu_InitFunc(void)
 	oglEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.1);
 	oglEnable(GL_TEXTURE_2D);
+#ifndef _HARMATTAN_OPENGLES2
+	oglDisable(GL_LIGHTING);
+#endif
+	oglDisable(GL_FOG);
 
 	if(has_init)
 		return;
 	new_button(&btn, 0.0, 0.0, 0.0, LIST_BUTTON_W, LIST_BUTTON_H, 2.0, Color_GetColor(lightskyblue_color, 0.4), Color_GetColor(green_color, 0.4), Color_GetColor(lightseagreen_color, 0.4), Color_GetColor(skyblue_color, 0.4), Color_GetColor(darkgreen_color, 0.4), Color_GetColor(seagreen_color, 0.4), NULL);
-	new_button(&sure_btn, BUTTON_SURE_X, BUTTON_SURE_Y, 0.1, BUTTON_W, BUTTON_H,  2.0, Color_GetColor(black_color, 0.4), Color_GetColor(green_color, 0.4), Color_GetColor(black_color, 0.4), Color_GetColor(gray_color, 0.4), Color_GetColor(darkgreen_color, 0.4), Color_GetColor(black_color, 0.4), "Sure");
-	new_button(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, 0.1, BUTTON_W, BUTTON_H, 2.0, Color_GetColor(black_color, 0.4), Color_GetColor(green_color, 0.4), Color_GetColor(black_color, 0.4), Color_GetColor(gray_color, 0.4), Color_GetColor(darkgreen_color, 0.4), Color_GetColor(black_color, 0.4), "Back");
+	btn.base.clip = GL_FALSE;
+	int m;
+	for(m = 0; m < total_action_type; m++)
+	{
+		new_button(btns + m, Btn_Infos[m].x, Btn_Infos[m].y, 0.3, Btn_Infos[m].w, Btn_Infos[m].h, 2.0, Color_GetColor(black_color, 0.4), Color_GetColor(green_color, 0.4), Color_GetColor(black_color, 0.4), Color_GetColor(gray_color, 0.4), Color_GetColor(darkgreen_color, 0.4), Color_GetColor(black_color, 0.4), Btn_Infos[m].label);
+		btns[m].fnt = &fnt;
+	}
 	btn.fnt = &fnt;
-	sure_btn.fnt = &fnt;
-	back_btn.fnt = &fnt;
 	new_list_view(&lst, LIST_VIEW_X, LIST_VIEW_Y, 0.0, LIST_VIEW_W, LIST_VIEW_H, 10, 20, 15, Color_GetColor(black_color, 0.2), Color_GetColor(lightgreen_color, 0.4), Color_GetColor(darkgreen_color, 0.4));
 	lst.delegate.component = &btn;
 	lst.delegate.update_func = UI_ButtonUpdateText;
@@ -149,27 +164,22 @@ void GameMenu_DrawFunc(void)
 		//glPolygonMode(GL_FRONT, GL_LINE);
 		UI_RenderScene2D(&bg);
 		UI_RenderScene2D(&fg);
-		oglEnable(GL_SCISSOR_TEST);
-		glScissor(lst.base.x, lst.base.y, lst.base.width, lst.base.height);
 		glPushMatrix();
 		{
 			glTranslatef(lst.base.x, lst.base.y, lst.base.z);
 			UI_RenderListView(&lst);
 		}
 		glPopMatrix();
-		oglDisable(GL_SCISSOR_TEST);
-		glPushMatrix();
+		int i;
+		for(i = 0; i < total_action_type; i++)
 		{
-			glTranslatef(sure_btn.base.x, sure_btn.base.y, sure_btn.base.z);
-			UI_RenderButton(&sure_btn);
+			glPushMatrix();
+			{
+				glTranslatef(btns[i].base.x, btns[i].base.y, btns[i].base.z);
+				UI_RenderButton(btns + i);
+			}
+			glPopMatrix();
 		}
-		glPopMatrix();
-		glPushMatrix();
-		{
-			glTranslatef(back_btn.base.x, back_btn.base.y, back_btn.base.z);
-			UI_RenderButton(&back_btn);
-		}
-		glPopMatrix();
 		glPushMatrix();
 		{
 			glTranslatef(lb.base.x, lb.base.y, lb.base.z);
@@ -192,8 +202,9 @@ void GameMenu_FreeFunc(void)
 	if(!has_init)
 		return;
 	delete_button(&btn);
-	delete_button(&sure_btn);
-	delete_button(&back_btn);
+	int m;
+	for(m = 0; m < total_action_type; m++)
+		delete_button(btns + m);
 	delete_label(&lb);
 	delete_list_view(&lst);
 	if(data)
@@ -240,7 +251,7 @@ int GameMenu_KeyEventFunc(int key, int act, int pressed, int x, int y)
 		case Harmattan_K_Escape:
 			if(pressed)
 			{
-				GameMenu_BackAction();
+				GameMenu_BackAction(NULL);
 				return 1;
 			}
 			break;
@@ -272,15 +283,14 @@ int GameMenu_MouseEventFunc(int button, int pressed, int x, int gl_y)
 {
 	if(!has_init)
 		return 0;
-	if(UI_PointInWidget(&sure_btn.base, x, gl_y))
+	int i;
+	for(i = 0; i < total_action_type; i++)
 	{
-		sure_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
-	}
-	else if(UI_PointInWidget(&back_btn.base, x, gl_y))
-	{
-		back_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
+		if(UI_PointInWidget(&btns[i].base, x, gl_y))
+		{
+			btns[i].highlight = pressed ? GL_TRUE : GL_FALSE;
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -298,25 +308,19 @@ int GameMenu_MouseMotionEventFunc(int button, int pressed, int x, int gl_y, int 
 		{
 			res = UI_SlideListView(&lst, dy);
 		}
-		if(UI_PointInWidget(&back_btn.base, x, gl_y) && !UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
+		int i;
+		for(i = 0; i < total_action_type; i++)
 		{
-			back_btn.highlight = GL_TRUE;
-			res |= 1;
-		}
-		else if(!UI_PointInWidget(&back_btn.base, x, gl_y) && UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
-		{
-			back_btn.highlight = GL_FALSE;
-			res |= 1;
-		}
-		if(UI_PointInWidget(&sure_btn.base, x, gl_y) && !UI_PointInWidget(&sure_btn.base, last_x, last_gl_y))
-		{
-			sure_btn.highlight = GL_TRUE;
-			res |= 1;
-		}
-		else if(!UI_PointInWidget(&sure_btn.base, x, gl_y) && UI_PointInWidget(&sure_btn.base, last_x, last_gl_y))
-		{
-			sure_btn.highlight = GL_FALSE;
-			res |= 1;
+			if(UI_PointInWidget(&btns[i].base, x, gl_y) && !UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+			{
+				btns[i].highlight = GL_TRUE;
+				res |= 1;
+			}
+			else if(!UI_PointInWidget(&btns[i].base, x, gl_y) && UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+			{
+				btns[i].highlight = GL_FALSE;
+				res |= 1;
+			}
 		}
 	}
 
@@ -373,7 +377,7 @@ void GameMenu_EnterAction(void *args)
 	}
 }
 
-void GameMenu_BackAction(void)
+void GameMenu_BackAction(void *data)
 {
 	if(!has_init)
 		return;
@@ -390,15 +394,17 @@ int GameMenu_MouseClickEventFunc(int button, int x, int gl_y)
 		UI_ClickListView(&lst, x - lst.base.x, gl_y - lst.base.y);
 		return 1;
 	}
-	else if(UI_PointInWidget(&sure_btn.base, x, gl_y))
+	int i;
+	for(i = 0; i < total_action_type; i++)
 	{
-		GameMenu_EnterAction(NULL);
-		return 1;
-	}
-	else if(UI_PointInWidget(&back_btn.base, x, gl_y))
-	{
-		GameMenu_BackAction();
-		return 1;
+		if(UI_PointInWidget(&btns[i].base, x, gl_y))
+		{
+			if(Btn_Infos[i].func)
+			{
+				Btn_Infos[i].func(Btn_Infos[i].data);
+			}
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -412,8 +418,8 @@ void GameMenu_CloseGameMenu(void)
 		((void__func__void)slot)();
 	if(bg.tex)
 	{
-		if(glIsTexture(bg.tex -> texid))
-			glDeleteTextures(1, &bg.tex -> texid);
+		if(glIsTexture(bg.tex->texid))
+			glDeleteTextures(1, &bg.tex->texid);
 		free(bg.tex);
 		bg.tex = NULL;
 	}
@@ -425,8 +431,8 @@ void GameMenu_OpenGameMenu(void)
 		return;
 	if(bg.tex)
 	{
-		if(glIsTexture(bg.tex -> texid))
-			glDeleteTextures(1, &bg.tex -> texid);
+		if(glIsTexture(bg.tex->texid))
+			glDeleteTextures(1, &bg.tex->texid);
 		free(bg.tex);
 		bg.tex = NULL;
 	}
@@ -436,14 +442,14 @@ void GameMenu_OpenGameMenu(void)
 glk_function * new_game_menu(glk_function *men)
 {
 	RETURN_PTR(m, men, glk_function)
-		m -> init_func = GameMenu_InitFunc;
-	m -> draw_func = GameMenu_DrawFunc;
-	m -> free_func = GameMenu_FreeFunc;
-	m -> idle_func = GameMenu_IdleEventFunc;
-	m -> key_func = GameMenu_KeyEventFunc;
-	m -> motion_func = GameMenu_MouseMotionEventFunc;
-	m -> reshape_func = GameMenu_ReshapeFunc;
-	m -> mouse_func = GameMenu_MouseEventFunc;
-	m -> click_func = GameMenu_MouseClickEventFunc;
+		m->init_func = GameMenu_InitFunc;
+	m->draw_func = GameMenu_DrawFunc;
+	m->free_func = GameMenu_FreeFunc;
+	m->idle_func = GameMenu_IdleEventFunc;
+	m->key_func = GameMenu_KeyEventFunc;
+	m->motion_func = GameMenu_MouseMotionEventFunc;
+	m->reshape_func = GameMenu_ReshapeFunc;
+	m->mouse_func = GameMenu_MouseEventFunc;
+	m->click_func = GameMenu_MouseClickEventFunc;
 	return m;
 }

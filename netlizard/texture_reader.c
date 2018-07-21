@@ -8,11 +8,11 @@ unsigned char * nlMakeOpenGLTextureDataRGBACompress(const png_texture *tex)
 {
 	if(!tex)
 		return NULL;
-	int *tex_color = (int *)(tex -> color_map -> array);
-	signed char *tex_index = (signed char *)(byte *)(tex -> color_index -> array);
-	long length = tex -> width * tex -> height;
+	int *tex_color = (int *)(tex->color_map->array);
+	signed char *tex_index = (signed char *)(byte *)(tex->color_index->array);
+	long length = tex->width * tex->height;
 	int *data_p = NEW_II(int, length);
-	int n = tex -> color_map -> length;
+	int n = tex->color_map->length;
 	int m = 255;
 	int i1;
 	for (i1 = 0; i1 < n; i1++)
@@ -20,9 +20,9 @@ unsigned char * nlMakeOpenGLTextureDataRGBACompress(const png_texture *tex)
 		int i2 = tex_color[i1];
 		tex_color[i1] = ((i2 & 0xFF000000) + (((i2 & 0xFF0000) >> 16) * m >> 8 << 16) + (((i2 & 0xFF00) >> 8) * m >> 8 << 8) + ((i2 & 0xFF) * m >> 8));
 	}
-	int i = tex -> width;
-	int k = tex -> width;
-	int j = tex -> height;
+	int i = tex->width;
+	int k = tex->width;
+	int j = tex->height;
 	int i3 = 0;
 	int i7 = 0;
 	int i8 = 0;
@@ -74,19 +74,19 @@ unsigned char * nlMakeOpenGLTextureDataRGBACompress(const png_texture *tex)
     //i3 += 0;//i6;
 	}
 	/*
-	for (i1 = 0; i1 < tex -> height; i1++)
+	for (i1 = 0; i1 < tex->height; i1++)
 	{
 		printf("===%d===\n", i1);
-		for (n = 0; n < tex -> width; n++)
+		for (n = 0; n < tex->width; n++)
 		{
-			printf("%d-%d  ", n, data_p[i1 * tex -> width + n]);
+			printf("%d-%d  ", n, data_p[i1 * tex->width + n]);
 		}
 		printf("\n");
 	}
-		printf("===%d===\n", tex -> height);
-		printf("===%d===\n", tex -> width);
+		printf("===%d===\n", tex->height);
+		printf("===%d===\n", tex->width);
 		*/
-	unsigned char *data = NEW_II(char, tex -> width * tex -> height * 4);
+	unsigned char *data = NEW_II(char, tex->width * tex->height * 4);
 	int ii;
 	for(ii = 0; ii < length; ii++)
 	{
@@ -94,7 +94,7 @@ unsigned char * nlMakeOpenGLTextureDataRGBACompress(const png_texture *tex)
 		data[ii * 4] = (byte)((color & 0x00ff0000) >> 16);
 		data[ii * 4 + 1] = (byte)((color & 0x0000ff00) >> 8);
 		data[ii * 4 + 2] = (byte)(color & 0x000000ff);
-		if(tex -> format != nl_rgb)
+		if(tex->format != nl_rgb)
 			data[ii * 4 + 3] = (byte)((color & 0xff000000) >> 24);
 		else
 			data[ii * 4 + 3] = (byte)(0xff);
@@ -107,13 +107,13 @@ unsigned char * nlMakeOpenGLTextureDataRGB(const png_texture *tex)
 {
 	if(!tex)
 		return NULL;
-	unsigned char *data = NEW_II(char, tex -> width * tex -> height * 3);
-	long length = tex -> width * tex -> height;
+	unsigned char *data = NEW_II(char, tex->width * tex->height * 3);
+	long length = tex->width * tex->height;
 	int i;
 	for(i = 0; i < length; i++)
 	{
-		byte index = ((byte *)(tex -> color_index -> array))[i];
-		unsigned int color = ((int *)(tex -> color_map -> array))[(int)index];
+		byte index = ((byte *)(tex->color_index->array))[i];
+		unsigned int color = ((int *)(tex->color_map->array))[(int)index];
 		/*
 		data[i * 3] = (byte)(color << 8 >> 24);
 		data[i * 3 + 1] = (byte)(color << 16 >> 24);
@@ -122,7 +122,7 @@ unsigned char * nlMakeOpenGLTextureDataRGB(const png_texture *tex)
 		data[i * 3] = (byte)((color & 0x00ff0000) >> 16);
 		data[i * 3 + 1] = (byte)((color & 0x0000ff00) >> 8);
 		data[i * 3 + 2] = (byte)(color & 0x000000ff);
-		//printf("%d: (%d * %d = %d) %x -> %d %d %d\n", i, tex -> width, tex -> height, tex -> width * tex -> height, color, data[i * 3], data[i * 3 + 1], data[i * 3 + 2]);
+		//printf("%d: (%d * %d = %d) %x->%d %d %d\n", i, tex->width, tex->height, tex->width * tex->height, color, data[i * 3], data[i * 3 + 1], data[i * 3 + 2]);
 	}
 
 	return data;
@@ -133,13 +133,13 @@ unsigned char * nlMakeOpenGLTextureDataRGBA(const png_texture *tex)
 	return nlMakeOpenGLTextureDataRGBACompress(tex);
 	if(!tex)
 		return NULL;
-	unsigned char *data = NEW_II(char, tex -> width * tex -> height * 4);
-	long length = tex -> width * tex -> height;
+	unsigned char *data = NEW_II(char, tex->width * tex->height * 4);
+	long length = tex->width * tex->height;
 	int i;
 	for(i = 0; i < length; i++)
 	{
-		byte index = ((byte *)(tex -> color_index -> array))[i];
-		unsigned int color = ((int *)(tex -> color_map -> array))[(int)index];
+		byte index = ((byte *)(tex->color_index->array))[i];
+		unsigned int color = ((int *)(tex->color_map->array))[(int)index];
 		data[i * 4] = (byte)((color & 0x00ff0000) >> 16);
 		data[i * 4 + 1] = (byte)((color & 0x0000ff00) >> 8);
 		data[i * 4 + 2] = (byte)(color & 0x000000ff);
@@ -148,7 +148,7 @@ unsigned char * nlMakeOpenGLTextureDataRGBA(const png_texture *tex)
 		data[i * 4 + 1] = (byte)(color << 16 >> 24);
 		data[i * 4 + 2] = (byte)(color << 24 >> 24);
 		*/
-		if(tex -> format != nl_rgb)
+		if(tex->format != nl_rgb)
 			data[i * 4 + 3] = (byte)((color & 0xff000000) >> 24);
 			//data[i * 4 + 3] = (byte)(color >> 24 );
 		else
@@ -161,15 +161,15 @@ void delete_png_texture(png_texture *tex)
 {
 	if(!tex)
 		return;
-	if(tex -> color_index)
+	if(tex->color_index)
 	{
-		delete_array(tex -> color_index);
-		free(tex -> color_index);
+		delete_array(tex->color_index);
+		free(tex->color_index);
 	}
-	if(tex -> color_map)
+	if(tex->color_map)
 	{
-		delete_array(tex -> color_map);
-		free(tex -> color_map);
+		delete_array(tex->color_map);
+		free(tex->color_map);
 	}
 }
 

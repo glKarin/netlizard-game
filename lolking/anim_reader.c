@@ -29,9 +29,9 @@ LOL_Anim * new_LOL_Anim(const char *file)
 	LOL_Anim *anim = malloc(sizeof(LOL_Anim));
 	memset(anim, 0, sizeof(LOL_Anim));
 
-	anim -> magic = magic;
-	fread(&anim -> version, 4, 1, in);
-	if(anim -> version >= 2 && anim -> version != 4) // 2018
+	anim->magic = magic;
+	fread(&anim->version, 4, 1, in);
+	if(anim->version >= 2 && anim->version != 4) // 2018
 	{
 		//FILE *out = tmpfile();
 		size_t str_len = 0;
@@ -86,53 +86,53 @@ void LOL_ReadAnimationData(FILE *data, LOL_Anim *anim)
 {
 	if(!data && !anim)
 		return;
-	fread(&anim -> animation_count, 4, 1, data);
-	anim -> animation = calloc(anim -> animation_count, sizeof(LOL_Animation));
+	fread(&anim->animation_count, 4, 1, data);
+	anim->animation = calloc(anim->animation_count, sizeof(LOL_Animation));
 	unsigned int i;
-	for(i = 0; i < anim -> animation_count; i++)
+	for(i = 0; i < anim->animation_count; i++)
 	{
-		LOL_Animation *animation = anim -> animation + i;
-		animation -> name = LOL_ReadLowerStringData(data, 0);
-		fread(&animation -> fps, 4, 1, data);
+		LOL_Animation *animation = anim->animation + i;
+		animation->name = LOL_ReadLowerStringData(data, 0);
+		fread(&animation->fps, 4, 1, data);
 		// 2018
-		if(anim -> version >= 4)
-			fread(&animation -> duration, 4, 1, data);
-		animation -> duration *= 1e3;
+		if(anim->version >= 4)
+			fread(&animation->duration, 4, 1, data);
+		animation->duration *= 1e3;
 		// end
-		fread(&animation -> bone_count, 4, 1, data);
+		fread(&animation->bone_count, 4, 1, data);
 
-		animation -> animation_bone = calloc(animation -> bone_count, sizeof(LOL_Animation_Bone));
+		animation->animation_bone = calloc(animation->bone_count, sizeof(LOL_Animation_Bone));
 
 		unsigned int j;
-		for(j = 0; j < animation -> bone_count; j++)
+		for(j = 0; j < animation->bone_count; j++)
 		{
-			LOL_Animation_Bone *animBone = animation -> animation_bone + j;
-			fread(&animBone -> frame_count, 4, 1, data);
-			animBone -> bone = LOL_ReadLowerStringData(data, 0);
-			fread(&animBone -> flag, 4, 1, data);
-			animBone -> frame = calloc(animBone -> frame_count, sizeof(LOL_Frame));
-			if(anim -> version >= 3)
+			LOL_Animation_Bone *animBone = animation->animation_bone + j;
+			fread(&animBone->frame_count, 4, 1, data);
+			animBone->bone = LOL_ReadLowerStringData(data, 0);
+			fread(&animBone->flag, 4, 1, data);
+			animBone->frame = calloc(animBone->frame_count, sizeof(LOL_Frame));
+			if(anim->version >= 3)
 			{
-				fread(animBone -> frame, sizeof(LOL_Frame), animBone -> frame_count, data);
+				fread(animBone->frame, sizeof(LOL_Frame), animBone->frame_count, data);
 			}
 			else
 			{
 				unsigned int k;
-				for(k = 0; k < animBone -> frame_count; k++)
+				for(k = 0; k < animBone->frame_count; k++)
 				{
-					fread(&animBone -> frame[k].pos, 4, 3, data);
-					fread(&animBone -> frame[k].rot, 4, 4, data);
-					animBone -> frame[k].scale[0] = 
-						animBone -> frame[k].scale[1] = 
-						animBone -> frame[k].scale[2] = 1.0f;
+					fread(&animBone->frame[k].pos, 4, 3, data);
+					fread(&animBone->frame[k].rot, 4, 4, data);
+					animBone->frame[k].scale[0] = 
+						animBone->frame[k].scale[1] = 
+						animBone->frame[k].scale[2] = 1.0f;
 				}
 			}
 		}
 
-		if(animation -> bone_count == 0 || animation -> fps <= 1)
-			animation -> duration = 1e3;
+		if(animation->bone_count == 0 || animation->fps <= 1)
+			animation->duration = 1e3;
 		else
-			animation -> duration = floor(1e3 * (animation -> animation_bone[0].frame_count / animation -> fps));
+			animation->duration = floor(1e3 * (animation->animation_bone[0].frame_count / animation->fps));
 	}
 }
 
@@ -141,19 +141,19 @@ void delete_LOL_Anim(LOL_Anim *anim)
 	if(!anim)
 		return;
 	unsigned int i;
-	for(i = 0; i < anim -> animation_count; i++)
+	for(i = 0; i < anim->animation_count; i++)
 	{
-		LOL_Animation *animation = anim -> animation + i;
-		free(animation -> name);
+		LOL_Animation *animation = anim->animation + i;
+		free(animation->name);
 		unsigned int j;
-		for(j = 0; j < animation -> bone_count; j++)
+		for(j = 0; j < animation->bone_count; j++)
 		{
-			free(animation -> animation_bone[j].bone);
-			free(animation -> animation_bone[j].frame);
+			free(animation->animation_bone[j].bone);
+			free(animation->animation_bone[j].frame);
 		}
-		free(animation -> animation_bone);
+		free(animation->animation_bone);
 	}
-	free(anim -> animation);
+	free(anim->animation);
 }
 
 int LOL_InflateZ(FILE *data, FILE* dest)

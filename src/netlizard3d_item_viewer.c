@@ -24,6 +24,9 @@
 ADA_GL_Model ada;
 ADA_pmd pmd;
 
+#include "./csol/hlsdk.h"
+
+static StudioModel mdl;
 //static float frustum[6][4];
 
 static game_name game;
@@ -122,7 +125,7 @@ void Viewer_NETLizard3DItemInitFunc(void)
 	is_cross = GL_TRUE;
 	//glClearColor(0.0, 0.0, 0.0 ,1.0);
 	oglDisable(GL_CULL_FACE);
-	move_unit_3d = 10;
+	move_unit_3d = 1;
 	turn_unit_3d = 10;
 	x_a_3d = -90;
 	z_t_3d = -400;
@@ -190,6 +193,14 @@ void Viewer_NETLizard3DItemInitFunc(void)
 	};
 	printfi(Ada_LoadPmdModel(&ada, pmds, 1, "xfile/pl0b"));
 	Ada_ReadPmdFile(&pmd, "xfile/pl0b/pl0b0a.pmd");
+
+	memset(&mdl, 0, sizeof(StudioModel));
+	//bool b = Init(&mdl, "natasha2.mdl");
+	bool b = Init(&mdl, "natasha2.mdl");
+	printf("%d\n", b);
+	if(!b)
+		exit(EXIT_FAILURE);
+	SetSequence(&mdl, 4);
 }
 
 void Viewer_NETLizard3DItemDrawFunc(void)
@@ -214,9 +225,21 @@ void Viewer_NETLizard3DItemDrawFunc(void)
 			glPushMatrix();
 			{
 				//NETLizard_RenderGL3DModel(item_model);
-				glScalef(10,10,10);
-				Ada_RenderStaticModel(&ada);
+				//glScalef(10, 10, 10);
+				//Ada_RenderStaticModel(&ada);
 				//arb(&pmd);
+				glPushAttrib(GL_CURRENT_BIT);
+				{
+					AdvanceFrame(&mdl, delta_time);
+					DrawModel(&mdl);
+				}
+				glPopAttrib();
+				/*
+				SetUpBones(&mdl);
+				DrawBones(&mdl);
+				DrawHitboxes(&mdl);
+				*/
+				glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			}
 			glPopMatrix();
 		}
@@ -236,9 +259,9 @@ void Viewer_NETLizard3DItemDrawFunc(void)
 		{
 			char str[50];
 			memset(str, '\0', 50 * sizeof(char));
-			sprintf(str, "Pos -> (%.2f, %.2f, %.2f)", x_t_3d, y_t_3d, z_t_3d);
+			sprintf(str, "Pos->(%.2f, %.2f, %.2f)", x_t_3d, y_t_3d, z_t_3d);
 			Font_RenderString(&fnt, 0, 0, 0.0, 0.0, 0.0, 1.0, str);
-			sprintf(str, "Ang -> (%.2f, %.2f)", y_r_3d, x_r_3d);
+			sprintf(str, "Ang->(%.2f, %.2f)", y_r_3d, x_r_3d);
 			Font_RenderString(&fnt, 0, 2 * fnt.height, 0.0, 0.0, 0.0, 1.0, str);
 			if(is_cross)
 				Font_RenderString(&fnt, 0, 4 * fnt.height, 0.0, 0.0, 0.0, 1.0, "cross");
@@ -264,10 +287,10 @@ int Viewer_NETLizard3DItemIdleEventFunc(void)
 {
 	/*
 		 int i;
-		 for(i = 0; i < item_model -> item_meshes[0].item_mesh.plane_count; i++)
+		 for(i = 0; i < item_model->item_meshes[0].item_mesh.plane_count; i++)
 		 {
 		 printfi(i);
-		 printfv3(*((vector3_t *)(item_model -> item_meshes[0].item_mesh.plane[i].normal)));
+		 printfv3(*((vector3_t *)(item_model->item_meshes[0].item_mesh.plane[i].normal)));
 		 }
 		 */
 	// 测面 （1 0 0）
@@ -297,7 +320,7 @@ int Viewer_NETLizard3DItemKeyEventFunc(int key, int a, int pressed, int x, int y
 
 void Viewer_NETLizard3DItemReshapeFunc(int w, int h)
 {
-#ifdef _HARMATTAN_OPENGLES
+#ifndef _HARMATTAN_OPENGL
 	glViewport(0, 0, w, h);
 #else
 	glViewport( (w - viewport_width) / 2, (h - viewport_height) / 2, viewport_width, viewport_height);

@@ -9,7 +9,7 @@ void UI_RenderFlickableItem(const GLvoid *comp)
 	if(!comp)
 		return;
 	flickable_setting_item *item = (flickable_setting_item *)comp;
-	UI_RenderComponent(item -> type, item -> component);
+	UI_RenderComponent(item->type, item->component);
 }
 
 void UI_GetFlickableItemGeometry(const GLvoid *comp, float *w, float *h)
@@ -17,7 +17,7 @@ void UI_GetFlickableItemGeometry(const GLvoid *comp, float *w, float *h)
 	if(!comp)
 		return;
 	flickable_setting_item *item = (flickable_setting_item *)comp;
-	UI_GetWidgetGeometry(item -> component, w, h);
+	UI_GetWidgetGeometry(item->component, w, h);
 }
 
 void UI_SettingItemChecked(GLvoid *comp, GLfloat x, GLfloat y)
@@ -28,25 +28,25 @@ void UI_SettingItemChecked(GLvoid *comp, GLfloat x, GLfloat y)
 	switcher *sw = NULL;
 	spin_box *sb = NULL;
 	time_spin_box *tsb = NULL;
-	switch(item -> type)
+	switch(item->type)
 	{
 		case widget_switcher_type:
-			sw = (switcher *)(item -> component);
-			if(UI_PointInRect2(&sw -> btn, x, y))
+			sw = (switcher *)(item->component);
+			if(UI_PointInRect2(&sw->btn, x, y))
 			{
-				sw -> open = !sw -> open;
-				Setting_SetSettingBoolean(Setting_Items[item -> index].name, sw -> open);
+				sw->open = !sw->open;
+				Setting_SetSettingBoolean(Setting_Items[item->index].name, sw->open);
 			}
 			break;
 		case widget_spin_box_type:
-			sb = (spin_box *)(item -> component);
+			sb = (spin_box *)(item->component);
 			if(UI_ClickSpinBox(sb, x, y))
-				Setting_SetSettingInteger(Setting_Items[item -> index].name, sb -> value);
+				Setting_SetSettingInteger(Setting_Items[item->index].name, sb->value);
 			break;
 		case widget_time_spin_box_type:
-			tsb = (time_spin_box *)(item -> component);
+			tsb = (time_spin_box *)(item->component);
 			if(UI_ClickTimeSpinBox(tsb, x, y))
-				Setting_SetSettingTime(Setting_Items[item -> index].name, tsb -> time);
+				Setting_SetSettingTime(Setting_Items[item->index].name, tsb->time);
 			break;
 		default:
 			break;
@@ -69,38 +69,40 @@ flickable_item * UI_MakeSettingItems(setting_item_type *types, unsigned int item
 		{
 			case boolean_value_type:
 				comp = new_switcher(NULL, 0.0, 0.0, 0.3, w, h, Color_GetColor(black_color, 0.0), X11_COLOR(green), X11_COLOR(darkgreen), Color_GetColor(black_color, 0.0), X11_COLOR(lightgreen), X11_COLOR(gray), X11_COLOR(seagreen), Setting_Items[types[i]].description);
-				((switcher *)comp) -> fnt = fnt;
+				((switcher *)comp)->fnt = fnt;
 				char b = 0;
 				Setting_GetSettingBoolean(Setting_Items[types[i]].name, &b);
-				((switcher *)comp) -> open = b ? GL_TRUE : GL_FALSE;
+				((switcher *)comp)->open = b ? GL_TRUE : GL_FALSE;
 				t = widget_switcher_type;
 				break;
 			case integer_value_type:
 				comp = new_spin_box(NULL, 0.0, 0.0, 0.3, w, h, Color_GetColor(black_color, 0.0), X11_COLOR(green), X11_COLOR(darkgreen), X11_COLOR(green), X11_COLOR(gray), X11_COLOR(seagreen), 0, 1, 20, 1, Setting_Items[types[i]].description);
 				int in = 0;
 				Setting_GetSettingInteger(Setting_Items[types[i]].name, &in);
-				((spin_box *)comp) -> fnt = fnt;
-				((spin_box *)comp) -> value = in;
-				((spin_box *)comp) -> min = atoi(Setting_Items[types[i]].min);
-				((spin_box *)comp) -> max = atoi(Setting_Items[types[i]].max);
+				((spin_box *)comp)->fnt = fnt;
+				((spin_box *)comp)->value = in;
+				((spin_box *)comp)->min = atoi(Setting_Items[types[i]].min);
+				((spin_box *)comp)->max = atoi(Setting_Items[types[i]].max);
 				t = widget_spin_box_type;
 				break;
 			case time_value_type:
 				comp = new_time_spin_box(NULL, 0.0, 0.0, 0.3, w, h * 3, Color_GetColor(black_color, 0.0), X11_COLOR(green), X11_COLOR(darkgreen), X11_COLOR(green), X11_COLOR(gray), X11_COLOR(seagreen), 1, 60, 3600, 300, Setting_Items[types[i]].description);
 				long long tm = 0;
 				Setting_GetSettingTime(Setting_Items[types[i]].name, &tm);
-				((time_spin_box *)comp) -> fnt = fnt;
-				((time_spin_box *)comp) -> min = atoll(Setting_Items[types[i]].min);
-				((time_spin_box *)comp) -> max = atoll(Setting_Items[types[i]].max);
+				((time_spin_box *)comp)->fnt = fnt;
+				((time_spin_box *)comp)->min = atoll(Setting_Items[types[i]].min);
+				((time_spin_box *)comp)->max = atoll(Setting_Items[types[i]].max);
 				UI_SetTimeSpinBoxTime(((time_spin_box *)comp), tm);
 				t = widget_time_spin_box_type;
 				break;
 			default:
 				break;
 		}
-		item -> component = comp;
-		item -> index = Setting_Items[types[i]].type;
-		item -> type = t;
+		if(comp)
+			((base_widget *)comp)->clip = GL_FALSE;
+		item->component = comp;
+		item->index = Setting_Items[types[i]].type;
+		item->type = t;
 		items[i].component = item;
 		items[i].render_func = UI_RenderFlickableItem;
 		items[i].get_geometry_func = UI_GetFlickableItemGeometry;
@@ -120,20 +122,20 @@ void UI_FreeSettingComponent(flickable_item *items, unsigned int item_count)
 		switcher *sw = NULL;
 		spin_box *sb = NULL;
 		time_spin_box *tsb = NULL;
-		switch(item -> type)
+		switch(item->type)
 		{
 			case widget_switcher_type:
-				sw = (switcher *)(item -> component);
+				sw = (switcher *)(item->component);
 				delete_switcher(sw);
 				free(sw);
 				break;
 			case widget_spin_box_type:
-				sb = (spin_box *)(item -> component);
+				sb = (spin_box *)(item->component);
 				delete_spin_box(sb);
 				free(sb);
 				break;
 			case widget_time_spin_box_type:
-				tsb = (time_spin_box *)(item -> component);
+				tsb = (time_spin_box *)(item->component);
 				delete_time_spin_box(tsb);
 				free(tsb);
 				break;

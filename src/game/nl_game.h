@@ -104,5 +104,8 @@ void Game_HandleScriptAI(const GL_NETLizard_3D_Model *map_model, game_character 
 int Game_HandleForceAI(const GL_NETLizard_3D_Model *map_model, game_character *gamer, long long time);
 // 换弹
 int Game_ReloadWeapon(weapon *w, long long game_time);
+// 转向某个方向
+void Game_LookatCharacter(const GL_NETLizard_3D_Model *map_model, game_character *gamer, const nl_vector3_t *dir);
+void Game_CharacterRand4Weapons(game_character *gamer);
 
 #endif

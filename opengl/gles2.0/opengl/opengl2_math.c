@@ -98,7 +98,7 @@ static void _math_transposef(float to[16], const float from[16])
 void Mesa_glTranslate(GL2_Matrix44 *mat, float x, float y, float z)
 {
 	IF_NULL_RETURN(mat)
-   float *m = mat -> m;
+   float *m = mat->m;
    m[12] = m[0] * x + m[4] * y + m[8]  * z + m[12];
    m[13] = m[1] * x + m[5] * y + m[9]  * z + m[13];
    m[14] = m[2] * x + m[6] * y + m[10] * z + m[14];
@@ -277,7 +277,7 @@ void Mesa_glRotate(GL2_Matrix44 *mat, float angle, float x, float y, float z)
 void Mesa_glScale(GL2_Matrix44 *mat, float x, float y, float z)
 {
 	IF_NULL_RETURN(mat)
-   float *m = mat -> m;
+   float *m = mat->m;
    m[0] *= x;   m[4] *= y;   m[8]  *= z;
    m[1] *= x;   m[5] *= y;   m[9]  *= z;
    m[2] *= x;   m[6] *= y;   m[10] *= z;
@@ -288,7 +288,7 @@ void Mesa_glLoadMatrix(GL2_Matrix44 *mat, const float *m)
 {
 	IF_NULL_RETURN(mat)
 	if (!m) return;
-   memcpy(mat -> m, m, 16 * sizeof(float));
+   memcpy(mat->m, m, 16 * sizeof(float));
 }
 
 void Mesa_glLoadTransposeMatrix(GL2_Matrix44 *mat, const float *m)
@@ -303,7 +303,7 @@ void Mesa_glLoadTransposeMatrix(GL2_Matrix44 *mat, const float *m)
 void Mesa_glLoadIdentity(GL2_Matrix44 *mat)
 {
 	IF_NULL_RETURN(mat)
-   memcpy(mat -> m, Identity, 16 * sizeof(float));
+   memcpy(mat->m, Identity, 16 * sizeof(float));
 }
 
 void Mesa_glMultMatrix(GL2_Matrix44 *mat, const float *m)
@@ -398,7 +398,7 @@ void Mesa_glTransform(float r[3], const float p[3], const GL2_Matrix44 *mat)
 	IF_NULL_RETURN(mat)
 	float v[4] = {p[0], p[1], p[2], 1};
 	float u[4];
-	_mesa_transform_vector(u, v, mat -> m);
+	_mesa_transform_vector(u, v, mat->m);
 	r[0] = u[0] / u[3];
 	r[1] = u[1] / u[3];
 	r[2] = u[2] / u[3];

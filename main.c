@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	if(show_help && ((cmdopts.option & Quiet_Mode) == 0))
-		Main_PrintHelp(_KARIN_APPLICATION);
+		Main_PrintHelp(_KARIN_APPBIN);
 	Main_ClearNLPCMDOpt();
 	if(fail)
 		exit(EXIT_FAILURE);

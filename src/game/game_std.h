@@ -4,6 +4,7 @@
 #define OPEN_SETTING "open_setting"
 #define OPEN_WEAPON_CHOOSER "open_weapon_chooser"
 #define OPEN_CHARACTER_MODEL_CHOOSER "open_character_model_chooser"
+#define OPEN_MDL_VIEWER "open_mdl_viewer"
 #define OPEN_KEYMAP_SETTING "open_keymap_setting"
 #define OPEN_ABOUT "open_about"
 #define OPEN_MAIN_MENU "open_main_menu"

@@ -11,7 +11,11 @@ typedef signed char byte_t; // GLbyte
 
 #define _true 1
 #define _false 0
+#define countof(arr) (sizeof(arr) / sizeof((arr)[0]))
 
+#define DEBUG_STRING_MAX_LENGTH 1024
+
+#define CHARCE(x) (rand() % (x) == 0)
 
 typedef struct _vector3_t gl_vector3_t;
 typedef struct _vector3_t nl_vector3_t;
@@ -25,9 +29,9 @@ typedef struct _vector2_t nl_vector2_t;
 }
 
 #define CONVERT_VECTOR3_POINTER_GL_TO_NL(glvp, nlvp) { \
-	(nlvp) -> x = -(glvp) -> x; \
-	(nlvp) -> y = (glvp) -> z; \
-	(nlvp) -> z = -(glvp) -> y; \
+	(nlvp)->x = -(glvp)->x; \
+	(nlvp)->y = (glvp)->z; \
+	(nlvp)->z = -(glvp)->y; \
 }
 
 #define CONVERT_VECTOR3_NL_TO_GL(nlv, glv) { \
@@ -37,9 +41,9 @@ typedef struct _vector2_t nl_vector2_t;
 }
 
 #define CONVERT_VECTOR3_POINTER_NL_TO_GL(nlvp, glvp) { \
-	(glvp) -> x = -(nlvp) -> x; \
-	(glvp) -> y = -(nlvp) -> z; \
-	(glvp) -> z = (nlvp) -> y; \
+	(glvp)->x = -(nlvp)->x; \
+	(glvp)->y = -(nlvp)->z; \
+	(glvp)->z = (nlvp)->y; \
 }
 
 #define RETURN_PTR(ptr, p, T) \

@@ -581,17 +581,17 @@ void Main3D_LoadKeyActionMapFromFile(const char *file)
 	if(!arr)
 		return;
 	printf("Read key map file: %s\n", keymap_file);
-	char *data = (char *)(arr -> array);
+	char *data = (char *)(arr->array);
 	char ch;
 	i = 0;
-	while(i < arr -> length)
+	while(i < arr->length)
 	{
 		while((ch = data[i]) == '\n') i++;
 		if(ch == '[')
 		{
 			i += 1;
 			int j = 0;
-			while(data[i + j] != ']' && i + j < arr -> length)
+			while(data[i + j] != ']' && i + j < arr->length)
 				j++;
 			char *title = NEW_II(char, j + 1);
 			memcpy(title, data + i, sizeof(char) * (j + 1));
@@ -607,7 +607,7 @@ void Main3D_LoadKeyActionMapFromFile(const char *file)
 			i += 1;
 			while(isspace((ch = data[i]))) i++;
 			int j = 0;
-			while(data[i + j] != '\n' && i + j < arr -> length)
+			while(data[i + j] != '\n' && i + j < arr->length)
 				j++;
 			if(show_comment)
 			{
@@ -624,7 +624,7 @@ void Main3D_LoadKeyActionMapFromFile(const char *file)
 		{
 			i += 1;
 			int j = 0;
-			while(data[i + j] != '>' && i + j < arr -> length)
+			while(data[i + j] != '>' && i + j < arr->length)
 				j++;
 			char *str = NEW_II(char, j + 1);
 			memcpy(str, data + i, sizeof(char) * (j + 1));
@@ -638,7 +638,7 @@ void Main3D_LoadKeyActionMapFromFile(const char *file)
 		else
 		{
 			int j = 0;
-			while(data[i + j] != '\n' && i + j < arr -> length)
+			while(data[i + j] != '\n' && i + j < arr->length)
 				j++;
 			char *str = NEW_II(char, j + 1);
 			memcpy(str, data + i, sizeof(char) * (j + 1));

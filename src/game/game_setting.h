@@ -20,6 +20,8 @@
 #define OPEN_RADAR_SETTING "open_radar"
 #define POINT_TARGET_SETTING "point_target"
 #define TIME_LIMIT_SETTING "time_limit"
+#define FOG_EFFECT_SETTING "fog_effect"
+#define LIGHTING_EFFECT_SETTING "lighting_effect"
 
 // special
 #define USE_WEAPON_SETTING "use_weapon"
@@ -49,6 +51,8 @@ typedef enum _setting_item_type
 
 	group_count_setting,
 	character_count_setting,
+	lighting_effect_setting,
+	fog_effect_setting,
 	god_mode_setting,
 	open_radar_setting,
 	point_target_setting,

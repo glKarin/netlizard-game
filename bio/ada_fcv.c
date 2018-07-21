@@ -6,12 +6,12 @@
 #define STRUCT_NAME(n) // mark a member of struct
 
 // for debug
-#define printfi(a) printf(#a" -> %d\n", a)
-#define printfx(a) printf(#a" -> %x\n", a)
+#define printfi(a) printf(#a"->%d\n", a)
+#define printfx(a) printf(#a"->%x\n", a)
 #define printfln(a) printf(#a"\n")
 #define printfnl printf("\n")
-#define printfs(a) printf(#a" -> %s\n", a)
-#define printfb(a) printf(#a" -> %s\n", a ? "true" : "false")
+#define printfs(a) printf(#a"->%s\n", a)
+#define printfb(a) printf(#a"->%s\n", a ? "true" : "false")
 
 typedef unsigned char uint8; // default char should be unsigned, may be not
 typedef signed char int8;
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 		STRUCT_MEMBER uint32 bone_index = 0;
 		STRUCT_MEMBER uint8 bone_id = 0;
 		fread(&bone_id, sizeof(uint8), 1, is);
-		printf("%d -> %d\n", i, bone_id);
+		printf("%d->%d\n", i, bone_id);
 	}
 
 	// 现在应该过了你标记的绿色区域， 到了你说要跳过的地方

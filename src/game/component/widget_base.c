@@ -6,13 +6,16 @@ base_widget * new_base_widget(base_widget *wid, GLfloat x, GLfloat y, GLfloat z,
 {
 	RETURN_PTR(w, wid, base_widget)
 
-		w -> x = x;
-	w -> y = y;
-	w -> z = z;
-	w -> width = width;
-	w -> height = height;
-	w -> visible = visible;
-	w -> scale = scale;
+		w->x = x;
+	w->y = y;
+	w->z = z;
+	w->width = width;
+	w->height = height;
+	w->visible = visible;
+	w->scale = scale;
+	w->focus = GL_FALSE;
+	w->enabled = GL_TRUE;
+	w->clip = GL_TRUE;
 	return w;
 }
 
@@ -21,9 +24,9 @@ void UI_SetWidgetSize(base_widget *base, GLfloat w, GLfloat h, GLbitfield mask)
 	if(!base)
 		return;
 	if(mask & geometry_w_mask && w > 0.0)
-		base -> width = w;
+		base->width = w;
 	if(mask & geometry_h_mask && h > 0.0)
-		base -> height = h;
+		base->height = h;
 }
 
 void UI_SetWidgetPosition(base_widget *base, GLfloat x, GLfloat y, GLfloat z, GLbitfield mask)
@@ -31,11 +34,11 @@ void UI_SetWidgetPosition(base_widget *base, GLfloat x, GLfloat y, GLfloat z, GL
 	if(!base)
 		return;
 	if(mask & geometry_x_mask)
-		base -> x = x;
+		base->x = x;
 	if(mask & geometry_y_mask)
-		base -> y = y;
+		base->y = y;
 	if(mask & geometry_z_mask)
-		base -> z = z;
+		base->z = z;
 }
 
 void UI_SetWidgetGeometry(base_widget *base, GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLbitfield mask)
@@ -50,21 +53,21 @@ GLboolean UI_PointInRect1(const rect1 *r, GLfloat x, GLfloat y)
 {
 	if(!r)
 		return GL_FALSE;
-	return((x >= r -> x && x <= r -> x + r -> w) 
-			&& (y >= r -> y && y <= r -> y + r -> h) ? GL_TRUE : GL_FALSE);
+	return((x >= r->x && x <= r->x + r->w) 
+			&& (y >= r->y && y <= r->y + r->h) ? GL_TRUE : GL_FALSE);
 }
 GLboolean UI_PointInRect2(const rect2 *r, GLfloat x, GLfloat y)
 {
 	if(!r)
 		return GL_FALSE;
-	return((x >= r -> x1 && x <= r -> x2) 
-			&& (y >= r -> y1 && y <= r -> y2) ? GL_TRUE : GL_FALSE);
+	return((x >= r->x1 && x <= r->x2) 
+			&& (y >= r->y1 && y <= r->y2) ? GL_TRUE : GL_FALSE);
 }
 
 GLboolean UI_PointInWidget(const base_widget *w, GLfloat x, GLfloat y)
 {
 	if(!w)
 		return GL_FALSE;
-	return((x >= w -> x && x <= w -> x + w -> width) 
-			&& (y >= w -> y && y <= w -> y + w -> height) ? GL_TRUE : GL_FALSE);
+	return((x >= w->x && x <= w->x + w->width) 
+			&& (y >= w->y && y <= w->y + w->height) ? GL_TRUE : GL_FALSE);
 }

@@ -74,6 +74,9 @@ typedef struct _zoom
 	int zoom_auto;
 } zoom;
 
+char shared_str[DEBUG_STRING_MAX_LENGTH];
+
+static GLfloat light_position[] = { 1.0f, 1.0f, 1.0f, 0.0 };
 static zoom zm = {no_zoom_type, 0, FOXY_MAX, FOXY_MAX, FOXY_MAX, 0, 0, 0};
 static int my_character_index = WHO_AM_I;
 static vkb vkb_layer;
@@ -115,6 +118,8 @@ static bool_t open_radar = 1;
 static int tp_x_offset = 10;
 static int tp_y_offset = 25;
 static int tp_dis = 300;
+static bool_t lighting_effect = 0;
+static bool_t fog_effect = 0;
 
 static void Game_ResetViewer(void);
 static void Game_ViewerInitFunc(void);
@@ -127,7 +132,8 @@ static int Game_ViewerMouseEventFunc(int b, int p, int x, int y);
 static int Game_ViewerMouseClickEventFunc(int b, int x, int y);
 static int Game_ViewerMouseMotionEventFunc(int b, int p, int x, int y, int dx, int dy);
 static void Game_UpdateFPPosition(const game_character *c);
-static void Game_ViewerInitSimpleLight(void);
+static void Game_ViewerInitGlobalLighting(void);
+static void Game_ViewerInitPlayerLighting(void);
 static void Game_UpdateZoomProgress(void);
 
 static void Game_UpdateGLTransform(game_character *gamer);
@@ -141,7 +147,7 @@ static int Game_ViewerActionEvent(int b, int a, int p);
 static void Game_ViewerGetSetting(void);
 static void Game_GameOver(void);
 
-void Game_ViewerInitSimpleLight(void)
+void Game_ViewerInitPlayerLighting(void)
 {
 #ifndef _HARMATTAN_OPENGLES2
 	GLfloat ambient_light[] = {
@@ -153,22 +159,46 @@ void Game_ViewerInitSimpleLight(void)
 	GLfloat specular_light[] = {
 		1.0f, 1.0f, 1.0f, 1.0f
 	};
-	GLfloat light_position[] = {
-		0.0f, 0.0f, 1.0f, 1.0
-	};
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_light);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_light);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, specular_light);
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, ambient_light);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse_light);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, specular_light);
 
 	GLfloat spot_directory[] = {
 		0.0, 0.0, -1.0
 	};
-	GLfloat spot_cutoff = 22.5f;
-	GLfloat spot_exponent = 2.0f;
-	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, spot_cutoff);
-	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spot_directory);
-	glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, spot_exponent);
+	GLfloat spot_cutoff = 10.0f;
+	GLfloat spot_exponent = 64.0f;
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, spot_cutoff);
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spot_directory);
+	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, spot_exponent);
+
+	GLfloat pos[] = {0.0, 0.0, -45.0, 1.0};
+	glLightfv(GL_LIGHT1, GL_POSITION, pos);
+
+	//oglEnable(GL_LIGHT1);
+#endif
+}
+
+void Game_ViewerInitGlobalLighting(void)
+{
+#ifndef _HARMATTAN_OPENGLES2
+	vector3_t dir = {light_position[0], light_position[1], light_position[2]};
+	Vector3_Normalize(&dir);
+	light_position[0] = dir.x;
+	light_position[1] = dir.y;
+	light_position[2] = dir.z;
+	GLfloat ambient_light[] = {
+		0.4f, 0.4f, 0.4f, 1.0f
+	};
+	GLfloat diffuse_light[] = {
+		0.4f, 0.4f, 0.4f, 1.0f
+	};
+	GLfloat specular_light[] = {
+		1.0f, 1.0f, 1.0f, 1.0f
+	};
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_light);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_light);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, specular_light);
 
 	GLfloat material_specular[] = {
 		1.0f, 1.0f, 1.0f, 1.0f
@@ -176,10 +206,10 @@ void Game_ViewerInitSimpleLight(void)
 	GLfloat material_ambient_and_diffuse[] = {
 		1.0f, 1.0f, 1.0f, 1.0f
 	};
-	GLfloat material_shiness = 0.0;
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, material_ambient_and_diffuse);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, material_specular);
-	glMaterialf(GL_FRONT, GL_SHININESS, material_shiness);
+	GLfloat material_shiness = 10.0;
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, material_ambient_and_diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material_specular);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, material_shiness);
 
 	GLfloat global_ambient_light[] = {
 		0.2f, 0.2f, 0.2f, 1.0f
@@ -283,11 +313,11 @@ int Game_InitGame(void)
 		loading_progress_func = (void__func__int_int_constcharptr)slot;
 	if(loading_progress_func)
 		loading_progress_func(0, 20, "Init GL State");
-	GLfloat bg_color[] = {1.0, 1.0, 1.0, 1.0};
-	OpenGL_InitSimpleFog(FOG_NEAR, FOG_FAR, 0.01f, bg_color);
-	oglDisable(GL_FOG);
+	GLfloat bg_color[] = {0.2, 0.2, 0.2, 1.0};
+	OpenGL_InitFog(GL_EXP, FOG_NEAR, FOG_FAR, 0.0002f, bg_color);
 #ifndef _HARMATTAN_OPENGLES2
-	Game_ViewerInitSimpleLight();
+	Game_ViewerInitGlobalLighting();
+	Game_ViewerInitPlayerLighting();
 #endif
 
 	if(loading_progress_func)
@@ -332,7 +362,7 @@ int Game_InitGame(void)
 		if(loading_progress_func)
 			loading_progress_func(0, 50, "Read map model successful");
 		NETLizard_MakeGL23DModel(map_model);
-		bg.tex = map_model -> bg_tex;
+		bg.tex = map_model->bg_tex;
 		if(loading_progress_func)
 			loading_progress_func(0, 60, "Reading map event");
 		event = Event_LoadEvent(EVENT_FILE, game, level);
@@ -347,13 +377,13 @@ int Game_InitGame(void)
 		loading_progress_func(0, 70, "Init game setting");
 	Game_ViewerGetSetting();
 	/*
-	x_t_3d = -map_model -> start_pos[0];
-	y_t_3d = -map_model -> start_pos[2];
-	z_t_3d = map_model -> start_pos[1];
-	y_r_3d = Algo_FormatAngle(map_model -> start_angle[1] - 180.0);
-	//x_r_3d = map_model -> start_angle[0];
+	x_t_3d = -map_model->start_pos[0];
+	y_t_3d = -map_model->start_pos[2];
+	z_t_3d = map_model->start_pos[1];
+	y_r_3d = Algo_FormatAngle(map_model->start_angle[1] - 180.0);
+	//x_r_3d = map_model->start_angle[0];
 	*/
-	nl_vector3_t p = {map_model -> start_pos[0], map_model -> start_pos[1], map_model -> start_pos[2]};
+	nl_vector3_t p = {map_model->start_pos[0], map_model->start_pos[1], map_model->start_pos[2]};
 	int scene = Algo_GetPointInAABBInNETLizard3DMap(&p, map_model);
 
 	if(loading_progress_func)
@@ -363,16 +393,23 @@ int Game_InitGame(void)
 	int gc = GROUP_COUNT;
 	Setting_GetSettingInteger(CHARACTER_COUNT_SETTING, &cc);
 	Setting_GetSettingInteger(GROUP_COUNT_SETTING, &gc);
-	Game_InitCharacter(map_model -> start_pos[0], map_model -> start_pos[1], map_model -> start_pos[2] - (2293760 >> 16), 0.0, map_model -> start_angle[1], scene, gc, cc, my_character_index, NULL);
+	Game_InitCharacter(map_model->start_pos[0], map_model->start_pos[1], map_model->start_pos[2] - (2293760 >> 16), 0.0, map_model->start_angle[1], scene, gc, cc, my_character_index, NULL);
 	player = characters + my_character_index;
 	if(god_mode)
 	{
-		player -> health = -1;
-		player -> health_full = -1;
-		player -> current_weapon.ammo_total_count = -1;
-		player -> current_weapon.ammo_total_count_limit = -1;
+		player->health = -1;
+		player->health_full = -1;
+		if(player->weapons.wpons)
+		{
+			unsigned int i;
+			for(i = 0; i < player->weapons.wp_count; i++)
+			{
+				player->weapons.wpons[i].ammo_total_count = -1;
+				player->weapons.wpons[i].ammo_total_count_limit = -1;
+			}
+		}
 	}
-	player -> ai.type = ai_player_type;
+	player->ai.type = ai_player_type;
 
 	int i;
 	for(i = 1; i < character_count; i++)
@@ -426,6 +463,7 @@ void Game_ViewerDrawFunc(void)
 		int *scenes = NULL;
 		unsigned int count = 0;
 		person_mode pm = game_mode.p_mode;
+		const weapon *wp = Game_CharacterCurrentWeapon(game_mode.characters + game_mode.current_character);
 		if(zm.type == sniper_zoom_type)
 			pm = first_person_mode;
 
@@ -460,25 +498,25 @@ void Game_ViewerDrawFunc(void)
 			{
 				if(game_mode.characters[game_mode.current_character].scene != -1)
 				{
-					const GL_NETLizard_3D_Mesh *mesh = map_model -> meshes + game_mode.characters[game_mode.current_character].scene;
+					const GL_NETLizard_3D_Mesh *mesh = map_model->meshes + game_mode.characters[game_mode.current_character].scene;
 					unsigned int k;
-					for(k = mesh -> item_index_range[0]; k < mesh -> item_index_range[1]; k++)
+					for(k = mesh->item_index_range[0]; k < mesh->item_index_range[1]; k++)
 					{
-						const GL_NETLizard_3D_Item_Mesh *im = map_model -> item_meshes + k;
-						if(im -> item_type == Item_Box_Type)
+						const GL_NETLizard_3D_Item_Mesh *im = map_model->item_meshes + k;
+						if(im->item_type == Item_Box_Type)
 						{
-							if(!im -> item_mesh.materials)
+							if(!im->item_mesh.materials)
 								break;
 							glPushMatrix();
 							{
 								glRotatef(x_r_3d, 1.0, 0.0 ,0.0);
 								glRotatef(y_r_3d, 0.0, 1.0, 0.0);
 								glRotatef(-90.0, 1.0, 0.0, 0.0);
-								GLfloat xs = im -> item_mesh.ortho[0] - im -> item_mesh.ortho[3];
-								GLfloat ys = im -> item_mesh.ortho[1] - im -> item_mesh.ortho[4];
-								GLfloat zs = im -> item_mesh.ortho[2] - im -> item_mesh.ortho[5];
+								GLfloat xs = im->item_mesh.ortho[0] - im->item_mesh.ortho[3];
+								GLfloat ys = im->item_mesh.ortho[1] - im->item_mesh.ortho[4];
+								GLfloat zs = im->item_mesh.ortho[2] - im->item_mesh.ortho[5];
 								glScalef(frustum_far / xs, frustum_far / ys, frustum_far / zs);
-								NETLizard_RenderGL3DMesh(&(im -> item_mesh), map_model -> texes);
+								NETLizard_RenderGL3DMesh(&(im->item_mesh), map_model->texes);
 							}
 							glPopMatrix();
 							break;
@@ -489,7 +527,7 @@ void Game_ViewerDrawFunc(void)
 		}
 		else
 		{
-			if(map_model -> bg_tex)
+			if(map_model->bg_tex)
 			{
 				OpenGL_Render2D(0.0, width, 0.0, height);
 				{
@@ -499,8 +537,14 @@ void Game_ViewerDrawFunc(void)
 		}
 
 #ifndef _HARMATTAN_OPENGLES2
-		if(is_lighting)
+		if(lighting_effect || is_lighting)
 			oglEnable(GL_LIGHTING);
+#endif
+		if(fog_effect)
+			oglEnable(GL_FOG);
+#ifndef _HARMATTAN_OPENGLES2
+		if(is_lighting)
+			oglEnable(GL_LIGHT1);
 #endif
 		OpenGL_Render3D(zm.foxy, width, height, FRUSTUM_NEAR, frustum_far);
 		{
@@ -508,6 +552,13 @@ void Game_ViewerDrawFunc(void)
 			glPushMatrix();
 			{
 				Main3D_ModelViewTransform(pm, -25.0, -15.0, 120.0, 0);
+				if(lighting_effect)
+				{
+					oglEnable(GL_LIGHT0);
+					glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+				}
+				else
+					oglDisable(GL_LIGHT0);
 
 				if(game_mode.characters[game_mode.current_character].scene != -1)
 				{
@@ -563,19 +614,28 @@ void Game_ViewerDrawFunc(void)
 						ray_ava = 0;
 					if(ray_ava)
 					{
-						tps_ray_cross_hair.ray.start_pos[0] = game_mode.characters[game_mode.current_character].current_weapon.position[0];
-						tps_ray_cross_hair.ray.start_pos[1] = game_mode.characters[game_mode.current_character].current_weapon.position[1];
-						tps_ray_cross_hair.ray.start_pos[2] = game_mode.characters[game_mode.current_character].current_weapon.position[2];
+						if(wp)
+						{
+							tps_ray_cross_hair.ray.start_pos[0] = wp->position[0];
+							tps_ray_cross_hair.ray.start_pos[1] = wp->position[1];
+							tps_ray_cross_hair.ray.start_pos[2] = wp->position[2];
+						}
+						else
+						{
+							tps_ray_cross_hair.ray.start_pos[0] = game_mode.characters[game_mode.current_character].position[0];
+							tps_ray_cross_hair.ray.start_pos[1] = game_mode.characters[game_mode.current_character].position[1];
+							tps_ray_cross_hair.ray.start_pos[2] = game_mode.characters[game_mode.current_character].position[2] - game_mode.characters[game_mode.current_character].height;
+						}
 						tps_ray_cross_hair.ray.target_pos[0] = collision_point.x;
 						tps_ray_cross_hair.ray.target_pos[1] = collision_point.y;
 						tps_ray_cross_hair.ray.target_pos[2] = collision_point.z;
 #ifndef _HARMATTAN_OPENGLES2
-						if(is_lighting)
+						if(lighting_effect || is_lighting)
 							oglDisable(GL_LIGHTING);
 #endif
 						UI_RenderCrossHair(&tps_ray_cross_hair);
 #ifndef _HARMATTAN_OPENGLES2
-						if(is_lighting)
+						if(lighting_effect || is_lighting)
 							oglEnable(GL_LIGHTING);
 #endif
 					}
@@ -584,13 +644,19 @@ void Game_ViewerDrawFunc(void)
 			glPopMatrix();
 		}
 
+		if(fog_effect)
+			oglDisable(GL_FOG);
 #ifndef _HARMATTAN_OPENGLES2
 		if(is_lighting)
-			oglDisable(GL_LIGHTING);
+			oglDisable(GL_LIGHT1);
 #endif
 		if(zm.type == sniper_zoom_type)
 			oglDisable(GL_STENCIL_TEST);
 
+#ifndef _HARMATTAN_OPENGLES2
+		if(lighting_effect || is_lighting)
+			oglDisable(GL_LIGHTING);
+#endif
 		OpenGL_Render2D(0.0, width, 0.0, height);
 		{
 			if(open_radar)
@@ -621,20 +687,12 @@ void Game_ViewerDrawFunc(void)
 				{
 					if(game_mode.characters[game_mode.current_character].health != health_death_type)
 					{
-#ifndef _HARMATTAN_OPENGLES2
-						if(is_lighting)
-							oglEnable(GL_LIGHTING);
-#endif
-						if(fp.fp.tex != game_mode.characters[game_mode.current_character].current_weapon.model -> fp_tex)
+						if(wp && fp.fp.tex != wp->model->fp_tex)
 						{
-							UI_SetFirstPersonTexture(&fp, game_mode.characters[game_mode.current_character].current_weapon.model -> fp_tex);
+							UI_SetFirstPersonTexture(&fp, wp->model->fp_tex);
 						}
 						UI_UpdateFirstPerson(&fp, delta_time);
 						UI_RenderFirstPerson(&fp);
-#ifndef _HARMATTAN_OPENGLES2
-						if(is_lighting)
-							oglDisable(GL_LIGHTING);
-#endif
 					}
 				}
 			}
@@ -687,22 +745,24 @@ void Game_ViewerDrawFunc(void)
 			{
 				char str[100];
 				memset(str, '\0', 100 * sizeof(char));
-				const GL_NETLizard_3D_Mesh *mesh = map_model -> meshes + game_mode.characters[game_mode.current_character].scene;
+				const GL_NETLizard_3D_Mesh *mesh = map_model->meshes + game_mode.characters[game_mode.current_character].scene;
 				Font_RenderString(&fnt, 4, height - 8 * fnt.height, 0.0, 1.0, 0.0, 1.0, map_file);
 				nl_vector3_t dir = Algo_ComputeDirection(game_mode.characters[game_mode.current_character].y_angle, game_mode.characters[game_mode.current_character].x_angle);
-				sprintf(str, "Pos -> (%.2f, %.2f, %.2f)", game_mode.characters[game_mode.current_character].position[0], game_mode.characters[game_mode.current_character].position[1], game_mode.characters[game_mode.current_character].position[2]);
+				sprintf(str, "Pos->(%.2f, %.2f, %.2f)", game_mode.characters[game_mode.current_character].position[0], game_mode.characters[game_mode.current_character].position[1], game_mode.characters[game_mode.current_character].position[2]);
 				Font_RenderString(&fnt, 4, height - 9 * fnt.height, 0.0, 1.0, 0.0, 1.0, str);
-				sprintf(str, "Ang -> (%.0f, %.0f) Dir -> (%.2f, %.2f, %.2f)", game_mode.characters[game_mode.current_character].x_angle, game_mode.characters[game_mode.current_character].y_angle, dir.x, dir.y, dir.z);
+				sprintf(str, "Ang->(%.0f, %.0f) Dir->(%.2f, %.2f, %.2f)", game_mode.characters[game_mode.current_character].x_angle, game_mode.characters[game_mode.current_character].y_angle, dir.x, dir.y, dir.z);
 				Font_RenderString(&fnt, 4, height - 10 * fnt.height, 0.0, 1.0, 0.0, 1.0, str);
-				sprintf(str, "Scene -> (%d / %d) Item -> %d (%d, %d)", game_mode.characters[game_mode.current_character].scene, map_model -> count, game_mode.characters[game_mode.current_character].collision_item, mesh -> item_index_range[0], mesh -> item_index_range[1]);
+				sprintf(str, "Scene->(%d / %d) Item->%d (%d, %d)", game_mode.characters[game_mode.current_character].scene, map_model->count, game_mode.characters[game_mode.current_character].collision_item, mesh->item_index_range[0], mesh->item_index_range[1]);
 				Font_RenderString(&fnt, 4, height - 11 * fnt.height, 0.0, 1.0, 0.0, 1.0, str);
-				sprintf(str, "y -> %d x -> %d dis -> %d", tp_y_offset, tp_x_offset, tp_dis);
+				sprintf(str, "y->%d x->%d dis->%d", tp_y_offset, tp_x_offset, tp_dis);
 				Font_RenderString(&fnt, 4, height - 12 * fnt.height, 0.0, 1.0, 0.0, 1.0, str);
 				if(last_key != Harmattan_Total_Key)
 				{
 					sprintf(str, "%s - %s", Key_Infos[last_key].symbol, last_pressed ? "pressed" : "released");
 					Font_RenderString(&fnt, 4, height - 13 * fnt.height, 0.0, 1.0, 0.0, 1.0, str);
 				}
+				if(*shared_str)
+					Font_RenderString(&fnt, 4, height - 14 * fnt.height, 0.0, 1.0, 0.0, 1.0, shared_str);
 			}
 		}
 		if(scenes)
@@ -751,6 +811,10 @@ void Game_ViewerFreeFunc(void)
 	Game_ResetViewer();
 	Sound_FreeGameSound();
 	Game_FreeWeaponModel();
+#ifndef _HARMATTAN_OPENGLES2
+	oglDisable(GL_LIGHTING);
+#endif
+	oglDisable(GL_FOG);
 	has_init = 0;
 }
 
@@ -758,17 +822,20 @@ void Game_UpdateFPPosition(const game_character *c)
 {
 	if(!c)
 		return;
-	if((c -> ai.action & aiaction_attack_type || c -> ai.action & aiaction_fight_type) && c -> current_weapon.status == firing_type)
+	const weapon *wp = Game_CharacterCurrentWeapon((game_character *)c);
+	if(!wp)
+		return;
+	if((c->ai.action & aiaction_attack_type || c->ai.action & aiaction_fight_type) && wp->status == firing_type)
 		UI_UpdateFirstPersonStatus(&fp, fp_fight_status_type);
-	else if(c -> ai.action & aiaction_movexyz_type || c -> ai.action & aiaction_jump_type)
+	else if(c->ai.action & aiaction_movexyz_type || c->ai.action & aiaction_jump_type)
 		UI_UpdateFirstPersonStatus(&fp, fp_move_status_type);
-	else if(c -> ai.action & aiaction_turnleft_type)
+	else if(c->ai.action & aiaction_turnleft_type)
 		UI_UpdateFirstPersonStatus(&fp, fp_turnleft_status_type);
-	else if(c -> ai.action & aiaction_turnright_type)
+	else if(c->ai.action & aiaction_turnright_type)
 		UI_UpdateFirstPersonStatus(&fp, fp_turnright_status_type);
-	else if(c -> ai.action & aiaction_turndown_type)
+	else if(c->ai.action & aiaction_turndown_type)
 		UI_UpdateFirstPersonStatus(&fp, fp_turndown_status_type);
-	else if(c -> ai.action & aiaction_turnup_type)
+	else if(c->ai.action & aiaction_turnup_type)
 		UI_UpdateFirstPersonStatus(&fp, fp_turnup_status_type);
 	else
 		UI_UpdateFirstPersonStatus(&fp, fp_idle_status_type);
@@ -782,7 +849,7 @@ void Game_UpdateZoomProgress(void)
 		return;
 	if(zm.type == no_zoom_type)
 		return;
-	if(player -> health == health_death_type)
+	if(player->health == health_death_type)
 	{
 		zm.type = no_zoom_type;
 		zm.foxy = zm.max_foxy;
@@ -821,31 +888,31 @@ void Game_UpdateGLTransform(game_character *gamer)
 		return;
 	if(!gamer)
 		return;
-	x_t_3d = -gamer -> position[0];
-	y_t_3d = -gamer -> position[2] - gamer -> height;
-	z_t_3d = gamer -> position[1];
-	x_r_3d = gamer -> x_angle;
-	y_r_3d = Algo_FormatAngle(-gamer -> y_angle - 180.0);
+	x_t_3d = -gamer->position[0];
+	y_t_3d = -gamer->position[2] - gamer->height;
+	z_t_3d = gamer->position[1];
+	x_r_3d = gamer->x_angle;
+	y_r_3d = Algo_FormatAngle(-gamer->y_angle - 180.0);
 
 	if(game_mode.p_mode == third_person_mode)
 	{
 		gl_vector3_t third = {0.0, 0.0, 0.0};
-		//if(Algo_UpdateThirdPersonPosition(&third.x, &third.y, &third.z, x_t_3d, y_t_3d, z_t_3d, x_r_3d, y_r_3d, -27.0, 15.0, 180.0, gamer -> scene, gamer -> scene_collision_result))
+		//if(Algo_UpdateThirdPersonPosition(&third.x, &third.y, &third.z, x_t_3d, y_t_3d, z_t_3d, x_r_3d, y_r_3d, -27.0, 15.0, 180.0, gamer->scene, gamer->scene_collision_result))
 		float rxr = 0.0;
 		float ryr = 0.0;
-		if(gamer -> ai.action == aiaction_dead_type && gamer -> score.killed_character != -1)
+		if(gamer->ai.action == aiaction_dead_type && gamer->score.killed_character != -1)
 		{
 			view_free_reason = view_game_free_type;
 			view_free_mode = GL_TRUE;
 			float xr = 0.0;
 			float yr = 0.0;
-			Game_ComputeCharacterAndCharacterAngle(gamer, game_mode.characters + gamer -> score.killed_character, &yr, &xr);
+			Game_ComputeCharacterAndCharacterAngle(gamer, game_mode.characters + gamer->score.killed_character, &yr, &xr);
 			/*
-			gamer -> x_angle = xr;
-			gamer -> current_weapon.x_angle = gamer -> x_angle;
+			gamer->x_angle = xr;
+			wp->.x_angle = gamer->x_angle;
 			*/
-			view_y_angle = yr;//Algo_FormatAngle(yr - game_mode.gamer -> y_angle);
-			view_x_angle = xr;//Algo_FormatAngle(xr - game_mode.gamer -> x_angle);
+			view_y_angle = yr;//Algo_FormatAngle(yr - game_mode.gamer->y_angle);
+			view_x_angle = xr;//Algo_FormatAngle(xr - game_mode.gamer->x_angle);
 		}
 		else
 		{
@@ -861,16 +928,16 @@ void Game_UpdateGLTransform(game_character *gamer)
 				{
 					view_y_angle = Algo_FormatAngle(view_y_angle + r);
 					/*
-					if(Algo_FormatAngle(view_y_angle - gamer -> y_angle) > 180.0)
-						view_y_angle = Algo_FormatAngle(gamer -> y_angle + 180.0);
+					if(Algo_FormatAngle(view_y_angle - gamer->y_angle) > 180.0)
+						view_y_angle = Algo_FormatAngle(gamer->y_angle + 180.0);
 						*/
 				}
 				else if(action_state[FreeViewTurnLeft_Action] == 0 && action_state[FreeViewTurnRight_Action])
 				{
 					view_y_angle = Algo_FormatAngle(view_y_angle - r);
 					/*
-					if(Algo_FormatAngle(view_y_angle - gamer -> y_angle) < 180.0)
-						view_y_angle = Algo_FormatAngle(gamer -> y_angle - 180.0);
+					if(Algo_FormatAngle(view_y_angle - gamer->y_angle) < 180.0)
+						view_y_angle = Algo_FormatAngle(gamer->y_angle - 180.0);
 						*/
 				}
 				if(action_state[FreeViewTurnUp_Action] && action_state[FreeViewTurnDown_Action] == 0)
@@ -888,7 +955,7 @@ void Game_UpdateGLTransform(game_character *gamer)
 			}
 			/*
 			else
-				view_y_angle = gamer -> y_angle;
+				view_y_angle = gamer->y_angle;
 				*/
 		}
 
@@ -900,22 +967,22 @@ void Game_UpdateGLTransform(game_character *gamer)
 			tp_y_r_3d = ryr;
 			tp_x_r_3d = rxr;
 			/*
-				 gamer -> current_weapon.position[0] = -third.x;
-				 gamer -> current_weapon.position[1] = third.z;
-				 gamer -> current_weapon.position[2] = -third.y;
-				 gamer -> current_weapon.x_angle = Algo_FormatAngle(gamer -> x_angle + 15);
-				 gamer -> current_weapon.y_angle = Algo_FormatAngle(gamer -> y_angle + 27);
+					wp->position[0] = -third.x;
+					wp->position[1] = third.z;
+					wp->position[2] = -third.y;
+					wp->x_angle = Algo_FormatAngle(gamer->x_angle + 15);
+					wp->y_angle = Algo_FormatAngle(gamer->y_angle + 27);
 				 */
 		}
 	}
-	if(gamer -> ai.action == aiaction_dead_type && gamer -> score.killed_character != -1)
+	if(gamer->ai.action == aiaction_dead_type && gamer->score.killed_character != -1)
 	{
 		float xr = 0.0;
 		float yr = 0.0;
-		Game_ComputeCharacterAndCharacterAngle(gamer, game_mode.characters + gamer -> score.killed_character, &yr, &xr);
+		Game_ComputeCharacterAndCharacterAngle(gamer, game_mode.characters + gamer->score.killed_character, &yr, &xr);
 		x_r_3d = xr;
 		y_r_3d = Algo_FormatAngle(-yr - 180.0);
-		y_t_3d = -gamer -> position[2] - gamer -> width / 2;
+		y_t_3d = -gamer->position[2] - gamer->width / 2;
 		tp_y_t_3d = y_t_3d;
 	}
 }
@@ -931,90 +998,91 @@ int Game_UpdatePlayerAI(Game_Action a, int p)
 		return 0;
 	if(a == Total_Action)
 		return 0;
-	if(player -> ai.action & aiaction_dead_type)
+	if(player->ai.action & aiaction_dead_type)
 		return 0;
+	weapon *wp = Game_CharacterCurrentWeapon(player);
 	int r = 1;
 	switch(a)
 	{
 		case Forward_Action:
-			if((!p && (player -> ai.action & aiaction_moveforward_type)) || (p && (player -> ai.action & aiaction_moveforward_type) == 0))
-				player -> ai.action ^= aiaction_moveforward_type;
+			if((!p && (player->ai.action & aiaction_moveforward_type)) || (p && (player->ai.action & aiaction_moveforward_type) == 0))
+				player->ai.action ^= aiaction_moveforward_type;
 			break;
 		case Backward_Action:
-			if((!p && (player -> ai.action & aiaction_movebackward_type)) || (p && (player -> ai.action & aiaction_movebackward_type) == 0))
-				player -> ai.action ^= aiaction_movebackward_type;
+			if((!p && (player->ai.action & aiaction_movebackward_type)) || (p && (player->ai.action & aiaction_movebackward_type) == 0))
+				player->ai.action ^= aiaction_movebackward_type;
 			break;
 		case MoveLeft_Action:
-			if((!p && (player -> ai.action & aiaction_moveleft_type)) || (p && (player -> ai.action & aiaction_moveleft_type) == 0))
-				player -> ai.action ^= aiaction_moveleft_type;
+			if((!p && (player->ai.action & aiaction_moveleft_type)) || (p && (player->ai.action & aiaction_moveleft_type) == 0))
+				player->ai.action ^= aiaction_moveleft_type;
 			break;
 		case MoveRight_Action:
-			if((!p && (player -> ai.action & aiaction_moveright_type)) || (p && (player -> ai.action & aiaction_moveright_type) == 0))
-				player -> ai.action ^= aiaction_moveright_type;
+			if((!p && (player->ai.action & aiaction_moveright_type)) || (p && (player->ai.action & aiaction_moveright_type) == 0))
+				player->ai.action ^= aiaction_moveright_type;
 			break;
 		case MoveUp_Action:
-			if((!p && (player -> ai.action & aiaction_moveup_type)) || (p && (player -> ai.action & aiaction_moveup_type) == 0))
-				player -> ai.action ^= aiaction_moveup_type;
+			if((!p && (player->ai.action & aiaction_moveup_type)) || (p && (player->ai.action & aiaction_moveup_type) == 0))
+				player->ai.action ^= aiaction_moveup_type;
 			break;
 		case MoveDown_Action:
-			if((!p && (player -> ai.action & aiaction_movedown_type)) || (p && (player -> ai.action & aiaction_movedown_type) == 0))
-				player -> ai.action ^= aiaction_movedown_type;
+			if((!p && (player->ai.action & aiaction_movedown_type)) || (p && (player->ai.action & aiaction_movedown_type) == 0))
+				player->ai.action ^= aiaction_movedown_type;
 			break;
 		case TurnLeft_Action:
-			if((!p && (player -> ai.action & aiaction_turnleft_type)) || (p && (player -> ai.action & aiaction_turnleft_type) == 0))
-				player -> ai.action ^= aiaction_turnleft_type;
+			if((!p && (player->ai.action & aiaction_turnleft_type)) || (p && (player->ai.action & aiaction_turnleft_type) == 0))
+				player->ai.action ^= aiaction_turnleft_type;
 			break;
 		case TurnRight_Action:
-			if((!p && (player -> ai.action & aiaction_turnright_type)) || (p && (player -> ai.action & aiaction_turnright_type) == 0))
-				player -> ai.action ^= aiaction_turnright_type;
+			if((!p && (player->ai.action & aiaction_turnright_type)) || (p && (player->ai.action & aiaction_turnright_type) == 0))
+				player->ai.action ^= aiaction_turnright_type;
 			break;
 		case TurnUp_Action:
-			if((!p && (player -> ai.action & aiaction_turnup_type)) || (p && (player -> ai.action & aiaction_turnup_type) == 0))
-				player -> ai.action ^= aiaction_turnup_type;
+			if((!p && (player->ai.action & aiaction_turnup_type)) || (p && (player->ai.action & aiaction_turnup_type) == 0))
+				player->ai.action ^= aiaction_turnup_type;
 			break;
 		case TurnDown_Action:
-			if((!p && (player -> ai.action & aiaction_turndown_type)) || (p && (player -> ai.action & aiaction_turndown_type) == 0))
-				player -> ai.action ^= aiaction_turndown_type;
+			if((!p && (player->ai.action & aiaction_turndown_type)) || (p && (player->ai.action & aiaction_turndown_type) == 0))
+				player->ai.action ^= aiaction_turndown_type;
 			break;
 		case Attack_Action:
-			if(p && player -> current_weapon.ammo_total_count != 0)
+			if(p && wp && wp->ammo_total_count != 0)
 			{
-				if(player -> current_weapon.type <= short_attack_type)
+				if(wp->type <= short_attack_type)
 				{
-					player -> ai.action |= aiaction_fight_type;
-					player -> ai.fighting = 1;
+					player->ai.action |= aiaction_fight_type;
+					player->ai.fighting = 1;
 				}
 				else
 				{
-					player -> ai.action |= aiaction_attack_type;
+					player->ai.action |= aiaction_attack_type;
 				}
 			}
 			else
 			{
-				if(player -> ai.action & aiaction_attack_type)
-					player -> ai.action ^= aiaction_attack_type;
-				else if(player -> ai.action & aiaction_fight_type)
-					player -> ai.action ^= aiaction_fight_type;
+				if(player->ai.action & aiaction_attack_type)
+					player->ai.action ^= aiaction_attack_type;
+				else if(player->ai.action & aiaction_fight_type)
+					player->ai.action ^= aiaction_fight_type;
 			}
 			break;
 		case Jump_Action:
 			if(p)
 			{
-				if(player -> z_moving.state == no_z_type)
+				if(player->z_moving.state == no_z_type)
 				{
-					player -> z_moving.state = z_jumping_type;
-					player -> z_moving.start_z = player -> position[2];
-					player -> z_moving.start_time = game_mode.game_time;
-					player -> z_moving.jump_speed = -player -> z_jump_speed;
-					player -> z_moving.speed = player -> z_moving.jump_speed;
+					player->z_moving.state = z_jumping_type;
+					player->z_moving.start_z = player->position[2];
+					player->z_moving.start_time = game_mode.game_time;
+					player->z_moving.jump_speed = -player->z_jump_speed;
+					player->z_moving.speed = player->z_moving.jump_speed;
 				}
 			}
 			break;
 		case Reload_Action:
-			if(p)
+			if(p && wp)
 			{
-				if(Game_ReloadWeapon(&player -> current_weapon, player -> ai.time))
-					player -> ai.action |= aiaction_reload_type;
+				if(Game_ReloadWeapon(wp, player->ai.time))
+					player->ai.action |= aiaction_reload_type;
 			}
 			break;
 		case FreeViewMode_Action:
@@ -1030,8 +1098,8 @@ int Game_UpdatePlayerAI(Game_Action a, int p)
 			else
 			{
 				game_character *c = game_mode.characters + game_mode.current_character;
-				view_x_angle = c -> x_angle;
-				view_y_angle = c -> y_angle;
+				view_x_angle = c->x_angle;
+				view_y_angle = c->y_angle;
 			}
 			break;
 		case FreeViewTurnLeft_Action:
@@ -1062,8 +1130,8 @@ int Game_UpdatePlayerAI(Game_Action a, int p)
 			else
 			{
 				game_character *c = game_mode.characters + game_mode.current_character;
-				view_x_angle = c -> x_angle;
-				view_y_angle = c -> y_angle;
+				view_x_angle = c->x_angle;
+				view_y_angle = c->y_angle;
 			}
 			break;
 		default:
@@ -1079,8 +1147,9 @@ int Game_ViewerIdleEventFunc(void)
 		return 0;
 	if(game_mode.state == running_game_type)
 	{
-		//player -> health = health_full_type;
+		//player->health = health_full_type;
 		Mode_DeathGameModeMain(&game_mode, fps, delta_time);
+		const weapon *wp = Game_CharacterCurrentWeapon(game_mode.characters + game_mode.current_character);
 		if(game_mode.state == finish_game_type)
 		{
 			Game_GameOver();
@@ -1091,7 +1160,8 @@ int Game_ViewerIdleEventFunc(void)
 		game_character *c = game_mode.characters + game_mode.current_character;
 		Game_UpdateGLTransform(c);
 
-		fps_cross_hair.normal.scale = game_mode.characters[game_mode.current_character].current_weapon.firing_progress;
+		if(wp)
+			fps_cross_hair.normal.scale = wp->firing_progress;
 
 		Game_UpdateRadar(game_mode.characters + game_mode.current_character, game_mode.characters, 0, game_mode.character_count, &rad);
 		if(game_mode.p_mode == first_person_mode)
@@ -1173,7 +1243,7 @@ void Game_UpdateRadar(const game_character *gamer, const game_character characte
 	int i;
 	int count = 0;
 	GLfloat *points = NEW_II(GLfloat, 4 * character_count);
-	nl_vector3_t me = {gamer -> position[0], gamer -> position[1], gamer -> position[2]};
+	nl_vector3_t me = {gamer->position[0], gamer->position[1], gamer->position[2]};
 	for(i = start; i < character_count; i++)
 	{
 		if(gamer == characters + i)
@@ -1181,9 +1251,9 @@ void Game_UpdateRadar(const game_character *gamer, const game_character characte
 		if(characters[i].health == health_death_type)
 			continue;
 		int g = 0;
-		if(gamer -> group == characters[i].group)
+		if(gamer->group == characters[i].group)
 			g = 1;
-		else if(gamer -> group != characters[i].group)
+		else if(gamer->group != characters[i].group)
 			g = 2;
 
 		nl_vector3_t p = {characters[i].position[0], characters[i].position[1], characters[i].position[2]};
@@ -1194,10 +1264,10 @@ void Game_UpdateRadar(const game_character *gamer, const game_character characte
 		points[count * 4 + 3] = g;
 		count++;
 	}
-	free(r -> point_pos);
-	r -> rotation = gamer -> y_angle;
-	r -> point_pos = points;
-	r -> point_count = count;
+	free(r->point_pos);
+	r->rotation = gamer->y_angle;
+	r->point_pos = points;
+	r->point_count = count;
 }
 
 void Game_ViewerInitFunc(void)
@@ -1322,10 +1392,6 @@ void Game_ResetViewer(void)
 	//map_model = NULL;
 	level = -1;
 
-	tp_x_offset = 10;
-	tp_y_offset = 25;
-	tp_dis = 300;
-
 	frustum_far = FRUSTUM_FAR;
 	frustum_width = FRUSTUM_WIDTH;
 	frustum_height = FRUSTUM_HEIGHT;
@@ -1339,6 +1405,8 @@ void Game_ResetViewer(void)
 	tp_x_offset = 10;
 	tp_y_offset = 25;
 	tp_dis = 300;
+	lighting_effect = 0;
+	fog_effect = 0;
 
 	zm.type = no_zoom_type;
 	zm.zoom_state = 0;
@@ -1355,17 +1423,18 @@ void Game_RenderGameParticle(unsigned int index, const void *data)
 		return;
 	if(!data)
 		return;
+		const weapon *wp = Game_CharacterCurrentWeapon(game_mode.characters + game_mode.current_character);
 	const particle *p = (particle *)data;
-	if(p -> type == gunfire_particle_type 
-			&& ((game_mode.characters[game_mode.current_character].current_weapon.type == sniper_rifle_type && zm.type == sniper_zoom_type)
+	if(p->type == gunfire_particle_type 
+			&& (!wp || (wp->type == sniper_rifle_type && zm.type == sniper_zoom_type)
 				|| game_mode.p_mode == first_person_mode))
 		return;
 	glPushMatrix();
 	{
-		glTranslatef(p -> pos[0], p -> pos[1], p -> pos[2]);
-		glRotatef(p -> y_angle, 0.0f, 0.0f, 1.0f);
-		glRotatef(p -> x_angle, 1.0f, 0.0f, 0.0f);
-		Particle_RanderParitcle(&spirit, p -> type);
+		glTranslatef(p->pos[0], p->pos[1], p->pos[2]);
+		glRotatef(p->y_angle, 0.0f, 0.0f, 1.0f);
+		glRotatef(p->x_angle, 1.0f, 0.0f, 0.0f);
+		Particle_RanderParitcle(&spirit, p->type);
 	}
 	glPopMatrix();
 }
@@ -1384,6 +1453,7 @@ int Game_ViewerActionEvent(int key, int a, int pressed)
 {
 	if(!has_init)
 		return 0;
+	weapon *wp = Game_CharacterCurrentWeapon(player);
 	int res = 0;
 	if(a != Total_Action)
 	{
@@ -1394,10 +1464,11 @@ int Game_ViewerActionEvent(int key, int a, int pressed)
 			case ViewCenter_Action:
 				if(pressed)
 				{
-					if(player -> health != health_death_type)
+					if(player->health != health_death_type)
 					{
-						player -> x_angle = 0.0;
-						player -> current_weapon.x_angle = 0.0;
+						player->x_angle = 0.0;
+						if(wp)
+							wp->x_angle = 0.0;
 					}
 				}
 				break;
@@ -1428,68 +1499,14 @@ int Game_ViewerActionEvent(int key, int a, int pressed)
 			case PrevWeapon_Action:
 				if(pressed)
 				{
-					int w = player -> current_weapon.weapon_index;
-					do
-					{
-						w--;
-						if(w < ct3d_Dagger)
-							w = clone3d_Rocket_Launcher;
-						break;
-						/*
-							 if(w != ct3d_Fragmentation_Grenade && w != ct3d_Flash_Grenade && w != specnaz3d_Fragmentation_Grenade)
-							 break;
-							 if(w != ct3d_Dagger && w != ct3d_Fragmentation_Grenade && w != ct3d_Flash_Grenade && w != specnaz3d_Dagger && w != specnaz3d_Fragmentation_Grenade && w != egypt3d_The_Sword_of_Osiris && w != egypt3d_Dagger)
-							 break;
-							 */
-					}while(1);
-					new_weapon(&player -> current_weapon, w);
-					if(god_mode)
-					{
-						player -> current_weapon.ammo_total_count = -1;
-						player -> current_weapon.ammo_total_count_limit = -1;
-					}
-					if(zm.type != no_zoom_type)
-					{
-						zm.type = no_zoom_type;
-						zm.zoom_state = 0;
-						zm.zoom_out_unit = 0;
-						zm.zoom_in_unit = 0;
-						zm.foxy = zm.max_foxy;
-					}
+					Game_PrevWeapon(player, 0);
 					res = 1;
 				}
 				break;
 			case NextWeapon_Action:
 				if(pressed)
 				{
-					int w = player -> current_weapon.weapon_index;
-					do
-					{
-						w++;
-						if(w > clone3d_Rocket_Launcher)
-							w = ct3d_Dagger;
-						break;
-						/*
-							 if(w != ct3d_Fragmentation_Grenade && w != ct3d_Flash_Grenade && w != specnaz3d_Fragmentation_Grenade)
-							 break;
-							 if(w != ct3d_Dagger && w != ct3d_Fragmentation_Grenade && w != ct3d_Flash_Grenade && w != specnaz3d_Dagger && w != specnaz3d_Fragmentation_Grenade && w != egypt3d_The_Sword_of_Osiris && w != egypt3d_Dagger)
-							 break;
-							 */
-					}while(1);
-					new_weapon(&player -> current_weapon, w);
-					if(god_mode)
-					{
-						player -> current_weapon.ammo_total_count = -1;
-						player -> current_weapon.ammo_total_count_limit = -1;
-					}
-					if(zm.type != no_zoom_type)
-					{
-						zm.type = no_zoom_type;
-						zm.zoom_state = 0;
-						zm.foxy = zm.max_foxy;
-						zm.zoom_out_unit = 0;
-						zm.zoom_in_unit = 0;
-					}
+					Game_NextWeapon(player, 0);
 					res = 1;
 				}
 				break;
@@ -1499,7 +1516,7 @@ int Game_ViewerActionEvent(int key, int a, int pressed)
 					if(zm.type == no_zoom_type)
 					{
 						int zv = 0;
-						if(player -> current_weapon.type == sniper_rifle_type)
+						if(wp && wp->type == sniper_rifle_type)
 						{
 							zm.type = sniper_zoom_type;
 							zm.min_foxy = FOXY_MIN;
@@ -1689,8 +1706,8 @@ int Game_ViewerActionEvent(int key, int a, int pressed)
 				if(pressed)
 				{
 					/*
-						 player -> health = player -> health == health_death_type ? health_full_type : health_death_type;
-						 player -> score.death++;
+						 player->health = player->health == health_death_type ? health_full_type : health_death_type;
+						 player->score.death++;
 						 */
 					Game_OperateAIGoMe(game_mode.map, player,  game_mode.characters, 0, game_mode.character_count);
 					res = 1;
@@ -1744,20 +1761,97 @@ int Game_ViewerActionEvent(int key, int a, int pressed)
 					god_mode ^= 1;
 					if(god_mode)
 					{
-						player -> health = -1;
-						player -> health_full = -1;
-						player -> current_weapon.ammo_total_count = -1;
-						player -> current_weapon.ammo_total_count_limit = -1;
+						player->health = -1;
+						player->health_full = -1;
+						if(player->weapons.wpons)
+						{
+							unsigned int i;
+							for(i = 0; i < player->weapons.wp_count; i++)
+							{
+								player->weapons.wpons[i].ammo_total_count = -1;
+								player->weapons.wpons[i].ammo_total_count_limit = -1;
+							}
+						}
 					}
 					else
 					{
-						player -> health = health_full_type;
-						player -> health_full = health_full_type;
-						new_weapon(&player -> current_weapon, player -> current_weapon.weapon_index);
+						player->health = health_full_type;
+						player->health_full = health_full_type;
+						Game_CharacterRand4Weapons(player); // ??? 20180718 4wpons
 					}
 					res = 1;
 				}
 				break;
+#if 0
+			case PrevWeapon_Action:
+				if(pressed)
+				{
+					int w = wp.weapon_index;
+					do
+					{
+						w--;
+						if(w < ct3d_Dagger)
+							w = clone3d_Rocket_Launcher;
+						break;
+						/*
+							 if(w != ct3d_Fragmentation_Grenade && w != ct3d_Flash_Grenade && w != specnaz3d_Fragmentation_Grenade)
+							 break;
+							 if(w != ct3d_Dagger && w != ct3d_Fragmentation_Grenade && w != ct3d_Flash_Grenade && w != specnaz3d_Dagger && w != specnaz3d_Fragmentation_Grenade && w != egypt3d_The_Sword_of_Osiris && w != egypt3d_Dagger)
+							 break;
+							 */
+					}while(1);
+					new_weapon(&player->current_weapon, w);
+					if(god_mode)
+					{
+						player->current_weapon.ammo_total_count = -1;
+						player->current_weapon.ammo_total_count_limit = -1;
+					}
+					if(zm.type != no_zoom_type)
+					{
+						zm.type = no_zoom_type;
+						zm.zoom_state = 0;
+						zm.zoom_out_unit = 0;
+						zm.zoom_in_unit = 0;
+						zm.foxy = zm.max_foxy;
+					}
+					res = 1;
+				}
+				break;
+			case NextWeapon_Action:
+				if(pressed)
+				{
+					int w = player->current_weapon.weapon_index;
+					do
+					{
+						w++;
+						if(w > clone3d_Rocket_Launcher)
+							w = ct3d_Dagger;
+						break;
+						/*
+							 if(w != ct3d_Fragmentation_Grenade && w != ct3d_Flash_Grenade && w != specnaz3d_Fragmentation_Grenade)
+							 break;
+							 if(w != ct3d_Dagger && w != ct3d_Fragmentation_Grenade && w != ct3d_Flash_Grenade && w != specnaz3d_Dagger && w != specnaz3d_Fragmentation_Grenade && w != egypt3d_The_Sword_of_Osiris && w != egypt3d_Dagger)
+							 break;
+							 */
+					}while(1);
+					new_weapon(&player->current_weapon, w);
+					if(god_mode)
+					{
+						player->current_weapon.ammo_total_count = -1;
+						player->current_weapon.ammo_total_count_limit = -1;
+					}
+					if(zm.type != no_zoom_type)
+					{
+						zm.type = no_zoom_type;
+						zm.zoom_state = 0;
+						zm.foxy = zm.max_foxy;
+						zm.zoom_out_unit = 0;
+						zm.zoom_in_unit = 0;
+					}
+					res = 1;
+				}
+				break;
+#endif
 			default:
 				break;
 		}
@@ -1794,6 +1888,12 @@ void Game_ViewerGetSetting(void)
 	i = 0;
 	if(Setting_GetSettingInteger(THIRD_PERSON_VIEW_DISTANCE_SETTING, &i))
 		tp_dis = i;
+	b = 0;
+	if(Setting_GetSettingBoolean(LIGHTING_EFFECT_SETTING, &b))
+		lighting_effect = b;
+	b = 0;
+	if(Setting_GetSettingBoolean(FOG_EFFECT_SETTING, &b))
+		fog_effect = b;
 }
 
 void Game_ReplayGame(void)
@@ -1808,27 +1908,35 @@ void Game_ReplayGame(void)
 	for(i = 0; i < game_mode.character_count; i++)
 	{
 		Game_RandStartPosition(map_model, game_mode.characters + i, -1);
-		if(game_mode.characters[i].current_weapon.type > short_attack_type)
-			Game_ChangeRandLongWeapon(&game_mode.characters[i].current_weapon);
+		const weapon *wp = Game_CharacterCurrentWeapon(game_mode.characters + i);
+		if(wp && wp->type > short_attack_type)
+			Game_CharacterRand4Weapons(game_mode.characters + i);
 	}
-	nl_vector3_t p = {map_model -> start_pos[0], map_model -> start_pos[1], map_model -> start_pos[2]};
+	nl_vector3_t p = {map_model->start_pos[0], map_model->start_pos[1], map_model->start_pos[2]};
 	int scene = Algo_GetPointInAABBInNETLizard3DMap(&p, map_model);
-	player -> position[0] = map_model -> start_pos[0];
-	player -> position[1] = map_model -> start_pos[1];
-	player -> position[2] = map_model -> start_pos[2] - (2293760 >> 16);
-	player -> x_angle = 0.0;
-	player -> y_angle = map_model -> start_angle[1];
-	player -> scene = scene;
-	delete_weapon(&player -> current_weapon);
+	player->position[0] = map_model->start_pos[0];
+	player->position[1] = map_model->start_pos[1];
+	player->position[2] = map_model->start_pos[2] - (2293760 >> 16);
+	player->x_angle = 0.0;
+	player->y_angle = map_model->start_angle[1];
+	player->scene = scene;
+#if 0
 	int wpi = clone3d_M16;
 	Setting_GetSettingInteger(USE_WEAPON_SETTING, &wpi);
-	new_weapon(&player -> current_weapon, wpi);
+#endif // !!! 20180718 4wpons
 	if(god_mode)
 	{
-		player -> health = -1;
-		player -> health_full = -1;
-		player -> current_weapon.ammo_total_count = -1;
-		player -> current_weapon.ammo_total_count_limit = -1;
+		player->health = -1;
+		player->health_full = -1;
+		if(player->weapons.wpons)
+		{
+			unsigned int i;
+			for(i = 0; i < player->weapons.wp_count; i++)
+			{
+				player->weapons.wpons[i].ammo_total_count = -1;
+				player->weapons.wpons[i].ammo_total_count_limit = -1;
+			}
+		}
 	}
 
 	view_y_angle = 0.0;

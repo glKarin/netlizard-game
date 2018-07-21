@@ -153,7 +153,7 @@ void Viewer_NETLizard3DAnimationDrawFunc(void)
 				if(playing)
 				{
 					frame++;
-					if(frame > role_model -> animations[anim].end - role_model -> animations[anim].begin)
+					if(frame > role_model->animations[anim].end - role_model->animations[anim].begin)
 						frame = 0;
 				}
 			}
@@ -175,13 +175,13 @@ void Viewer_NETLizard3DAnimationDrawFunc(void)
 		{
 			char str[50];
 			memset(str, '\0', 50 * sizeof(char));
-			sprintf(str, "Pos -> (%.2f, %.2f, %.2f)", x_t_3d, y_t_3d, z_t_3d);
+			sprintf(str, "Pos->(%.2f, %.2f, %.2f)", x_t_3d, y_t_3d, z_t_3d);
 			Font_RenderString(&fnt, 0, 0, 0.0, 0.0, 0.0, 1.0, str);
-			sprintf(str, "Ang -> (%.2f, %.2f)", y_r_3d, x_r_3d);
+			sprintf(str, "Ang->(%.2f, %.2f)", y_r_3d, x_r_3d);
 			Font_RenderString(&fnt, 0, 2 * fnt.height, 0.0, 0.0, 0.0, 1.0, str);
-			sprintf(str, "frame -> (%d %d - %d / %d)", anim, role_model -> animations[anim].begin, frame, role_model -> animations[anim].end - role_model -> animations[anim].begin);
+			sprintf(str, "frame->(%d %d - %d / %d)", anim, role_model->animations[anim].begin, frame, role_model->animations[anim].end - role_model->animations[anim].begin);
 			Font_RenderString(&fnt, 0, 4 * fnt.height, 0.0, 0.0, 0.0, 1.0, str);
-			sprintf(str, "%s", nlGetAnimationName(role_model -> animations[anim].type));
+			sprintf(str, "%s", nlGetAnimationName(role_model->animations[anim].type));
 			Font_RenderString(&fnt, 0, 6 * fnt.height, 0.0, 0.0, 0.0, 1.0, str);
 			Font_RenderString(&fnt, 0, height - 2 * fnt.height, 0.0, 0.0, 0.0, 1.0, un_file);
 		}
@@ -236,7 +236,7 @@ int Viewer_NETLizard3DAnimationKeyEventFunc(int key, int a, int pressed, int x, 
 			{
 				playing = 0;
 				frame++;
-				if(frame > role_model -> animations[anim].end - role_model -> animations[anim].begin)
+				if(frame > role_model->animations[anim].end - role_model->animations[anim].begin)
 					frame = 0;
 				res |= 1;
 			}
@@ -266,7 +266,7 @@ int Viewer_NETLizard3DAnimationKeyEventFunc(int key, int a, int pressed, int x, 
 		case Harmattan_K_l:
 			if(pressed)
 			{
-				if(anim >= role_model -> anim_count - 1)
+				if(anim >= role_model->anim_count - 1)
 					anim = 0;
 				else
 					anim++;

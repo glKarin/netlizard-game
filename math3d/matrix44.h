@@ -4,7 +4,7 @@
 #include "math3d_std.h"
 
 #define Matrix44_GjInverseNotSingular(m) Matrix44_GjInverse(m, 0)
-#define printfm4(x) printf(#x" -> "); Matrix44_Print(&(x));
+#define printfm4(x) printf(#x"->"); Matrix44_Print(&(x));
 
 typedef struct _matrix44_t
 {

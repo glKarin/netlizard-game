@@ -33,19 +33,20 @@
 #define ANIMATION_VIEW_W 300
 #define ANIMATION_VIEW_H 280
 
-#define ACTION_BUTTON_W 120
-#define ACTION_BUTTON_H 60
-#define BUTTON_SURE_X 280
-#define BUTTON_SURE_Y 10
-#define BUTTON_BACK_X 420
-#define BUTTON_BACK_Y 10
+#define BTN_W 120
+#define BTN_H 60
 #define LABEL_H 80
 
 #define IDLE_TIME_DELAY 0.4
 
-#define ANIMATION_COUNT 7
+typedef enum _menu_action
+{
+	enter_action = 0,
+	back_action,
+	total_action_type
+} menu_action;
 
-static const character_status_type Animation_List[ANIMATION_COUNT] = {
+static const character_status_type Animation_List[] = {
 	idle_status_type,
 	run_status_type,
 	attack_status_type,
@@ -70,20 +71,22 @@ static void Menu_CharacterModelChooserFreeFunc(void);
 static void Menu_ResetCharacterModelChooser(void);
 static void Menu_MakeListViewData(void);
 static void Menu_ViewCharacterModel(void *index);
-static void Menu_BackAction(void);
-static void Menu_ChooseCharacterModel(void);
+static void Menu_BackAction(void *data);
+static void Menu_ChooseCharacterModel(void *data);
 static void Menu_RenderCharacterModel(void);
 static int Menu_SwipeCharacterModel(int x, int y, int dx, int dy);
 static void Menu_UpdateAnimation(void *index);
 static void Menu_PlayAnimation(float delta);
 static void Menu_SetCharacterModelChooserPageSize(GLsizei w, GLsizei h);
 
+static const button_initilizer Btn_Infos[] = {
+	{280, 10, BTN_W, BTN_H, "Sure", Menu_ChooseCharacterModel, NULL},
+	{420, 10, BTN_W, BTN_H, "Back", Menu_BackAction, NULL},
+};
+
 static button btn;
 static button action_btn;
-
-static button sure_btn;
-static button back_btn;
-
+static button btns[total_action_type];
 static list_view lst;
 static list_view action_lst;
 static label lb;
@@ -113,13 +116,14 @@ void Menu_SetCharacterModelChooserPageSize(GLsizei w, GLsizei h)
 	{
 		UI_ResizeButton(&btn, CHARACTER_MODEL_BUTTON_W, CHARACTER_MODEL_BUTTON_H);
 		UI_ResizeButton(&action_btn, ANIMATION_BUTTON_W, ANIMATION_BUTTON_H);
-		UI_ResetButtonGeometry(&sure_btn, BUTTON_SURE_X, BUTTON_SURE_Y, ACTION_BUTTON_W, ACTION_BUTTON_H);
-		UI_ResetButtonGeometry(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, ACTION_BUTTON_W, ACTION_BUTTON_H);
 		UI_ResetListViewGeometry(&lst, CHARACTER_MODEL_LIST_VIEW_X, CHARACTER_MODEL_LIST_VIEW_Y, CHARACTER_MODEL_LIST_VIEW_W, CHARACTER_MODEL_LIST_VIEW_H);
 		UI_ResetListViewGeometry(&action_lst, ANIMATION_LIST_VIEW_X, ANIMATION_LIST_VIEW_Y, ANIMATION_LIST_VIEW_W, ANIMATION_LIST_VIEW_H);
 		UI_ResetLabelGeometry(&name_lb, NAME_LABEL_X, NAME_LABEL_Y, NAME_LABEL_W, NAME_LABEL_H);
 		UI_ResetLabelGeometry(&lb, 0.0, page_height - LABEL_H, page_width, LABEL_H);
 		UI_ResizeScene3D(&model_view, ANIMATION_VIEW_W, ANIMATION_VIEW_H, page_width, page_height);
+		int i;
+		for(i = 0; i < total_action_type; i++)
+			UI_ResetButtonGeometry(btns + i, Btn_Infos[i].x, Btn_Infos[i].y, Btn_Infos[i].w, Btn_Infos[i].h);
 	}
 }
 
@@ -155,6 +159,10 @@ void Menu_CharacterModelChooserInitFunc(void)
 	oglEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.1);
 	oglEnable(GL_TEXTURE_2D);
+#ifndef _HARMATTAN_OPENGLES2
+	oglDisable(GL_LIGHTING);
+#endif
+	oglDisable(GL_FOG);
 }
 
 void Menu_CharacterModelChooserDrawFunc(void)
@@ -166,35 +174,29 @@ void Menu_CharacterModelChooserDrawFunc(void)
 	OpenGL_Render3DOrtho(0.0, width, 0.0, height);
 	{
 		//glPolygonMode(GL_FRONT, GL_LINE);
-		oglEnable(GL_SCISSOR_TEST);
-		glScissor(lst.base.x, lst.base.y, lst.base.width, lst.base.height);
 		glPushMatrix();
 		{
 			glTranslatef(lst.base.x, lst.base.y, lst.base.z);
 			UI_RenderListView(&lst);
 		}
 		glPopMatrix();
-		glScissor(action_lst.base.x, action_lst.base.y, action_lst.base.width, action_lst.base.height);
 		glPushMatrix();
 		{
 			glTranslatef(action_lst.base.x, action_lst.base.y, action_lst.base.z);
 			UI_RenderListView(&action_lst);
 		}
 		glPopMatrix();
-		oglDisable(GL_SCISSOR_TEST);
 
-		glPushMatrix();
+		int i;
+		for(i = 0; i < total_action_type; i++)
 		{
-			glTranslatef(sure_btn.base.x, sure_btn.base.y, sure_btn.base.z);
-			UI_RenderButton(&sure_btn);
+			glPushMatrix();
+			{
+				glTranslatef(btns[i].base.x, btns[i].base.y, btns[i].base.z);
+				UI_RenderButton(btns + i);
+			}
+			glPopMatrix();
 		}
-		glPopMatrix();
-		glPushMatrix();
-		{
-			glTranslatef(back_btn.base.x, back_btn.base.y, back_btn.base.z);
-			UI_RenderButton(&back_btn);
-		}
-		glPopMatrix();
 
 		glPushMatrix();
 		{
@@ -228,8 +230,9 @@ void Menu_CharacterModelChooserFreeFunc(void)
 
 	delete_button(&btn);
 	delete_button(&action_btn);
-	delete_button(&sure_btn);
-	delete_button(&back_btn);
+	int m;
+	for(m = 0; m < total_action_type; m++)
+		delete_button(btns + m);
 	delete_label(&lb);
 	delete_label(&name_lb);
 	delete_list_view(&lst);
@@ -296,7 +299,7 @@ int Menu_CharacterModelChooserKeyEventFunc(int key, int act, int pressed, int x,
 		case Harmattan_K_Escape:
 			if(pressed)
 			{
-				Menu_BackAction();
+				Menu_BackAction(NULL);
 				return 1;
 			}
 			break;
@@ -327,6 +330,15 @@ int Menu_CharacterModelChooserMouseEventFunc(int button, int pressed, int x, int
 	if(!has_init)
 		return 0;
 	int gl_y = height - y;
+	int i;
+	for(i = 0; i < total_action_type; i++)
+	{
+		if(UI_PointInWidget(&btns[i].base, x, gl_y))
+		{
+			btns[i].highlight = pressed ? GL_TRUE : GL_FALSE;
+			return 1;
+		}
+	}
 	rect2 r = {model_view.x, model_view.y, model_view.x + model_view.width, model_view.y + model_view.height};
 
 	if(UI_PointInRect2(&r, x, gl_y))
@@ -336,16 +348,6 @@ int Menu_CharacterModelChooserMouseEventFunc(int button, int pressed, int x, int
 			// TODO ???
 			return 1;
 		}
-	}
-	else if(UI_PointInWidget(&sure_btn.base, x, gl_y))
-	{
-		sure_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
-	}
-	else if(UI_PointInWidget(&back_btn.base, x, gl_y))
-	{
-		back_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
 	}
 	return 0;
 }
@@ -368,25 +370,19 @@ int Menu_CharacterModelChooserMouseMotionEventFunc(int button, int pressed, int 
 		{
 			res |= UI_SlideListView(&action_lst, -dy);
 		}
-		if(UI_PointInWidget(&sure_btn.base, x, gl_y) && !UI_PointInWidget(&sure_btn.base, last_x, last_gl_y))
+		int i;
+		for(i = 0; i < total_action_type; i++)
 		{
-			sure_btn.highlight = GL_TRUE;
-			res |= 1;
-		}
-		else if(!UI_PointInWidget(&sure_btn.base, x, gl_y) && UI_PointInWidget(&sure_btn.base, last_x, last_gl_y))
-		{
-			sure_btn.highlight = GL_FALSE;
-			res |= 1;
-		}
-		if(UI_PointInWidget(&back_btn.base, x, gl_y) && !UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
-		{
-			back_btn.highlight = GL_TRUE;
-			res |= 1;
-		}
-		else if(!UI_PointInWidget(&back_btn.base, x, gl_y) && UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
-		{
-			back_btn.highlight = GL_FALSE;
-			res |= 1;
+			if(UI_PointInWidget(&btns[i].base, x, gl_y) && !UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+			{
+				btns[i].highlight = GL_TRUE;
+				res |= 1;
+			}
+			else if(!UI_PointInWidget(&btns[i].base, x, gl_y) && UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+			{
+				btns[i].highlight = GL_FALSE;
+				res |= 1;
+			}
 		}
 
 		res |= Menu_SwipeCharacterModel(x, gl_y, dx, -dy);
@@ -450,7 +446,7 @@ void Menu_MakeListViewData(void)
 		action_data = NULL;
 		action_data_count = 0;
 	}
-	action_data_count = ANIMATION_COUNT;
+	action_data_count = countof(Animation_List);
 	action_data = NEW_II(list_view_data, action_data_count);
 	for(i = 0; i < action_data_count; i++)
 	{
@@ -478,13 +474,13 @@ void Menu_ViewCharacterModel(void *args)
 	model_view.rotate.xr = -90.0;
 	model_view.rotate.yr = 0.0;
 	model_view.rotate.zr = 0.0;
-	model_view.translate.zt = - ANIMATION_VIEW_H / 2;
+	model_view.translate.yt = -ANIMATION_VIEW_H / 2;
 	action_lst.current_index = 0;
 	character_status_type status = Animation_List[action_lst.current_index];
 	Menu_UpdateAnimation(&status);
 }
 
-void Menu_ChooseCharacterModel(void)
+void Menu_ChooseCharacterModel(void *data)
 {
 	if(!has_init)
 		return;
@@ -494,7 +490,7 @@ void Menu_ChooseCharacterModel(void)
 		Setting_SetSettingInteger(USE_CHARACTER_MODEL_SETTING, current_character);
 }
 
-void Menu_BackAction(void)
+void Menu_BackAction(void *data)
 {
 	if(!has_init)
 		return;
@@ -520,15 +516,17 @@ int Menu_CharacterModelChooserMouseClickEventFunc(int button, int x, int y)
 		UI_ClickListView(&action_lst, x - action_lst.base.x, gl_y - action_lst.base.y);
 		return 1;
 	}
-	else if(UI_PointInWidget(&sure_btn.base, x, gl_y))
+	int i;
+	for(i = 0; i < total_action_type; i++)
 	{
-		Menu_ChooseCharacterModel();
-		return 1;
-	}
-	else if(UI_PointInWidget(&back_btn.base, x, gl_y))
-	{
-		Menu_BackAction();
-		return 1;
+		if(UI_PointInWidget(&btns[i].base, x, gl_y))
+		{
+			if(Btn_Infos[i].func)
+			{
+				Btn_Infos[i].func(Btn_Infos[i].data);
+			}
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -543,13 +541,17 @@ void Menu_InitCharacterModelChooser(void)
 		Game_MakeGameCharacterModel(model_list + i, i);
 
 	new_button(&btn, 0.0, 0.0, 0.0, CHARACTER_MODEL_BUTTON_W, CHARACTER_MODEL_BUTTON_H, 2.0, X11_COLOR(lightskyblue), X11_COLOR(green), X11_COLOR(lightseagreen), X11_COLOR(pink), X11_COLOR(darkgreen), X11_COLOR(seagreen), NULL);
+	btn.base.clip = GL_FALSE;
 	new_button(&action_btn, 0.0, 0.0, 0.0, ANIMATION_BUTTON_W, ANIMATION_BUTTON_H, 2.0, X11_COLOR(lightskyblue), X11_COLOR(green), X11_COLOR(lightseagreen), X11_COLOR(pink), X11_COLOR(darkgreen), X11_COLOR(seagreen), NULL);
-	new_button(&sure_btn, BUTTON_SURE_X, BUTTON_SURE_Y, 0.3, ACTION_BUTTON_W, ACTION_BUTTON_H, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), "Sure");
-	new_button(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, 0.3, ACTION_BUTTON_W, ACTION_BUTTON_H, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), "Back");
+	action_btn.base.clip = GL_FALSE;
+	int m;
+	for(m = 0; m < total_action_type; m++)
+	{
+		new_button(btns + m, Btn_Infos[m].x, Btn_Infos[m].y, 0.3, Btn_Infos[m].w, Btn_Infos[m].h, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), Btn_Infos[m].label);
+		btns[m].fnt = &fnt;
+	}
 	btn.fnt = &fnt;
 	action_btn.fnt = &fnt;
-	sure_btn.fnt = &fnt;
-	back_btn.fnt = &fnt;
 	new_list_view(&lst, CHARACTER_MODEL_LIST_VIEW_X, CHARACTER_MODEL_LIST_VIEW_Y, 0.0, CHARACTER_MODEL_LIST_VIEW_W, CHARACTER_MODEL_LIST_VIEW_H, 10, 20, 15, Color_GetColor(black_color, 0.0), X11_COLOR(lightgreen), X11_COLOR(darkgreen));
 	lst.delegate.component = &btn;
 	lst.delegate.update_func = UI_ButtonUpdateText;
@@ -571,13 +573,17 @@ void Menu_InitCharacterModelChooser(void)
 	Menu_MakeListViewData();
 	lst.data = data;
 	lst.count = data_count;
-	lst.current_index = 0;
 	lst.progress = 0.0;
 
 	action_lst.data = action_data;
 	action_lst.count = action_data_count;
 	action_lst.current_index = 0;
 	action_lst.progress = 0.0;
+
+	current_character = natasha2;
+	Setting_GetSettingInteger(USE_CHARACTER_MODEL_SETTING, &current_character);
+	UI_SetListCurrentIndex(&lst, current_character);
+	Menu_ViewCharacterModel(&current_character);
 }
 
 void Menu_ResetCharacterModelChooser(void)
@@ -596,31 +602,51 @@ void Menu_RenderCharacterModel(void)
 	if(current_character == -1)
 		return;
 	const game_character_model *cm = model_list + current_character;
-	if(cm -> source == lol_model_type)
+	if(cm->source == lol_model_type)
 	{
-		if(!cm -> lol_character.model)
+		if(!cm->lol_character.model)
 			return;
 		glPushMatrix();
 		{
-			glRotatef(cm -> lol_character.x_offset, 1.0, 0.0, 0.0);
+			glRotatef(cm->lol_character.x_offset, 1.0, 0.0, 0.0);
 
-			if(cm -> lol_character.scale != 1.0)
-				glScalef(cm -> lol_character.scale, cm -> lol_character.scale, cm -> lol_character.scale);
-			LOL_RenderModel(cm -> lol_character.model, 1, animation.anim, animation.frame);
+			if(cm->lol_character.scale != 1.0)
+				glScalef(cm->lol_character.scale, cm->lol_character.scale, cm->lol_character.scale);
+			LOL_RenderModel(cm->lol_character.model, 1, animation.anim, animation.frame);
 		}
 		glPopMatrix();
 	}
 
-	else if(cm -> source == netlizard_model_type)
+	else if(cm->source == netlizard_model_type)
 	{
-		if(!cm -> netlizard_character.model)
+		if(!cm->netlizard_character.model)
 			return;
 		glPushMatrix();
 		{
-			glRotatef(cm -> netlizard_character.z_offset, 0.0f, 0.0f, 1.0f);
-			if(cm -> netlizard_character.scale != 1.0)
-				glScalef(cm -> netlizard_character.scale, cm -> netlizard_character.scale, cm -> netlizard_character.scale);
-			NETLizard_RenderGL3DAnimationModel(cm -> netlizard_character.model, animation.anim, animation.frame);
+			glRotatef(cm->netlizard_character.z_offset, 0.0f, 0.0f, 1.0f);
+			if(cm->netlizard_character.scale != 1.0)
+				glScalef(cm->netlizard_character.scale, cm->netlizard_character.scale, cm->netlizard_character.scale);
+			NETLizard_RenderGL3DAnimationModel(cm->netlizard_character.model, animation.anim, animation.frame);
+		}
+		glPopMatrix();
+	}
+
+	else if(cm->source == csol_model_type)
+	{
+		if(!cm->csol_character.model)
+			return;
+		glPushMatrix();
+		{
+			glTranslatef(0.0, 0.0, (float)HL_MDL_Z_TRANSLATE * cm->csol_character.scale);
+			glRotatef(cm->csol_character.z_offset, 0.0f, 0.0f, 1.0f);
+			glRotatef(cm->csol_character.y_offset, 0.0f, 0.0f, 1.0f);
+			if(cm->csol_character.scale != 1.0)
+				glScalef(cm->csol_character.scale, cm->csol_character.scale, cm->csol_character.scale);
+			glPushAttrib(GL_ALL_ATTRIB_BITS);
+			{
+				DrawModel(cm->csol_character.model);
+			}
+			glPopAttrib();
 		}
 		glPopMatrix();
 	}
@@ -633,14 +659,19 @@ int Menu_SwipeCharacterModel(int x, int y, int dx, int dy)
 	if(current_character == -1)
 		return 0;
 	const game_character_model *cm = model_list + current_character;
-	if(cm -> source == lol_model_type)
+	if(cm->source == lol_model_type)
 	{
-		if(!cm -> lol_character.model)
+		if(!cm->lol_character.model)
 			return 0;
 	}
-	else if(cm -> source == netlizard_model_type)
+	else if(cm->source == netlizard_model_type)
 	{
-		if(!cm -> netlizard_character.model)
+		if(!cm->netlizard_character.model)
+			return 0;
+	}
+	else if(cm->source == csol_model_type)
+	{
+		if(!cm->csol_character.model)
 			return 0;
 	}
 	else
@@ -652,7 +683,7 @@ int Menu_SwipeCharacterModel(int x, int y, int dx, int dy)
 	if(UI_PointInRect2(&r, x, y) && UI_PointInRect2(&r, last_x, last_y))
 	{
 		//model_view.rotate.xr += -dy;
-		model_view.rotate.zr += dx;
+		model_view.rotate.zr = Algo_FormatAngle(model_view.rotate.zr + dx);
 		return 1;
 	}
 	return 0;
@@ -666,61 +697,61 @@ void Menu_UpdateAnimation(void *args)
 		return;
 	character_status_type status = (character_status_type)(*((int *)args));
 	game_character_model *gmodel = model_list + current_character;
-	if(gmodel -> source == lol_model_type)
+	if(gmodel->source == lol_model_type)
 	{
-		if(!gmodel -> lol_character.model -> anim)
+		if(!gmodel->lol_character.model->anim)
 			return;
 
 		int anim = -1;
 		int frame_count = -1;
 		if(status == death_status_type)
 		{
-			anim = gmodel -> lol_character.anim_list[LOL_Death_Type];
+			anim = gmodel->lol_character.anim_list[LOL_Death_Type];
 		}
 		else if(status == reload_status_type || status == runreload_status_type)
 		{
-			anim = gmodel -> lol_character.anim_list[LOL_Idle3_Type];
+			anim = gmodel->lol_character.anim_list[LOL_Idle3_Type];
 			frame_count = 83; // idle 3 160 / 340
 		}
 		else if(status == run_status_type)
 		{
-			anim = gmodel -> lol_character.anim_list[LOL_Run1_Type];
+			anim = gmodel->lol_character.anim_list[LOL_Run1_Type];
 		}
 		else if(status == attack_status_type)
 		{
-			anim = gmodel -> lol_character.anim_list[LOL_Attack1_Type];
+			anim = gmodel->lol_character.anim_list[LOL_Attack1_Type];
 		}
 		else if(status == fighting_status_type)
 		{
-			anim = gmodel -> lol_character.anim_list[LOL_Attack1_Type];
+			anim = gmodel->lol_character.anim_list[LOL_Attack1_Type];
 		}
 		else
 		{
 			int ran = rand() % 3;
-			anim = ran == 0 ? gmodel -> lol_character.anim_list[LOL_Idle1_Type] : (ran == 1 ? gmodel -> lol_character.anim_list[LOL_Idle2_Type] : gmodel -> lol_character.anim_list[LOL_Idle2_Type]); //Idle1 for test
+			anim = ran == 0 ? gmodel->lol_character.anim_list[LOL_Idle1_Type] : (ran == 1 ? gmodel->lol_character.anim_list[LOL_Idle2_Type] : gmodel->lol_character.anim_list[LOL_Idle2_Type]); //Idle1 for test
 		}
 		if(anim != -1)
 		{
 			animation.frame = 0;
 			animation.anim = anim;
-			animation.frame_count = frame_count == -1 ? (int)gmodel -> lol_character.model -> anim -> animation[animation.anim].animation_bone[0].frame_count : frame_count;
+			animation.frame_count = frame_count == -1 ? (int)gmodel->lol_character.model->anim->animation[animation.anim].animation_bone[0].frame_count : frame_count;
 			animation.anim_loop = one_animation_loop_type;
-			animation.fps = gmodel -> lol_character.model -> anim -> animation[anim].fps;
+			animation.fps = gmodel->lol_character.model->anim->animation[anim].fps;
 			animation.anim_orient = forward_play_type;
 		}
 		else
 			return;
 	}
-	else if(gmodel -> source == netlizard_model_type)
+	else if(gmodel->source == netlizard_model_type)
 	{
-		if(!gmodel -> netlizard_character.model)
+		if(!gmodel->netlizard_character.model)
 			return;
 
 		int anim = -1;
 		if(status == death_status_type)
 		{
-			int a1 = Game_GetNETLizardAnimationIndex(gmodel -> netlizard_character.model, Animation_Dead1_Type);
-			int a2 = Game_GetNETLizardAnimationIndex(gmodel -> netlizard_character.model, Animation_Dead2_Type);
+			int a1 = Game_GetNETLizardAnimationIndex(gmodel->netlizard_character.model, Animation_Dead1_Type);
+			int a2 = Game_GetNETLizardAnimationIndex(gmodel->netlizard_character.model, Animation_Dead2_Type);
 			if(a1 != -1 && a2 != -1)
 				anim = rand() % 2 == 0 ? a1 : a2;
 			else if(a1 != -1)
@@ -732,12 +763,12 @@ void Menu_UpdateAnimation(void *args)
 		}
 		else if(status == run_status_type)
 		{
-			anim = Game_GetNETLizardAnimationIndex(gmodel -> netlizard_character.model, Animation_Run_Type);
+			anim = Game_GetNETLizardAnimationIndex(gmodel->netlizard_character.model, Animation_Run_Type);
 		}
 		else if(status == attack_status_type || status == reload_status_type)
 		{
-			int a1 = Game_GetNETLizardAnimationIndex(gmodel -> netlizard_character.model, Animation_Attack1_Type);
-			int a2 = Game_GetNETLizardAnimationIndex(gmodel -> netlizard_character.model, Animation_Attack2_Type);
+			int a1 = Game_GetNETLizardAnimationIndex(gmodel->netlizard_character.model, Animation_Attack1_Type);
+			int a2 = Game_GetNETLizardAnimationIndex(gmodel->netlizard_character.model, Animation_Attack2_Type);
 			if(a1 != -1 && a2 != -1)
 				anim = rand() % 2 == 0 ? a1 : a2;
 			else if(a1 != -1)
@@ -749,8 +780,8 @@ void Menu_UpdateAnimation(void *args)
 		}
 		else if(status == fighting_status_type || status == runreload_status_type)
 		{
-			int a1 = Game_GetNETLizardAnimationIndex(gmodel -> netlizard_character.model, Animation_Fighting1_Type);
-			int a2 = Game_GetNETLizardAnimationIndex(gmodel -> netlizard_character.model, Animation_Fighting2_Type);
+			int a1 = Game_GetNETLizardAnimationIndex(gmodel->netlizard_character.model, Animation_Fighting1_Type);
+			int a2 = Game_GetNETLizardAnimationIndex(gmodel->netlizard_character.model, Animation_Fighting2_Type);
 			if(a1 != -1 && a2 != -1)
 				anim = rand() % 2 == 0 ? a1 : a2;
 			else if(a1 != -1)
@@ -758,8 +789,8 @@ void Menu_UpdateAnimation(void *args)
 			else if(a2 != -1)
 				anim = a2;
 			{
-				a1 = Game_GetNETLizardAnimationIndex(gmodel -> netlizard_character.model, Animation_Attack1_Type);
-				a2 = Game_GetNETLizardAnimationIndex(gmodel -> netlizard_character.model, Animation_Attack2_Type);
+				a1 = Game_GetNETLizardAnimationIndex(gmodel->netlizard_character.model, Animation_Attack1_Type);
+				a2 = Game_GetNETLizardAnimationIndex(gmodel->netlizard_character.model, Animation_Attack2_Type);
 				if(a1 != -1 && a2 != -1)
 					anim = rand() % 2 == 0 ? a1 : a2;
 				else if(a1 != -1)
@@ -772,16 +803,70 @@ void Menu_UpdateAnimation(void *args)
 		}
 		else
 		{
-			anim = Game_GetNETLizardAnimationIndex(gmodel -> netlizard_character.model, Animation_Idle_Type);
+			anim = Game_GetNETLizardAnimationIndex(gmodel->netlizard_character.model, Animation_Idle_Type);
 		}
 		if(anim != -1)
 		{
 			animation.frame = 0;
 			animation.anim = anim;
-			animation.frame_count = gmodel -> netlizard_character.model -> animations[animation.anim].end - gmodel -> netlizard_character.model -> animations[animation.anim].begin + 1;
+			animation.frame_count = gmodel->netlizard_character.model->animations[animation.anim].end - gmodel->netlizard_character.model->animations[animation.anim].begin + 1;
 			animation.anim_loop = one_animation_loop_type;
 			animation.fps = NETLIZARD_ANIMATION_FPS;
 			animation.anim_orient = forward_play_type;
+		}
+		else
+			return;
+	}
+	else if(gmodel->source == csol_model_type)
+	{
+		int anim = -1;
+		mstudioseqdesc_t *seq = NULL;
+
+		if(status == death_status_type)
+		{
+			const char *deaths[] = {
+				"death1",
+				"death2",
+				"death3",
+				"head",
+				"gutshot",
+				"left",
+				"back",
+				"right",
+				"forward",
+				"crouch_die"
+			};
+			seq = GetSequence(gmodel->csol_character.model, deaths[rand() % (countof(deaths))], &anim);
+		}
+		else if(status == reload_status_type || status == runreload_status_type)
+		{
+			seq = GetSequence(gmodel->csol_character.model, "ref_reload_ak47", &anim);
+		}
+		else if(status == run_status_type)
+		{
+			seq = GetSequence(gmodel->csol_character.model, "run", &anim);
+		}
+		else if(status == attack_status_type)
+		{
+			seq = GetSequence(gmodel->csol_character.model, "idle", &anim);
+		}
+		else if(status == fighting_status_type)
+		{
+			seq = GetSequence(gmodel->csol_character.model, "run", &anim);
+		}
+		else
+		{
+			seq = GetSequence(gmodel->csol_character.model, "idle1", &anim);
+		}
+		if(seq)
+		{
+			animation.frame = 0;
+			animation.anim = anim;
+			animation.frame_count = seq->numframes;
+			animation.anim_loop = Game_GetStatusAniamtionLoop(status);
+			animation.fps = seq->fps;
+			animation.last_play_time = 0.0f;
+			SetSequence(gmodel->csol_character.model, anim);
 		}
 		else
 			return;
@@ -798,10 +883,17 @@ void Menu_PlayAnimation(float delta)
 		return;
 	int f = Game_ComputeAnimationPlayFrameCount(model_list[current_character].source, &animation, fps, delta);
 
-	int n = Game_GetAnimationNextFrame(&animation, f);
-	if(n >= 0)
+	if(model_list[current_character].source == csol_model_type)
 	{
-		animation.frame = n;
+		animation.frame = (int)AdvanceFrame(model_list[current_character].csol_character.model, delta);
+	}
+	else
+	{
+		int n = Game_GetAnimationNextFrame(&animation, f);
+		if(n >= 0)
+		{
+			animation.frame = n;
+		}
 	}
 	//animation.last_play_time = time;
 }

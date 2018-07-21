@@ -23,6 +23,7 @@ struct AlphaTest{
 varying vec2 fTexcoord; // 纹理坐标0
 varying float fFogFactory; // 雾因子
 varying vec4 fFogColor; // 雾颜色
+varying vec4 fPrimaryColor; // 颜色
 
 uniform sampler2D fTexture; // 纹理0采样器
 uniform vec4 fColor; // 颜色
@@ -76,7 +77,7 @@ void main()
 	else
 		gl_FragColor = fColor;
 		*/
-	vec4 color = texture2D(fTexture, fTexcoord) * fColor;
+	vec4 color = texture2D(fTexture, fTexcoord) * fColor;// * fPrimaryColor;
 	gl_FragColor = mix(fFogColor, color, fFogFactory);
 	/*
 	if(gl_FragColor.a < 0.1)

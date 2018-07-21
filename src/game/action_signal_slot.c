@@ -32,10 +32,10 @@ const void * SignalSlot_GetAction(const char *signal)
 	for(i = 0; i < action_list.count; i++)
 	{
 		const signal_slot *ss = List_GetConstDataByIndexT(&action_list, i, signal_slot);
-		if(ss -> signal)
+		if(ss->signal)
 		{
-			if(strcmp(ss -> signal, signal) == 0)
-				return ss -> slot;
+			if(strcmp(ss->signal, signal) == 0)
+				return ss->slot;
 		}
 	}
 	return NULL;
@@ -51,9 +51,9 @@ int SignalSlot_AddAction(const char *signal, const void *slot)
 	for(i = 0; i < action_list.count; i++)
 	{
 		const signal_slot *ss = List_GetConstDataByIndexT(&action_list, i, signal_slot);
-		if(ss -> signal)
+		if(ss->signal)
 		{
-			if(strcmp(ss -> signal, signal) == 0)
+			if(strcmp(ss->signal, signal) == 0)
 				return -2;
 		}
 	}
@@ -71,7 +71,7 @@ void SignalSlot_ClearAction(void)
 	for(i = 0; i < action_list.count; i++)
 	{
 		signal_slot *ss = List_GetDataByIndexT(&action_list, i, signal_slot);
-		FREE_PTR(ss -> signal)
+		FREE_PTR(ss->signal)
 	}
 	List_DeleteAll(&action_list);
 }

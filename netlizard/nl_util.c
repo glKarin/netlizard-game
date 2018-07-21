@@ -20,7 +20,7 @@ array * nlReadFile(const char *name)
 	}
 	array *arr = new_array(nl_byte, l, NULL, 0);
 	fseek(file, 0, SEEK_SET);
-	fread(arr -> array, sizeof(char), l, file);
+	fread(arr->array, sizeof(char), l, file);
 	fclose(file);
 	return arr;
 }
@@ -40,12 +40,12 @@ int nlIsPNG(const array *arr)
 	if(!arr)
 		return 0;
 	int res = 1;
-	if(arr -> length < len)
+	if(arr->length < len)
 		return 0;
 	int i1;
 	for(i1 = 0; i1 < len; i1++)
 	{
-		if(((byte *)(arr -> array))[i1] != PNG_Dec[i1]) {
+		if(((byte *)(arr->array))[i1] != PNG_Dec[i1]) {
 			res = 0;
 			break;
 		}
@@ -99,12 +99,12 @@ char * nlParseString(array *arr)
 	char *str = NEW(char);
 	ZERO(str, char);
 	int i2;
-	for(i2 = 0; i2 < arr -> length; i2++)
+	for(i2 = 0; i2 < arr->length; i2++)
 	{
 		long l1;
 		char ch;
 		char *tmp = NULL;
-		if ((l1 = ((int *)(arr -> array))[i2]) < 0L) {
+		if ((l1 = ((int *)(arr->array))[i2]) < 0L) {
 			l1 += 4294967296LL;
 		}
 		ch = (char)(int)((l1 & 0xFF000000) >> 24);
@@ -162,9 +162,9 @@ char * nlParseStringC(array *arr)
 	char *str = NEW(char);
 	ZERO(str, char);
 	int i2;
-	for(i2 = 0; i2 < arr -> length; i2++)
+	for(i2 = 0; i2 < arr->length; i2++)
 	{
-		int *iptr = &(((int *)(arr -> array))[i2]);
+		int *iptr = &(((int *)(arr->array))[i2]);
 		long l1 = *iptr;
 		if (l1 < 0L) {
 			*iptr += 4294967296LL;
@@ -200,12 +200,12 @@ int nlIsNLPNG(const array *arr)
 	if(!arr)
 		return 0;
 	int res = 1;
-	if(arr -> length < len)
+	if(arr->length < len)
 		return 0;
 	int i1;
 	for(i1 = 0; i1 < len; i1++)
 	{
-		if(((byte *)(arr -> array))[i1] != NL_PNG_Dec[i1]) {
+		if(((byte *)(arr->array))[i1] != NL_PNG_Dec[i1]) {
 			res = 0;
 			break;
 		}
@@ -303,9 +303,9 @@ int nlIsNL3DV3Texture(const array *arr)
 	if(!arr)
 		return 0;
 	const char *F = "BIP";
-	if(arr -> length < 3)
+	if(arr->length < 3)
 		return 0;
-	const char *data = (char *)(arr -> array);
+	const char *data = (char *)(arr->array);
 	return(strncmp(data, F, 3) == 0);
 }
 
@@ -327,9 +327,9 @@ int nlIsNL3DV2Texture(const array *arr)
 	if(!arr)
 		return 0;
 	const char *F = "&&&";
-	if(arr -> length < 3)
+	if(arr->length < 3)
 		return 0;
-	const char *data = (char *)(arr -> array);
+	const char *data = (char *)(arr->array);
 	return(strncmp(data, F, 3) == 0);
 }
 
@@ -351,12 +351,12 @@ array * nlEncodeDecodeData(const array *arr)
 	static const int n = 100;
 	if(!arr)
 		return NULL;
-	array *data = new_array(nl_byte, arr -> length, NULL, 0);
+	array *data = new_array(nl_byte, arr->length, NULL, 0);
 	int paramInt = n;
 	int i2;
-	for (i2 = 0; i2 < arr -> length; i2++)
+	for (i2 = 0; i2 < arr->length; i2++)
 	{
-		((byte *)(data -> array))[i2] = ((byte)(((byte *)(arr -> array))[i2] ^ paramInt));
+		((byte *)(data->array))[i2] = ((byte)(((byte *)(arr->array))[i2] ^ paramInt));
 		paramInt++;
 		if (paramInt > 255) {
 			paramInt = 0;

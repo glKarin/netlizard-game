@@ -42,7 +42,7 @@ int nlHandleText_File2File(const char *from, const char *to)
 			res = 0;
 		else
 		{
-			res = (fprintf(file, "%s", ((byte *)(data -> array))) == data -> length - 1) ? 1 : 0;
+			res = (fprintf(file, "%s", ((byte *)(data->array))) == data->length - 1) ? 1 : 0;
 			fflush(file);
 			fclose(file);
 		}
@@ -66,7 +66,7 @@ int nlHandleText_Memory2File(const array *arr, const char *to)
 			res = 0;
 		else
 		{
-			res = (fprintf(file, "%s", ((byte *)(data -> array))) == data -> length - 1) ? 1 : 0;
+			res = (fprintf(file, "%s", ((byte *)(data->array))) == data->length - 1) ? 1 : 0;
 			fflush(file);
 			fclose(file);
 		}
@@ -82,26 +82,26 @@ array * class_p__function_a_1string_2char__text(const array *arr, wchar_t paramC
 {
 	if(!arr)
 		return NULL;
-	if(arr -> length == 0)
+	if(arr->length == 0)
 		return NULL;
-	int length = arr -> length;
-	signed char *o = (signed char *)(arr -> array);
+	int length = arr->length;
+	signed char *o = (signed char *)(arr->array);
 	array *data = NULL;
 	signed char *paramString = NULL;
 	if ((length > 1) && (o[0] == 59) && (o[1] == 67)) {
 		data = nlEncodeDecodeData(arr);
-		length = data -> length;
-		paramString = (signed char *)(data -> array);
+		length = data->length;
+		paramString = (signed char *)(data->array);
 	}
 	else if ((length > 1) && (o[0] == -101) && (o[1] == -101)) {
 		data = nlEncodeDecodeData(arr);
-		length = data -> length;
-		paramString = (signed char *)(data -> array);
+		length = data->length;
+		paramString = (signed char *)(data->array);
 	}
 	else
 	{
-		length = arr -> length;
-		paramString = (signed char *)(arr -> array);
+		length = arr->length;
+		paramString = (signed char *)(arr->array);
 	}
 	wchar_t c1 = '\000';
 	if ((length > 0) && (paramString[0] == 95)) {
@@ -181,7 +181,7 @@ array * class_p__function_a_1string_2char__text(const array *arr, wchar_t paramC
 		i++;
 	}
 	array *res = new_array(nl_byte, ii + 1, str, 0);
-	((char *)(res -> array))[ii] = '\0';
+	((char *)(res->array))[ii] = '\0';
 	setlocale(LC_CTYPE, NULL);
 	delete_array(data);
 	free(data);

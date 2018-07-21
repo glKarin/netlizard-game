@@ -16,17 +16,17 @@
 #define UNUSED(ptr) free(ptr); ptr = NULL;
 #define UNPARSED 0
 
-#define printfi(x) printf(#x" -> %d\n", x)
-#define printfu(x) printf(#x" -> %u\n", x)
-#define printfl(x) printf(#x" -> %ld\n", x)
-#define printful(x) printf(#x" -> %lu\n", x)
-#define printff(x) printf(#x" -> %f\n", x)
-#define printfx(x) printf(#x" -> %x\n", x)
-#define printfs(x) printf(#x" -> %s\n", x)
-#define printfc(x) printf(#x" -> %c\n", x)
-#define printfp(x) printf(#x" -> %p\n", x)
-#define printf2f(x) printf(#x" -> %.2f\n", x)
-#define printf1f(x) printf(#x" -> %.1f\n", x)
+#define printfi(x) printf(#x"->%d\n", x)
+#define printfu(x) printf(#x"->%u\n", x)
+#define printfl(x) printf(#x"->%ld\n", x)
+#define printful(x) printf(#x"->%lu\n", x)
+#define printff(x) printf(#x"->%f\n", x)
+#define printfx(x) printf(#x"->%x\n", x)
+#define printfs(x) printf(#x"->%s\n", x)
+#define printfc(x) printf(#x"->%c\n", x)
+#define printfp(x) printf(#x"->%p\n", x)
+#define printf2f(x) printf(#x"->%.2f\n", x)
+#define printf1f(x) printf(#x"->%.1f\n", x)
 #define printfln(fmt, args...) printf(fmt"\n", ##args) 
 
 #define nlprintf(fmt, args...) \

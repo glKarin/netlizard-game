@@ -9,6 +9,29 @@
 #define SHOTGUN_ANGLE_MAX_OFFSET 3.0f
 #define SHOTGUN_ANGLE_MIN_OFFSET 0.2f
 
+#define IS_LONG_WEAPON(wp) ((wp).type == shot_gun_type || (wp).type == mini_submachine_gun_type || (wp).type == automatic_rifle_type || (wp).type == sniper_rifle_type || (wp).type == machine_gun_type)
+#define IS_GRENADE_WEAPON(wp) ((wp).type == grenades_type || (wp).type == flash_flares_type || (wp).type == smoke_bomb_type)   
+#define IS_RIFLE_WEAPON(wp) ((wp).type == automatic_rifle_type || (wp).type == sniper_rifle_type)
+#define IS_NEAR_WEAPON(wp) ((wp).type == pistol_gun_type || (wp).type == dagger_type)   
+#define IS_LAUNCHER_WEAPON(wp) ((wp).type == launcher1_gun_type || (wp).type == launcher2_gun_type)
+
+#define OTHER_WEAPON_INDEX 0
+#define FIGHTING_WEAPON_INDEX 0
+#define SECONDARY_WEAPON_INDEX 1
+#define MAIN_WEAPON_1_INDEX 2
+#define LAUNCH_WEAPON_INDEX 3
+#define MAIN_WEAPON_2_INDEX 4
+
+typedef enum _weapon_position_type
+{
+	other_weapon = 1,
+	fighting_weapon = 1 << 1,
+	secondary_weapon = 1 << 2,
+	main_weapon_1 = 1 << 3,
+	launch_weapon = 1 << 4,
+	main_weapon_2 = 1 << 5,
+} weapon_position_type;
+
 typedef enum _weapon_usage_type
 {
 	weapon_on_floor_type = 0,
@@ -138,6 +161,11 @@ bullet * Game_WeaponFire(bullet bt[], const weapon *wp, float w, int character_i
 void Game_LoadWeaponModel(void);
 void Game_FreeWeaponModel(void);
 weapon_model_type Game_RandLongWeapon(void);
-void Game_ChangeRandLongWeapon(weapon *w);
+weapon_model_type Game_RandHeavyWeapon(void);
+weapon_model_type Game_RandLightWeapon(void);
+weapon_model_type Game_RandKnifeWeapon(void);
+weapon_model_type Game_RandPistolWeapon(void);
+weapon_model_type Game_RandGrenadeWeapon(void);
+int Game_Rand4WeaponTypes(weapon_model_type wps[], unsigned int max, unsigned mask);
 
 #endif

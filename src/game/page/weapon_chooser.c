@@ -34,17 +34,20 @@
 #define WEAPON_VIEW_W 300
 #define WEAPON_VIEW_H 120
 
-#define ACTION_BUTTON_W 120
-#define ACTION_BUTTON_H 60
-#define BUTTON_SURE_X 550
-#define BUTTON_SURE_Y 10
-#define BUTTON_BACK_X 700
-#define BUTTON_BACK_Y 10
+#define BTN_W 120
+#define BTN_H 60
 #define LABEL_H 80
 
 #define IDLE_TIME_DELAY 0.4
 
 #define WEAPON_TYPE_COUNT 9
+
+typedef enum _menu_action
+{
+	enter_action = 0,
+	back_action,
+	total_action_type
+} menu_action;
 
 static const weapon_attack_type Weapon_Type_List[WEAPON_TYPE_COUNT] = {
 	pistol_gun_type,
@@ -72,18 +75,20 @@ static void Menu_WeaponChooserFreeFunc(void);
 static void Menu_ResetWeaponChooser(void);
 static void Menu_MakeWeaponListViewData(void *type);
 static void Menu_ViewWeapon(void *index);
-static void Menu_BackAction(void);
-static void Menu_ChooseWeapon(void);
+static void Menu_BackAction(void *data);
+static void Menu_ChooseWeapon(void *data);
 static void Menu_RenderWeapon(void);
 static int Menu_SwipeWeapon(int x, int y, int dx, int dy);
 static void Menu_SetWeaponChooserPageSize(GLsizei w, GLsizei h);
 
+static const button_initilizer Btn_Infos[] = {
+	{500, 10, BTN_W, BTN_H, "Sure", Menu_ChooseWeapon, NULL},
+	{700, 10, BTN_W, BTN_H, "Back", Menu_BackAction, NULL},
+};
+
 static button btn;
 static button wp_btn;
-
-static button sure_btn;
-static button back_btn;
-
+static button btns[total_action_type];
 static list_view lst;
 static list_view wp_lst;
 static label lb;
@@ -113,13 +118,14 @@ void Menu_SetWeaponChooserPageSize(GLsizei w, GLsizei h)
 	{
 		UI_ResizeButton(&btn, TYPE_BUTTON_W, TYPE_BUTTON_H);
 		UI_ResizeButton(&wp_btn, WEAPON_BUTTON_W, WEAPON_BUTTON_H);
-		UI_ResetButtonGeometry(&sure_btn, BUTTON_SURE_X, BUTTON_SURE_Y, ACTION_BUTTON_W, ACTION_BUTTON_H);
-		UI_ResetButtonGeometry(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, ACTION_BUTTON_W, ACTION_BUTTON_H);
 		UI_ResetListViewGeometry(&lst, TYPE_LIST_VIEW_X, TYPE_LIST_VIEW_Y, TYPE_LIST_VIEW_W, TYPE_LIST_VIEW_H);
 		UI_ResetListViewGeometry(&wp_lst, WEAPON_LIST_VIEW_X, WEAPON_LIST_VIEW_Y, WEAPON_LIST_VIEW_W, WEAPON_LIST_VIEW_H);
 		UI_ResetTextBrowserGeometry(&tb, TEXT_VIEW_X, TEXT_VIEW_Y, TEXT_VIEW_W, TEXT_VIEW_H);
 		UI_ResetLabelGeometry(&lb, 0.0, page_height - LABEL_H, page_width, LABEL_H);
 		UI_ResizeScene3D(&weapon_view, WEAPON_VIEW_W, WEAPON_VIEW_H, page_width, page_height);
+		int i;
+		for(i = 0; i < total_action_type; i++)
+			UI_ResetButtonGeometry(btns + i, Btn_Infos[i].x, Btn_Infos[i].y, Btn_Infos[i].w, Btn_Infos[i].h);
 	}
 }
 
@@ -132,7 +138,7 @@ int Menu_WeaponChooserIdleEventFunc(void)
 		if(current_weapon != -1)
 		{
 			const weapon *wp = weapon_list + current_weapon;
-			if(wp -> model && wp -> model -> tp_model)
+			if(wp->model && wp->model->tp_model)
 			{
 				weapon_view.rotate.zr += delta_time * weapon_view_unit;
 			}
@@ -166,6 +172,10 @@ void Menu_WeaponChooserInitFunc(void)
 	oglEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.1);
 	oglEnable(GL_TEXTURE_2D);
+#ifndef _HARMATTAN_OPENGLES2
+	oglDisable(GL_LIGHTING);
+#endif
+	oglDisable(GL_FOG);
 }
 
 void Menu_WeaponChooserDrawFunc(void)
@@ -177,42 +187,35 @@ void Menu_WeaponChooserDrawFunc(void)
 	OpenGL_Render3DOrtho(0.0, width, 0.0, height);
 	{
 		//glPolygonMode(GL_FRONT, GL_LINE);
-		oglEnable(GL_SCISSOR_TEST);
-		glScissor(lst.base.x, lst.base.y, lst.base.width, lst.base.height);
 		glPushMatrix();
 		{
 			glTranslatef(lst.base.x, lst.base.y, lst.base.z);
 			UI_RenderListView(&lst);
 		}
 		glPopMatrix();
-		glScissor(wp_lst.base.x, wp_lst.base.y, wp_lst.base.width, wp_lst.base.height);
 		glPushMatrix();
 		{
 			glTranslatef(wp_lst.base.x, wp_lst.base.y, wp_lst.base.z);
 			UI_RenderListView(&wp_lst);
 		}
 		glPopMatrix();
-		glScissor(tb.base.x, tb.base.y, tb.base.width, tb.base.height);
 		glPushMatrix();
 		{
 			glTranslatef(tb.base.x, tb.base.y, tb.base.z);
 			UI_RenderTextBrowser(&tb);
 		}
 		glPopMatrix();
-		oglDisable(GL_SCISSOR_TEST);
 
-		glPushMatrix();
+		int i;
+		for(i = 0; i < total_action_type; i++)
 		{
-			glTranslatef(sure_btn.base.x, sure_btn.base.y, sure_btn.base.z);
-			UI_RenderButton(&sure_btn);
+			glPushMatrix();
+			{
+				glTranslatef(btns[i].base.x, btns[i].base.y, btns[i].base.z);
+				UI_RenderButton(btns + i);
+			}
+			glPopMatrix();
 		}
-		glPopMatrix();
-		glPushMatrix();
-		{
-			glTranslatef(back_btn.base.x, back_btn.base.y, back_btn.base.z);
-			UI_RenderButton(&back_btn);
-		}
-		glPopMatrix();
 
 		glPushMatrix();
 		{
@@ -240,8 +243,9 @@ void Menu_WeaponChooserFreeFunc(void)
 
 	delete_button(&btn);
 	delete_button(&wp_btn);
-	delete_button(&sure_btn);
-	delete_button(&back_btn);
+	int m;
+	for(m = 0; m < total_action_type; m++)
+		delete_button(btns + m);
 	delete_label(&lb);
 	delete_list_view(&lst);
 	delete_list_view(&wp_lst);
@@ -307,7 +311,7 @@ int Menu_WeaponChooserKeyEventFunc(int key, int act, int pressed, int x, int y)
 		case Harmattan_K_Escape:
 			if(pressed)
 			{
-				Menu_BackAction();
+				Menu_BackAction(NULL);
 				return 1;
 			}
 			break;
@@ -348,15 +352,14 @@ int Menu_WeaponChooserMouseEventFunc(int button, int pressed, int x, int y)
 			return 1;
 		}
 	}
-	else if(UI_PointInWidget(&sure_btn.base, x, gl_y))
+	int i;
+	for(i = 0; i < total_action_type; i++)
 	{
-		sure_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
-	}
-	else if(UI_PointInWidget(&back_btn.base, x, gl_y))
-	{
-		back_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
+		if(UI_PointInWidget(&btns[i].base, x, gl_y))
+		{
+			btns[i].highlight = pressed ? GL_TRUE : GL_FALSE;
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -383,25 +386,19 @@ int Menu_WeaponChooserMouseMotionEventFunc(int button, int pressed, int x, int y
 		{
 			res |= UI_SlideTextBrowser(&tb, -dy);
 		}
-		if(UI_PointInWidget(&sure_btn.base, x, gl_y) && !UI_PointInWidget(&sure_btn.base, last_x, last_gl_y))
+		int i;
+		for(i = 0; i < total_action_type; i++)
 		{
-			sure_btn.highlight = GL_TRUE;
-			res |= 1;
-		}
-		else if(!UI_PointInWidget(&sure_btn.base, x, gl_y) && UI_PointInWidget(&sure_btn.base, last_x, last_gl_y))
-		{
-			sure_btn.highlight = GL_FALSE;
-			res |= 1;
-		}
-		if(UI_PointInWidget(&back_btn.base, x, gl_y) && !UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
-		{
-			back_btn.highlight = GL_TRUE;
-			res |= 1;
-		}
-		else if(!UI_PointInWidget(&back_btn.base, x, gl_y) && UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
-		{
-			back_btn.highlight = GL_FALSE;
-			res |= 1;
+			if(UI_PointInWidget(&btns[i].base, x, gl_y) && !UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+			{
+				btns[i].highlight = GL_TRUE;
+				res |= 1;
+			}
+			else if(!UI_PointInWidget(&btns[i].base, x, gl_y) && UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+			{
+				btns[i].highlight = GL_FALSE;
+				res |= 1;
+			}
 		}
 
 		res |= Menu_SwipeWeapon(x, gl_y, dx, -dy);
@@ -534,7 +531,7 @@ void Menu_ViewWeapon(void *args)
 			"Ammo total count: %d\n"
 			"Reload time: %.1fs\n"
 			"Bullet speed: %.0f/s\n"
-			, Weapon_Name[wp -> weapon_index], Weapon_Type_Name[wp -> type], wp -> firing_rate, wp -> shot_range, wp -> damage * wp -> shell_count, wp -> ammo_count, wp -> ammo_total_count_limit, wp -> reload_time, wp -> speed);
+			, Weapon_Name[wp->weapon_index], Weapon_Type_Name[wp->type], wp->firing_rate, wp->shot_range, wp->damage * wp->shell_count, wp->ammo_count, wp->ammo_total_count_limit, wp->reload_time, wp->speed);
 
 	if(!tb.text || strcmp(tb.text, str))
 		UI_SetBrowserText(&tb, str);
@@ -544,7 +541,7 @@ void Menu_ViewWeapon(void *args)
 	auto_rotate = 1;
 }
 
-void Menu_ChooseWeapon(void)
+void Menu_ChooseWeapon(void *data)
 {
 	if(!has_init)
 		return;
@@ -553,7 +550,7 @@ void Menu_ChooseWeapon(void)
 	Setting_SetSettingInteger(USE_WEAPON_SETTING, current_weapon);
 }
 
-void Menu_BackAction(void)
+void Menu_BackAction(void *data)
 {
 	if(!has_init)
 		return;
@@ -579,15 +576,17 @@ int Menu_WeaponChooserMouseClickEventFunc(int button, int x, int y)
 		UI_ClickListView(&wp_lst, x - wp_lst.base.x, gl_y - wp_lst.base.y);
 		return 1;
 	}
-	else if(UI_PointInWidget(&sure_btn.base, x, gl_y))
+	int i;
+	for(i = 0; i < total_action_type; i++)
 	{
-		Menu_ChooseWeapon();
-		return 1;
-	}
-	else if(UI_PointInWidget(&back_btn.base, x, gl_y))
-	{
-		Menu_BackAction();
-		return 1;
+		if(UI_PointInWidget(&btns[i].base, x, gl_y))
+		{
+			if(Btn_Infos[i].func)
+			{
+				Btn_Infos[i].func(Btn_Infos[i].data);
+			}
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -603,13 +602,17 @@ void Menu_InitWeaponChooser(void)
 		new_weapon(weapon_list + i, i);
 
 	new_button(&btn, 0.0, 0.0, 0.0, TYPE_BUTTON_W, TYPE_BUTTON_H, 2.0, X11_COLOR(lightskyblue), X11_COLOR(green), X11_COLOR(lightseagreen), X11_COLOR(pink), X11_COLOR(darkgreen), X11_COLOR(seagreen), NULL);
+	btn.base.clip = GL_FALSE;
 	new_button(&wp_btn, 0.0, 0.0, 0.0, WEAPON_BUTTON_W, WEAPON_BUTTON_H, 2.0, X11_COLOR(lightskyblue), X11_COLOR(green), X11_COLOR(lightseagreen), X11_COLOR(pink), X11_COLOR(darkgreen), X11_COLOR(seagreen), NULL);
-	new_button(&sure_btn, BUTTON_SURE_X, BUTTON_SURE_Y, 0.3, ACTION_BUTTON_W, ACTION_BUTTON_H, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), "Sure");
-	new_button(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, 0.3, ACTION_BUTTON_W, ACTION_BUTTON_H, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), "Back");
+	wp_btn.base.clip = GL_FALSE;
+	int m;
+	for(m = 0; m < total_action_type; m++)
+	{
+		new_button(btns + m, Btn_Infos[m].x, Btn_Infos[m].y, 0.3, Btn_Infos[m].w, Btn_Infos[m].h, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), Btn_Infos[m].label);
+		btns[m].fnt = &fnt;
+	}
 	btn.fnt = &fnt;
 	wp_btn.fnt = &fnt;
-	sure_btn.fnt = &fnt;
-	back_btn.fnt = &fnt;
 	new_list_view(&lst, TYPE_LIST_VIEW_X, TYPE_LIST_VIEW_Y, 0.0, TYPE_LIST_VIEW_W, TYPE_LIST_VIEW_H, 10, 20, 15, Color_GetColor(black_color, 0.0), X11_COLOR(lightgreen), X11_COLOR(darkgreen));
 	lst.delegate.component = &btn;
 	lst.delegate.update_func = UI_ButtonUpdateText;
@@ -652,16 +655,16 @@ void Menu_RenderWeapon(void)
 	if(current_weapon == -1)
 		return;
 	const weapon *wp = weapon_list + current_weapon;
-	if(!wp -> model || !wp -> model -> tp_model)
+	if(!wp->model || !wp->model->tp_model)
 		return;
 	glPushAttrib(GL_POLYGON_BIT);
 	{
 		oglDisable(GL_CULL_FACE);
-		glRotatef(wp -> model -> tp_model -> item_meshes[0].angle[0], 1.0f, 0.0f, 0.0f);
-		glRotatef(wp -> model -> tp_model -> item_meshes[0].angle[1], 0.0f, 0.0f, 1.0f);
-		if(wp -> model -> scale != 1.0)
-			glScalef(wp -> model -> scale, wp -> model -> scale, wp -> model -> scale);
-		NETLizard_RenderGL3DMesh(&(wp -> model -> tp_model -> item_meshes[0].item_mesh), wp -> model -> tp_model -> texes);
+		glRotatef(wp->model->tp_model->item_meshes[0].angle[0], 1.0f, 0.0f, 0.0f);
+		glRotatef(wp->model->tp_model->item_meshes[0].angle[1], 0.0f, 0.0f, 1.0f);
+		if(wp->model->scale != 1.0)
+			glScalef(wp->model->scale, wp->model->scale, wp->model->scale);
+		NETLizard_RenderGL3DMesh(&(wp->model->tp_model->item_meshes[0].item_mesh), wp->model->tp_model->texes);
 	}
 	glPopAttrib();
 }
@@ -673,7 +676,7 @@ int Menu_SwipeWeapon(int x, int y, int dx, int dy)
 	if(current_weapon == -1)
 		return 0;
 	const weapon *wp = weapon_list + current_weapon;
-	if(!wp -> model || !wp -> model -> tp_model)
+	if(!wp->model || !wp->model->tp_model)
 		return 0;
 	rect2 r = {weapon_view.x, weapon_view.y, weapon_view.x + weapon_view.width, weapon_view.y + weapon_view.height};
 	int last_x = x - dx;
@@ -681,8 +684,8 @@ int Menu_SwipeWeapon(int x, int y, int dx, int dy)
 	if(UI_PointInRect2(&r, x, y) && UI_PointInRect2(&r, last_x, last_y))
 	{
 		auto_rotate = 0;
-		weapon_view.rotate.xr += -dy;
-		weapon_view.rotate.zr += dx;
+		weapon_view.rotate.xr = Algo_FormatAngle(weapon_view.rotate.xr + -dy);
+		weapon_view.rotate.zr = Algo_FormatAngle(weapon_view.rotate.zr + dx);
 		return 1;
 	}
 	return 0;

@@ -212,7 +212,7 @@ void UI_RenderScene3D(const scene_3d *scene);
 void delete_scene_3d(scene_3d *s);
 
 // 计算NETLizard 3D场景中位置角度变换结果
-void Algo_TransformPositionAndAngle(position_type p, const nl_vector3_t *ov, float tunit, nl_vector3_t *rv, orientation_type o, float oxr, float oyr,  float runit, float *rxr, float *ryr, int corss);
+void Algo_TransformPositionAndAngle(position_type p, const nl_vector3_t *ov, float tunit, nl_vector3_t *rv, orientation_type o, float oxr, float oyr, float runit, float *rxr, float *ryr, int corss);
 // 计算OpenGL视觉坐标位置角度变换结果
 void Algo_GLTransformPositionAndAngle(position_type p, const gl_vector3_t *ov, float tunit, gl_vector3_t *rv, orientation_type o, float oxr, float oyr, float runit, float *rxr, float *ryr, int cross);
 // NETLizard 3D 场景中按角度计算方向

@@ -17,15 +17,18 @@
 #define FLICK_Y 100
 #define FLICK_W 554
 #define FLICK_H 300
-#define BUTTON_SURE_X 100
-#define BUTTON_SURE_Y 10
-#define BUTTON_BACK_X 600
-#define BUTTON_BACK_Y 10
-#define BUTTON_W 154
-#define BUTTON_H 60
+#define BTN_W 154
+#define BTN_H 60
 #define LABEL_H 80
 
 #define FLICK_MOVE_UNIT 100
+
+typedef enum _menu_action
+{
+	enter_action = 0,
+	back_action,
+	total_action_type
+} menu_action;
 
 static int Menu_RunSettingIdleEventFunc(void);
 static int Menu_RunSettingKeyEventFunc(int k, int a, int p, int x, int y);
@@ -38,13 +41,17 @@ static void Menu_RunSettingInitFunc(void);
 static void Menu_RunSettingFreeFunc(void);
 
 static void Menu_ResetRunSetting(void);
-static void Menu_SureAction(void);
-static void Menu_BackAction(void);
+static void Menu_SureAction(void *data);
+static void Menu_BackAction(void *data);
 static void Menu_SetRunSettingPageSize(GLsizei w, GLsizei h);
 
+static const button_initilizer Btn_Infos[] = {
+	{100, 10, BTN_W, BTN_H, "Sure", Menu_SureAction, NULL},
+	{600, 10, BTN_W, BTN_H, "Back", Menu_BackAction, NULL},
+};
+
 static label lb;
-static button sure_btn;
-static button back_btn;
+static button btns[total_action_type];
 static flickable_item *items = NULL;
 static int item_count = 0;
 static flickable flick;
@@ -62,10 +69,11 @@ void Menu_SetRunSettingPageSize(GLsizei w, GLsizei h)
 	page_height = h;
 	if(has_init)
 	{
-		UI_ResetButtonGeometry(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, BUTTON_W, BUTTON_H);
-		UI_ResetButtonGeometry(&sure_btn, BUTTON_SURE_X, BUTTON_SURE_Y, BUTTON_W, BUTTON_H);
 		UI_ResetLabelGeometry(&lb, 0.0, page_height - LABEL_H, page_width, LABEL_H);
 		UI_ResetFlickableGeometry(&flick, FLICK_X, FLICK_Y, FLICK_W, FLICK_H);
+		int i;
+		for(i = 0; i < total_action_type; i++)
+			UI_ResetButtonGeometry(btns + i, Btn_Infos[i].x, Btn_Infos[i].y, Btn_Infos[i].w, Btn_Infos[i].h);
 	}
 }
 
@@ -92,6 +100,10 @@ void Menu_RunSettingInitFunc(void)
 	oglEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.1);
 	oglEnable(GL_TEXTURE_2D);
+#ifndef _HARMATTAN_OPENGLES2
+	oglDisable(GL_LIGHTING);
+#endif
+	oglDisable(GL_FOG);
 }
 
 void Menu_RunSettingDrawFunc(void)
@@ -103,27 +115,22 @@ void Menu_RunSettingDrawFunc(void)
 	OpenGL_Render3DOrtho(0.0, width, 0.0, height);
 	{
 		//glPolygonMode(GL_FRONT, GL_LINE);
-		oglEnable(GL_SCISSOR_TEST);
-		glScissor(flick.base.x, flick.base.y, flick.base.width, flick.base.height);
 		glPushMatrix();
 		{
 			glTranslatef(flick.base.x, flick.base.y, flick.base.z);
 			UI_RenderFlickable(&flick);
 		}
 		glPopMatrix();
-		oglDisable(GL_SCISSOR_TEST);
-		glPushMatrix();
+		int i;
+		for(i = 0; i < total_action_type; i++)
 		{
-			glTranslatef(sure_btn.base.x, sure_btn.base.y, sure_btn.base.z);
-			UI_RenderButton(&sure_btn);
+			glPushMatrix();
+			{
+				glTranslatef(btns[i].base.x, btns[i].base.y, btns[i].base.z);
+				UI_RenderButton(btns + i);
+			}
+			glPopMatrix();
 		}
-		glPopMatrix();
-		glPushMatrix();
-		{
-			glTranslatef(back_btn.base.x, back_btn.base.y, back_btn.base.z);
-			UI_RenderButton(&back_btn);
-		}
-		glPopMatrix();
 		glPushMatrix();
 		{
 			glTranslatef(lb.base.x, lb.base.y, lb.base.z);
@@ -145,8 +152,9 @@ void Menu_RunSettingFreeFunc(void)
 {
 	if(!has_init)
 		return;
-	delete_button(&back_btn);
-	delete_button(&sure_btn);
+	int m;
+	for(m = 0; m < total_action_type; m++)
+		delete_button(btns + m);
 	delete_label(&lb);
 	delete_flickable(&flick);
 	if(items)
@@ -173,7 +181,7 @@ int Menu_RunSettingKeyEventFunc(int key, int act, int pressed, int x, int y)
 		case Harmattan_K_Escape:
 			if(pressed)
 			{
-				Menu_BackAction();
+				Menu_BackAction(NULL);
 				return 1;
 			}
 			break;
@@ -181,7 +189,7 @@ int Menu_RunSettingKeyEventFunc(int key, int act, int pressed, int x, int y)
 		case Harmattan_K_KP_Enter:
 			if(pressed)
 			{
-				Menu_SureAction();
+				Menu_SureAction(NULL);
 				return 1;
 			}
 			break;
@@ -212,15 +220,14 @@ int Menu_RunSettingMouseEventFunc(int button, int pressed, int x, int y)
 	if(!has_init)
 		return 0;
 	int gl_y = height - y;
-	if(UI_PointInWidget(&back_btn.base, x, gl_y))
+	int i;
+	for(i = 0; i < total_action_type; i++)
 	{
-		back_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
-	}
-	else if(UI_PointInWidget(&sure_btn.base, x, gl_y))
-	{
-		sure_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
+		if(UI_PointInWidget(&btns[i].base, x, gl_y))
+		{
+			btns[i].highlight = pressed ? GL_TRUE : GL_FALSE;
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -239,25 +246,19 @@ int Menu_RunSettingMouseMotionEventFunc(int button, int pressed, int x, int y, i
 		{
 			res = UI_SlideFlickable(&flick, -dy);
 		}
-		if(UI_PointInWidget(&back_btn.base, x, gl_y) && !UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
+		int i;
+		for(i = 0; i < total_action_type; i++)
 		{
-			back_btn.highlight = GL_TRUE;
-			res |= 1;
-		}
-		else if(!UI_PointInWidget(&back_btn.base, x, gl_y) && UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
-		{
-			back_btn.highlight = GL_FALSE;
-			res |= 1;
-		}
-		if(UI_PointInWidget(&sure_btn.base, x, gl_y) && !UI_PointInWidget(&sure_btn.base, last_x, last_gl_y))
-		{
-			sure_btn.highlight = GL_TRUE;
-			res |= 1;
-		}
-		else if(!UI_PointInWidget(&sure_btn.base, x, gl_y) && UI_PointInWidget(&sure_btn.base, last_x, last_gl_y))
-		{
-			sure_btn.highlight = GL_FALSE;
-			res |= 1;
+			if(UI_PointInWidget(&btns[i].base, x, gl_y) && !UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+			{
+				btns[i].highlight = GL_TRUE;
+				res |= 1;
+			}
+			else if(!UI_PointInWidget(&btns[i].base, x, gl_y) && UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+			{
+				btns[i].highlight = GL_FALSE;
+				res |= 1;
+			}
 		}
 	}
 	return res;
@@ -276,7 +277,7 @@ void Menu_RunSettingRegisterFunction(void)
 	Main3D_SetMouseClickEventFunction(Menu_RunSettingMouseClickEventFunc);
 }
 
-void Menu_BackAction(void)
+void Menu_BackAction(void *data)
 {
 	const void *slot = SignalSlot_GetAction(BACK_MAIN_MENU);
 	if(slot)
@@ -285,7 +286,7 @@ void Menu_BackAction(void)
 	}
 }
 
-void Menu_SureAction(void)
+void Menu_SureAction(void *data)
 {
 	const void *slot = SignalSlot_GetAction(LOAD_GAME);
 	if(slot)
@@ -299,19 +300,21 @@ int Menu_RunSettingMouseClickEventFunc(int button, int x, int y)
 	if(!has_init)
 		return 0;
 	int gl_y = height - y;
-	if(UI_PointInWidget(&back_btn.base, x, gl_y))
-	{
-		Menu_BackAction();
-		return 1;
-	}
-	else if(UI_PointInWidget(&sure_btn.base, x, gl_y))
-	{
-		Menu_SureAction();
-		return 1;
-	}
-	else if(UI_PointInWidget(&flick.base, x, gl_y))
+	if(UI_PointInWidget(&flick.base, x, gl_y))
 	{
 		return UI_ClickFlickable(&flick, x - flick.base.x, gl_y - flick.base.y);
+	}
+	int i;
+	for(i = 0; i < total_action_type; i++)
+	{
+		if(UI_PointInWidget(&btns[i].base, x, gl_y))
+		{
+			if(Btn_Infos[i].func)
+			{
+				Btn_Infos[i].func(Btn_Infos[i].data);
+			}
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -321,10 +324,12 @@ void Menu_InitRunSetting(int g, int l)
 	if(has_init)
 		return;
 	//Menu_SetRunSettingPageSize(width, height);
-	new_button(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, 0.3, BUTTON_W, BUTTON_H, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(black), "Back");
-	new_button(&sure_btn, BUTTON_SURE_X, BUTTON_SURE_Y, 0.3, BUTTON_W, BUTTON_H, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(black), "Sure");
-	sure_btn.fnt = &fnt;
-	back_btn.fnt = &fnt;
+	int m;
+	for(m = 0; m < total_action_type; m++)
+	{
+		new_button(btns + m, Btn_Infos[m].x, Btn_Infos[m].y, 0.3, Btn_Infos[m].w, Btn_Infos[m].h, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), Btn_Infos[m].label);
+		btns[m].fnt = &fnt;
+	}
 	new_label(&lb, 0.0, page_height - LABEL_H, 0.3, page_width, LABEL_H, 0, Color_GetColor(white_color, 0.4), X11_COLOR(green), Color_GetColor(black_color, 0.0), "Run game", NULL);
 	lb.fnt = &fnt;
 	new_flickable(&flick, FLICK_X, FLICK_Y, 0.2, FLICK_W, FLICK_H, 10, 15, 15, Color_GetColor(black_color, 0.0), X11_COLOR(lightgreen), X11_COLOR(darkgreen));

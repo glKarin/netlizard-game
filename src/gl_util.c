@@ -222,12 +222,12 @@ texture * new_OpenGL_texture_2d(const char *dds)
 	{
 		texture *g_tex = NEW(texture);
 		ZERO(g_tex, texture);
-		g_tex -> width = width;
-		g_tex -> height = height;
-		g_tex -> format = format;
+		g_tex->width = width;
+		g_tex->height = height;
+		g_tex->format = format;
 		// SOIL_load_OGL_texture()
-		glGenTextures(1, &(g_tex -> texid));
-		oglBindTexture(GL_TEXTURE_2D, g_tex -> texid);
+		glGenTextures(1, &(g_tex->texid));
+		oglBindTexture(GL_TEXTURE_2D, g_tex->texid);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -238,16 +238,16 @@ texture * new_OpenGL_texture_2d(const char *dds)
 		glGenerateMipmap(GL_TEXTURE_2D);
 #endif
 #ifdef _HARMATTAN_OPENGLES
-		OpenGL_TexImage2D(GL_TEXTURE_2D, 0, g_tex -> format, g_tex -> width, g_tex -> height, 0, g_tex -> format, GL_UNSIGNED_BYTE, data, SCALE_AUTO, NULL, NULL);
+		OpenGL_TexImage2D(GL_TEXTURE_2D, 0, g_tex->format, g_tex->width, g_tex->height, 0, g_tex->format, GL_UNSIGNED_BYTE, data, SCALE_AUTO, NULL, NULL);
 #else
-		glTexImage2D(GL_TEXTURE_2D, 0, g_tex -> format, g_tex -> width, g_tex -> height, 0, g_tex -> format, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, g_tex->format, g_tex->width, g_tex->height, 0, g_tex->format, GL_UNSIGNED_BYTE, data);
 #endif
 
 		oglBindTexture(GL_TEXTURE_2D, 0);
 
 		free(data);
 
-		//printf("tex %d: width -> %d, height -> %d, channel -> %d(%s)\n", g_tex -> texid, g_tex -> width, g_tex -> height, channel, (channel == 1 ? "luminance" : (channel == 2 ? "luminance-alpha" : (channel == 3 ? "RGB" : "RGBA"))));
+		//printf("tex %d: width->%d, height->%d, channel->%d(%s)\n", g_tex->texid, g_tex->width, g_tex->height, channel, (channel == 1 ? "luminance" : (channel == 2 ? "luminance-alpha" : (channel == 3 ? "RGB" : "RGBA"))));
 		return g_tex;
 	}
 	else
@@ -295,11 +295,11 @@ texture * new_OpenGL_texture_2d_from_memory(const unsigned char *d, size_t len)
 		// SOIL_load_OGL_texture()
 		texture *g_tex = NEW(texture);
 		ZERO(g_tex, texture);
-		g_tex -> width = width;
-		g_tex -> height = height;
-		g_tex -> format = format;
-		glGenTextures(1, &(g_tex -> texid));
-		oglBindTexture(GL_TEXTURE_2D, g_tex -> texid);
+		g_tex->width = width;
+		g_tex->height = height;
+		g_tex->format = format;
+		glGenTextures(1, &(g_tex->texid));
+		oglBindTexture(GL_TEXTURE_2D, g_tex->texid);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -310,16 +310,16 @@ texture * new_OpenGL_texture_2d_from_memory(const unsigned char *d, size_t len)
 		glGenerateMipmap(GL_TEXTURE_2D);
 #endif
 #ifdef _HARMATTAN_OPENGLES
-		OpenGL_TexImage2D(GL_TEXTURE_2D, 0, g_tex -> format, g_tex -> width, g_tex -> height, 0, g_tex -> format, GL_UNSIGNED_BYTE, data, SCALE_AUTO, NULL, NULL);
+		OpenGL_TexImage2D(GL_TEXTURE_2D, 0, g_tex->format, g_tex->width, g_tex->height, 0, g_tex->format, GL_UNSIGNED_BYTE, data, SCALE_AUTO, NULL, NULL);
 #else
-		glTexImage2D(GL_TEXTURE_2D, 0, g_tex -> format, g_tex -> width, g_tex -> height, 0, g_tex -> format, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, g_tex->format, g_tex->width, g_tex->height, 0, g_tex->format, GL_UNSIGNED_BYTE, data);
 #endif
 
 		oglBindTexture(GL_TEXTURE_2D, 0);
 
 		free(data);
 
-		//printf("tex %d: width -> %d, height -> %d, channel -> %d(%s)\n", g_tex -> texid, g_tex -> width, g_tex -> height, channel, (channel == 1 ? "luminance" : (channel == 2 ? "luminance-alpha" : (channel == 3 ? "RGB" : "RGBA"))));
+		//printf("tex %d: width->%d, height->%d, channel->%d(%s)\n", g_tex->texid, g_tex->width, g_tex->height, channel, (channel == 1 ? "luminance" : (channel == 2 ? "luminance-alpha" : (channel == 3 ? "RGB" : "RGBA"))));
 		return g_tex;
 	}
 	else
@@ -368,8 +368,8 @@ OpenGL_frame_buffer_object * new_OpenGL_frame_buffer_object(GLsizei width, GLsiz
 {
 	OpenGL_frame_buffer_object *fbo = NEW(OpenGL_frame_buffer_object);
 	ZERO(fbo, OpenGL_frame_buffer_object);
-	glGenTextures(1, &fbo -> texId);
-	oglBindTexture(GL_TEXTURE_2D, fbo -> texId);
+	glGenTextures(1, &fbo->texId);
+	oglBindTexture(GL_TEXTURE_2D, fbo->texId);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -383,26 +383,26 @@ OpenGL_frame_buffer_object * new_OpenGL_frame_buffer_object(GLsizei width, GLsiz
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	oglBindTexture(GL_TEXTURE_2D, 0);
 
-	glGenRenderbuffersEXT(1, &fbo -> rboId);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, fbo -> rboId);
+	glGenRenderbuffersEXT(1, &fbo->rboId);
+	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, fbo->rboId);
 	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, width, height);
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
-	glGenFramebuffersEXT(1, &fbo -> fboId);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo -> fboId);
+	glGenFramebuffersEXT(1, &fbo->fboId);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo->fboId);
 
 	// attach the texture to FBO color attachment point
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,        // 1. fbo target: GL_FRAMEBUFFER 
 			GL_COLOR_ATTACHMENT0_EXT,  // 2. attachment point
 			GL_TEXTURE_2D,         // 3. tex target: GL_TEXTURE_2D
-			fbo -> texId,             // 4. tex ID
+			fbo->texId,             // 4. tex ID
 			0);                    // 5. mipmap level: 0(base)
 
 	// attach the renderbuffer to depth attachment point
 	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,      // 1. fbo target: GL_FRAMEBUFFER
 			GL_DEPTH_ATTACHMENT_EXT, // 2. attachment point
 			GL_RENDERBUFFER_EXT,     // 3. rbo target: GL_RENDERBUFFER
-			fbo -> rboId);              // 4. rbo ID
+			fbo->rboId);              // 4. rbo ID
 
 	// check FBO status
 	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
@@ -413,8 +413,8 @@ OpenGL_frame_buffer_object * new_OpenGL_frame_buffer_object(GLsizei width, GLsiz
 
 	// switch back to window-system-provided framebuffer
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	fbo -> width = width;
-	fbo -> height = height;
+	fbo->width = width;
+	fbo->height = height;
 	return fbo;
 }
 
@@ -422,12 +422,12 @@ GLvoid delete_frame_buffer_object(OpenGL_frame_buffer_object *fbo)
 {
 	if(!fbo)
 		return;
-	if(glIsFramebufferEXT(fbo -> fboId))
-		glDeleteFramebuffersEXT(1, &fbo -> fboId);
-	if(glIsRenderbufferEXT(fbo -> rboId))
-		glDeleteRenderbuffersEXT(1, &fbo -> rboId);
-	if(glIsTexture(fbo -> texId))
-		glDeleteTextures(1, &fbo -> texId);
+	if(glIsFramebufferEXT(fbo->fboId))
+		glDeleteFramebuffersEXT(1, &fbo->fboId);
+	if(glIsRenderbufferEXT(fbo->rboId))
+		glDeleteRenderbuffersEXT(1, &fbo->rboId);
+	if(glIsTexture(fbo->texId))
+		glDeleteTextures(1, &fbo->texId);
 	free(fbo);
 }
 
@@ -446,9 +446,9 @@ void Algo_ExtrameDistanceAlongDir(const vector3_t *dir, array* vertices, int *mi
 	if(!dir || !vertices)
 		return;
 	float maxProj = - FLT_MAX , minProj = FLT_MAX ;
-	float *v = (float *)(vertices -> array);
+	float *v = (float *)(vertices->array);
 	int i;
-	for(i = 0 ; i < vertices -> length; i += 3)
+	for(i = 0 ; i < vertices->length; i += 3)
 	{
 		vector3_t p = {v[i], v[i + 1], v[i + 2]};
 		float proj = Vector3_DotVector3(&p, dir);
@@ -473,30 +473,30 @@ void Algo_ComputeAABBFromOriginalPointSet(array* vertices, vector3_t *min, vecto
 {
 	if(!vertices)
 		return;
-	float *v = (float *)(vertices -> array);
+	float *v = (float *)(vertices->array);
 	int minX_i = 0 , maxX_i = 0 ;
 	vector3_t vx = {1.0, 0.0, 0.0};
 	Algo_ExtrameDistanceAlongDir(&vx, vertices, &minX_i, &maxX_i);
 	if(min)
-		min -> x = v[minX_i];
+		min->x = v[minX_i];
 	if(max)
-		max -> x = v[maxX_i];
+		max->x = v[maxX_i];
 
 	int minY_i = 0 , maxY_i = 0;
 	vector3_t vy = {0.0, 1.0, 0.0};
 	Algo_ExtrameDistanceAlongDir(&vy, vertices, &minY_i, &maxY_i);
 	if(min)
-		min -> y = v[minY_i + 1];
+		min->y = v[minY_i + 1];
 	if(max)
-		max -> y = v[maxY_i + 1];
+		max->y = v[maxY_i + 1];
 
 	int minZ_i = 0 , maxZ_i = 0;
 	vector3_t vz = {0.0, 0.0, 1.0};
 	Algo_ExtrameDistanceAlongDir(&vz, vertices, &minZ_i, &maxZ_i);
 	if(min)
-		min -> z = v[minZ_i + 2];
+		min->z = v[minZ_i + 2];
 	if(max)
-		max -> z = v[maxZ_i + 2];
+		max->z = v[maxZ_i + 2];
 }// end for computeAABBFromOriginalPointSet
 
 void OpenGL_ExtractFrustum(GLfloat frustum[][4])
@@ -621,18 +621,21 @@ int Algo_AABBInFrustum(GLfloat frustum[][4], GLfloat x, GLfloat y, GLfloat z, GL
 	return 1;
 }
 
-void OpenGL_InitSimpleFog(GLfloat near, GLfloat far, GLfloat dis, GLfloat color[])
+void OpenGL_InitFog(GLenum mode, GLfloat near, GLfloat far, GLfloat dis, GLfloat color[])
 {
-	glFogf(GL_FOG_MODE, GL_LINEAR);
-	glFogf(GL_FOG_START, near);
-	glFogf(GL_FOG_END, far);
+	glFogf(GL_FOG_MODE, mode);
+	{
+		glFogf(GL_FOG_START, near);
+		glFogf(GL_FOG_END, far);
+	}
+	{
+		glFogf(GL_FOG_DENSITY, dis);
+	}
 	glFogfv(GL_FOG_COLOR, color);
-	glFogf(GL_FOG_DENSITY, dis);
 	//glFogi(GL_FOG_COORD_SRC, GL_FRAGMENT_DEPTH);
 #ifndef _HARMATTAN_OPENGLES2
 	glHint(GL_FOG_HINT, GL_FASTEST);
 #endif
-	oglEnable(GL_FOG);
 }
 
 void OpenGLU_Project(GLdouble x, GLdouble y, GLdouble z, GLdouble *wx, GLdouble *wy, GLdouble *wz)
@@ -680,11 +683,11 @@ texture * new_OpenGL_texture_2d_from_buffer_with_glCopyTexImage2D(GLint x, GLint
 		return NULL;
 	texture *g_tex = NEW(texture);
 	ZERO(g_tex, texture);
-	g_tex -> width = w;
-	g_tex -> height = h;
-	g_tex -> format = format;
-	glGenTextures(1, &(g_tex -> texid));
-	oglBindTexture(GL_TEXTURE_2D, g_tex -> texid);
+	g_tex->width = w;
+	g_tex->height = h;
+	g_tex->format = format;
+	glGenTextures(1, &(g_tex->texid));
+	oglBindTexture(GL_TEXTURE_2D, g_tex->texid);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -694,7 +697,7 @@ texture * new_OpenGL_texture_2d_from_buffer_with_glCopyTexImage2D(GLint x, GLint
 #else
 		glGenerateMipmap(GL_TEXTURE_2D);
 #endif
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, g_tex -> format, x, y, g_tex -> width, g_tex -> height, 0);
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, g_tex->format, x, y, g_tex->width, g_tex->height, 0);
 	oglBindTexture(GL_TEXTURE_2D, 0);
 
 	return g_tex;
@@ -721,11 +724,11 @@ texture * new_OpenGL_texture_2d_from_buffer_with_glReadPixels(GLint x, GLint y, 
 	}
 	texture *g_tex = NEW(texture);
 	ZERO(g_tex, texture);
-	g_tex -> width = w;
-	g_tex -> height = h;
-	g_tex -> format = format;
-	glGenTextures(1, &(g_tex -> texid));
-	oglBindTexture(GL_TEXTURE_2D, g_tex -> texid);
+	g_tex->width = w;
+	g_tex->height = h;
+	g_tex->format = format;
+	glGenTextures(1, &(g_tex->texid));
+	oglBindTexture(GL_TEXTURE_2D, g_tex->texid);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -735,20 +738,20 @@ texture * new_OpenGL_texture_2d_from_buffer_with_glReadPixels(GLint x, GLint y, 
 #else
 		glGenerateMipmap(GL_TEXTURE_2D);
 #endif
-	u = u * sizeof(GLubyte) * g_tex -> width * g_tex -> height;
+	u = u * sizeof(GLubyte) * g_tex->width * g_tex->height;
 	GLubyte *data = NEW_II(GLubyte, u);
-	OpenGL_ReadPixels(x, y, g_tex -> width, g_tex -> height, g_tex -> format, GL_UNSIGNED_BYTE, data);
-	GLsizei fw = g_tex -> width;
-	GLsizei fh = g_tex -> height;
-	void *dataout = OpenGLU_ScaleImage(g_tex -> width, g_tex -> height, g_tex -> format, GL_UNSIGNED_BYTE, data, SCALE_AUTO, &fw, &fh);
+	OpenGL_ReadPixels(x, y, g_tex->width, g_tex->height, g_tex->format, GL_UNSIGNED_BYTE, data);
+	GLsizei fw = g_tex->width;
+	GLsizei fh = g_tex->height;
+	void *dataout = OpenGLU_ScaleImage(g_tex->width, g_tex->height, g_tex->format, GL_UNSIGNED_BYTE, data, SCALE_AUTO, &fw, &fh);
 	if(dataout)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, g_tex -> format, fw, fh, 0, g_tex -> format, GL_UNSIGNED_BYTE, dataout);
+		glTexImage2D(GL_TEXTURE_2D, 0, g_tex->format, fw, fh, 0, g_tex->format, GL_UNSIGNED_BYTE, dataout);
 		free(dataout);
 	}
 	else
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, g_tex -> format, g_tex -> width, g_tex -> height, 0, g_tex -> format, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, g_tex->format, g_tex->width, g_tex->height, 0, g_tex->format, GL_UNSIGNED_BYTE, data);
 	}
 	oglBindTexture(GL_TEXTURE_2D, 0);
 	free(data);

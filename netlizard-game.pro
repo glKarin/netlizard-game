@@ -3,7 +3,7 @@
 ######################################################################
 
 TEMPLATE = subdirs
-SUBDIRS += opengl SOIL glk netlizard math3d lolking bio src testapp
+SUBDIRS += opengl SOIL glk netlizard math3d lolking bio csol src testapp
 CONFIG += ordered
 
 rsc.source = ./resource

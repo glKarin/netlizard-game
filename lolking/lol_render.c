@@ -67,26 +67,26 @@ void LOL_RenderStaticModel(const LOL_Mesh *mesh, const GLuint *tex, int count)
 
 	GLushort *index_ptr = NULL;
 
-	if(mesh -> vertex_array.gl == 2)
+	if(mesh->vertex_array.gl == 2)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, mesh -> vertex_array.vertex_buffer.buffers[LOL_Vertex_Buffer_Type]);
+		glBindBuffer(GL_ARRAY_BUFFER, mesh->vertex_array.vertex_buffer.buffers[LOL_Vertex_Buffer_Type]);
 		glTexCoordPointer(2, GL_FLOAT, sizeof(GLfloat) * 8, (GLubyte *)NULL + (sizeof(GLfloat) * 6));
 		glNormalPointer(GL_FLOAT, sizeof(GLfloat) * 8, (GLubyte *)NULL + (sizeof(GLfloat) * 3));
 		glVertexPointer(3, GL_FLOAT, sizeof(GLfloat) * 8, NULL);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh -> vertex_array.vertex_buffer.buffers[LOL_Index_Buffer_Type]);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->vertex_array.vertex_buffer.buffers[LOL_Index_Buffer_Type]);
 		index_ptr = NULL;
 	}
 	else
 	{
-		glNormalPointer(GL_FLOAT, sizeof(LOL_Vertex), mesh -> vertex[0].normal);
-		glTexCoordPointer(2, GL_FLOAT, sizeof(LOL_Vertex), mesh -> vertex[0].texcoord);
-		glVertexPointer(3, GL_FLOAT, sizeof(LOL_Vertex), mesh -> vertex);
-		index_ptr = mesh -> index;
+		glNormalPointer(GL_FLOAT, sizeof(LOL_Vertex), mesh->vertex[0].normal);
+		glTexCoordPointer(2, GL_FLOAT, sizeof(LOL_Vertex), mesh->vertex[0].texcoord);
+		glVertexPointer(3, GL_FLOAT, sizeof(LOL_Vertex), mesh->vertex);
+		index_ptr = mesh->index;
 	}
 	int i;
 	int j = count;
-	for(i = mesh -> material_count - 1; i >= 0; i--)
+	for(i = mesh->material_count - 1; i >= 0; i--)
 	{
 		if(j <= count && j > 0)
 			j--;
@@ -94,14 +94,14 @@ void LOL_RenderStaticModel(const LOL_Mesh *mesh, const GLuint *tex, int count)
 		{
 			oglBindTexture(GL_TEXTURE_2D, tex[j]);
 		}
-		DrawElements(GL_TRIANGLES, mesh -> material[i].index_count, GL_UNSIGNED_SHORT, index_ptr + mesh -> material[i].start_index);
+		DrawElements(GL_TRIANGLES, mesh->material[i].index_count, GL_UNSIGNED_SHORT, index_ptr + mesh->material[i].start_index);
 		if(tex && glIsTexture(tex[j]))
 		{
 			oglBindTexture(GL_TEXTURE_2D, 0);
 		}
 	}
 
-	if(mesh -> vertex_array.gl == 2)
+	if(mesh->vertex_array.gl == 2)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -116,13 +116,13 @@ void LOL_UpdateBone(LOL_Mesh_Bone *skl, const LOL_Animation *anm, int frame)
 	if(!skl || !anm)
 		return;
 	unsigned int i;
-	for(i = 0; i < skl -> bone_count; i++)
+	for(i = 0; i < skl->bone_count; i++)
 	{
 		unsigned int j;
 		int hasBone = 0;
-		for(j = 0; j < anm -> bone_count; j++)
+		for(j = 0; j < anm->bone_count; j++)
 		{
-			if(strcmp(skl -> bone[i].name, anm -> animation_bone[j].bone) == 0)
+			if(strcmp(skl->bone[i].name, anm->animation_bone[j].bone) == 0)
 			{
 				hasBone = 1;
 				break;
@@ -130,19 +130,19 @@ void LOL_UpdateBone(LOL_Mesh_Bone *skl, const LOL_Animation *anm, int frame)
 		}
 		if(!hasBone)
 			continue;
-		LOL_Bone *bone = skl -> bone + i;
-		const LOL_Frame *a = anm -> animation_bone[j].frame + frame;
-		if(bone -> parent == -1)
+		LOL_Bone *bone = skl->bone + i;
+		const LOL_Frame *a = anm->animation_bone[j].frame + frame;
+		if(bone->parent == -1)
 		{
-			bone -> incr_matrix = Math3D_MakeQuatAndToMatrix44(a -> rot, a -> pos, a -> scale);
-			bone -> orig_matrix = bone -> incr_matrix;
+			bone->incr_matrix = Math3D_MakeQuatAndToMatrix44(a->rot, a->pos, a->scale);
+			bone->orig_matrix = bone->incr_matrix;
 		}
 		else
 		{
-			const LOL_Bone *pBone = skl -> bone + bone -> parent;
-			bone -> incr_matrix = Math3D_MakeQuatAndToMatrix44(a -> rot, a -> pos, a -> scale);
-			//bone -> orig_matrix =  bone -> incr_matrix * pBone -> orig_matrix;
-			bone -> orig_matrix =  Matrix44_MultiplyMatrix44(&bone -> incr_matrix, &pBone -> orig_matrix);
+			const LOL_Bone *pBone = skl->bone + bone->parent;
+			bone->incr_matrix = Math3D_MakeQuatAndToMatrix44(a->rot, a->pos, a->scale);
+			//bone->orig_matrix =  bone->incr_matrix * pBone->orig_matrix;
+			bone->orig_matrix =  Matrix44_MultiplyMatrix44(&bone->incr_matrix, &pBone->orig_matrix);
 		}
 	}
 }
@@ -154,13 +154,13 @@ void LOL_RenderAnimationModel(const LOL_Mesh *mesh, const GLuint *tex, int count
 
 	GLfloat *vertex = NULL;
 
-	if(mesh -> vertex_array.gl == 2)
+	if(mesh->vertex_array.gl == 2)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, mesh -> vertex_array.vertex_buffer.buffers[LOL_Vertex_Buffer_Type]);
-		vertex = calloc(8 * mesh -> vertex_count, sizeof(GLfloat));
+		glBindBuffer(GL_ARRAY_BUFFER, mesh->vertex_array.vertex_buffer.buffers[LOL_Vertex_Buffer_Type]);
+		vertex = calloc(8 * mesh->vertex_count, sizeof(GLfloat));
 		LOL_UpdateVertex(mesh, vertex);
 		GLuint i;
-		for(i = 0; i < mesh -> vertex_count; i++)
+		for(i = 0; i < mesh->vertex_count; i++)
 		{
 			glBufferSubData(GL_ARRAY_BUFFER, i * sizeof(GLfloat) * 8, sizeof(GLfloat) * 6, vertex + i * 8);
 		}
@@ -169,7 +169,7 @@ void LOL_RenderAnimationModel(const LOL_Mesh *mesh, const GLuint *tex, int count
 	}
 	else
 	{
-		vertex = calloc(8 * mesh -> vertex_count, sizeof(GLfloat));
+		vertex = calloc(8 * mesh->vertex_count, sizeof(GLfloat));
 		LOL_UpdateVertex(mesh, vertex);
 	}
 
@@ -179,26 +179,26 @@ void LOL_RenderAnimationModel(const LOL_Mesh *mesh, const GLuint *tex, int count
 
 	GLushort *index_ptr = NULL;
 
-	if(mesh -> vertex_array.gl == 2)
+	if(mesh->vertex_array.gl == 2)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, mesh -> vertex_array.vertex_buffer.buffers[LOL_Vertex_Buffer_Type]);
+		glBindBuffer(GL_ARRAY_BUFFER, mesh->vertex_array.vertex_buffer.buffers[LOL_Vertex_Buffer_Type]);
 		glTexCoordPointer(2, GL_FLOAT, sizeof(GLfloat) * 8, (GLubyte *)NULL + (sizeof(GLfloat) * 6));
 		glNormalPointer(GL_FLOAT, sizeof(GLfloat) * 8, (GLubyte *)NULL + (sizeof(GLfloat) * 3));
 		glVertexPointer(3, GL_FLOAT, sizeof(GLfloat) * 8, NULL);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh -> vertex_array.vertex_buffer.buffers[LOL_Index_Buffer_Type]);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->vertex_array.vertex_buffer.buffers[LOL_Index_Buffer_Type]);
 		index_ptr = NULL;
 	}
 	else
 	{
 		glNormalPointer(GL_FLOAT, sizeof(GLfloat) * 8, vertex + 3);
-		glTexCoordPointer(2, GL_FLOAT, sizeof(LOL_Vertex), mesh -> vertex[0].texcoord);
+		glTexCoordPointer(2, GL_FLOAT, sizeof(LOL_Vertex), mesh->vertex[0].texcoord);
 		glVertexPointer(3, GL_FLOAT, sizeof(GLfloat) * 8, vertex);
-		index_ptr = mesh -> index;
+		index_ptr = mesh->index;
 	}
 	int i;
 	int j = count;
-	for(i = mesh -> material_count - 1; i >= 0; i--)
+	for(i = mesh->material_count - 1; i >= 0; i--)
 	{
 		if(j <= count && j > 0)
 			j--;
@@ -206,14 +206,14 @@ void LOL_RenderAnimationModel(const LOL_Mesh *mesh, const GLuint *tex, int count
 		{
 			oglBindTexture(GL_TEXTURE_2D, tex[j]);
 		}
-		DrawElements(GL_TRIANGLES, mesh -> material[i].index_count, GL_UNSIGNED_SHORT, index_ptr + mesh -> material[i].start_index);
+		DrawElements(GL_TRIANGLES, mesh->material[i].index_count, GL_UNSIGNED_SHORT, index_ptr + mesh->material[i].start_index);
 		if(tex && glIsTexture(tex[j]))
 		{
 			oglBindTexture(GL_TEXTURE_2D, 0);
 		}
 	}
 
-	if(mesh -> vertex_array.gl == 2)
+	if(mesh->vertex_array.gl == 2)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -222,7 +222,7 @@ void LOL_RenderAnimationModel(const LOL_Mesh *mesh, const GLuint *tex, int count
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	if(mesh -> vertex_array.gl != 2)
+	if(mesh->vertex_array.gl != 2)
 		free(vertex);
 }
 
@@ -230,34 +230,34 @@ void LOL_UpdateVertex(const LOL_Mesh *mesh, GLfloat *verteces)
 {
 	if(!mesh || !verteces)
 		return;
-	const LOL_Mesh_Bone *skl = &(mesh -> bone_data);
+	const LOL_Mesh_Bone *skl = &(mesh->bone_data);
 
 	unsigned int i;
-	for(i = 0; i < mesh -> vertex_count; i++)
+	for(i = 0; i < mesh->vertex_count; i++)
 	{
-		const LOL_Vertex *vertex = mesh -> vertex + i;
-		const vector3_t v = {vertex -> position[0], vertex -> position[1], vertex -> position[2]};
-		const vector3_t n = {vertex -> normal[0], vertex -> normal[1], vertex -> normal[2]};
+		const LOL_Vertex *vertex = mesh->vertex + i;
+		const vector3_t v = {vertex->position[0], vertex->position[1], vertex->position[2]};
+		const vector3_t n = {vertex->normal[0], vertex->normal[1], vertex->normal[2]};
 		vector3_t nv = {0.0, 0.0, 0.0};
 		vector3_t nn = {0.0, 0.0, 0.0};
 		unsigned int j;
-		size_t len = sizeof(vertex -> bone_index) / sizeof(unsigned char);
+		size_t len = sizeof(vertex->bone_index) / sizeof(unsigned char);
 		for(j = 0; j < len; j++)
 		{
-			if(vertex -> bone_weight[j] == 0.0) continue;
-			unsigned int idx = vertex -> bone_index[j];
-			if(idx < skl -> bone_count)
-				idx = skl -> bone[idx].index;
+			if(vertex->bone_weight[j] == 0.0) continue;
+			unsigned int idx = vertex->bone_index[j];
+			if(idx < skl->bone_count)
+				idx = skl->bone[idx].index;
 			/*
-				 if(idx >= skl -> numBones)
+				 if(idx >= skl->numBones)
 				 continue;
 				 */
 
-			matrix44_t mat = Matrix44_MultiplyMatrix44(&skl -> bone[idx].base_matrix, &skl -> bone[idx].orig_matrix);
+			matrix44_t mat = Matrix44_MultiplyMatrix44(&skl->bone[idx].base_matrix, &skl->bone[idx].orig_matrix);
 			vector3_t vv = Math3D_Vector3MultiplyMatrix44(&v, &mat);
 			vector3_t vn = Math3D_Vector3MultiplyMatrix44(&n, &mat);
-			vv = Vector3_Scale(&vv, vertex -> bone_weight[j]);
-			vn = Vector3_Scale(&vn, vertex -> bone_weight[j]);
+			vv = Vector3_Scale(&vv, vertex->bone_weight[j]);
+			vn = Vector3_Scale(&vn, vertex->bone_weight[j]);
 			nv = Vector3_PlusVector3(&nv, &vv);
 			nn = Vector3_PlusVector3(&nn, &vn);
 		}

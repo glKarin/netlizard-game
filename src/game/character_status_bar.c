@@ -11,40 +11,40 @@ character_status_bar * new_character_status_bar(character_status_bar *sb, GLfloa
 {
 	RETURN_PTR(s, sb, character_status_bar)
 
-		s -> x = x;
-	s -> y = y;
-	s -> z = z;
-	s -> width = width;
-	s -> height = height;
-	s -> border_width = border_width;
-	COPY_COLOR4(s -> bg_color, bg_color)
-	COPY_COLOR4(s -> border_color, border_color)
-	COPY_COLOR4(s -> icon_color, icon_color)
-	COPY_COLOR4(s -> text_color, text_color)
+		s->x = x;
+	s->y = y;
+	s->z = z;
+	s->width = width;
+	s->height = height;
+	s->border_width = border_width;
+	COPY_COLOR4(s->bg_color, bg_color)
+	COPY_COLOR4(s->border_color, border_color)
+	COPY_COLOR4(s->icon_color, icon_color)
+	COPY_COLOR4(s->text_color, text_color)
 
 	GLfloat vertex[8] = {
 		0.0, 0.0,
-		s -> width, 0.0,
-		0.0, s -> height,
-		s -> width, s -> height
+		s->width, 0.0,
+		0.0, s->height,
+		s->width, s->height
 	};
 	GLushort index[4] = {
 		0, 1, 3, 2
 	};
-	s -> buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, vertex, GL_STATIC_DRAW);
-	s -> buffers[index_buffer_type] = new_OpenGL_buffer_object(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * 4, index, GL_STATIC_DRAW);
+	s->buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, vertex, GL_STATIC_DRAW);
+	s->buffers[index_buffer_type] = new_OpenGL_buffer_object(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * 4, index, GL_STATIC_DRAW);
 
 	GLfloat health[8 * 2];
-	UI_MakeHealthIcon(s -> height - 4, (s -> height - 4) / 3, health);
-	s -> health_buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8 * 2, health, GL_STATIC_DRAW);
+	UI_MakeHealthIcon(s->height - 4, (s->height - 4) / 3, health);
+	s->health_buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8 * 2, health, GL_STATIC_DRAW);
 
 	GLfloat clock[363 * 2];
-	UI_MakeClockIcon((s -> height - 2) / 2, clock);
-	s -> clock_buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 363 * 2, clock, GL_STATIC_DRAW);
+	UI_MakeClockIcon((s->height - 2) / 2, clock);
+	s->clock_buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 363 * 2, clock, GL_STATIC_DRAW);
 
 	GLfloat ammo[11 * 3 * 2];
-	UI_MakeAmmoIcon(s -> height - 4, s -> height - 4, ammo);
-	s -> ammo_buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 11 * 3 * 2, ammo, GL_STATIC_DRAW);
+	UI_MakeAmmoIcon(s->height - 4, s->height - 4, ammo);
+	s->ammo_buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 11 * 3 * 2, ammo, GL_STATIC_DRAW);
 	return s;
 }
 
@@ -55,23 +55,23 @@ void UI_RenderCharacterStatusBar(const character_status_bar *sb)
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glPushAttrib(GL_CURRENT_BIT | GL_LINE_BIT);
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, sb -> buffers[vertex_buffer_type]);
+		glBindBuffer(GL_ARRAY_BUFFER, sb->buffers[vertex_buffer_type]);
 		glVertexPointer(2, GL_FLOAT, 0, NULL);
-		glColor4fv(sb -> bg_color);
+		glColor4fv(sb->bg_color);
 		oglDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		if(sb -> border_width != 0.0)
+		if(sb->border_width != 0.0)
 		{
-			glColor4fv(sb -> border_color);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sb -> buffers[index_buffer_type]);
+			glColor4fv(sb->border_color);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sb->buffers[index_buffer_type]);
 			oglDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, NULL);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
 
 		glPushMatrix();
 		{
-			glColor4fv(sb -> icon_color);
-			glTranslatef(sb -> width / 18, sb -> height / 2, 0.1);
-			glBindBuffer(GL_ARRAY_BUFFER, sb -> health_buffers[vertex_buffer_type]);
+			glColor4fv(sb->icon_color);
+			glTranslatef(sb->width / 18, sb->height / 2, 0.1);
+			glBindBuffer(GL_ARRAY_BUFFER, sb->health_buffers[vertex_buffer_type]);
 			glVertexPointer(2, GL_FLOAT, 0, NULL);
 			oglDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			oglDrawArrays(GL_TRIANGLE_STRIP, 4, 4);
@@ -79,9 +79,9 @@ void UI_RenderCharacterStatusBar(const character_status_bar *sb)
 		glPopMatrix();
 		glPushMatrix();
 		{
-			glColor4fv(sb -> icon_color);
-			glTranslatef(sb -> width / 18 * 7, sb -> height / 2, 0.1);
-			glBindBuffer(GL_ARRAY_BUFFER, sb -> clock_buffers[vertex_buffer_type]);
+			glColor4fv(sb->icon_color);
+			glTranslatef(sb->width / 18 * 7, sb->height / 2, 0.1);
+			glBindBuffer(GL_ARRAY_BUFFER, sb->clock_buffers[vertex_buffer_type]);
 			glVertexPointer(2, GL_FLOAT, 0, NULL);
 			oglDrawArrays(GL_LINE_LOOP, 0, 360);
 			oglDrawArrays(GL_LINE_STRIP, 360, 3);
@@ -89,9 +89,9 @@ void UI_RenderCharacterStatusBar(const character_status_bar *sb)
 		glPopMatrix();
 		glPushMatrix();
 		{
-			glColor4fv(sb -> icon_color);
-			glTranslatef(sb -> width / 18 * 13, sb -> height / 2, 0.1);
-			glBindBuffer(GL_ARRAY_BUFFER, sb -> ammo_buffers[vertex_buffer_type]);
+			glColor4fv(sb->icon_color);
+			glTranslatef(sb->width / 18 * 13, sb->height / 2, 0.1);
+			glBindBuffer(GL_ARRAY_BUFFER, sb->ammo_buffers[vertex_buffer_type]);
 			glVertexPointer(2, GL_FLOAT, 0, NULL);
 			int i;
 			for(i = 0; i < 3; i++)
@@ -106,30 +106,34 @@ void UI_RenderCharacterStatusBar(const character_status_bar *sb)
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 	glPopAttrib();
-	if(sb -> fnt && sb -> game_mode)
+	if(sb->fnt && sb->game_mode)
 	{
 		char str[100];
 		glPushMatrix();
 		{
-			glTranslatef(sb -> width / 18 * 3, sb -> height / 2 - sb -> fnt -> height / 2, 0.1);
-			sprintf(str, "%d", sb -> game_mode -> characters[sb -> game_mode -> current_character].health); 
-			Font_RenderString(sb -> fnt, 0, 0, sb -> text_color[0], sb -> text_color[1], sb -> text_color[2], sb -> text_color[3], str);
+			glTranslatef(sb->width / 18 * 3, sb->height / 2 - sb->fnt->height / 2, 0.1);
+			sprintf(str, "%d", sb->game_mode->characters[sb->game_mode->current_character].health); 
+			Font_RenderString(sb->fnt, 0, 0, sb->text_color[0], sb->text_color[1], sb->text_color[2], sb->text_color[3], str);
 		}
 		glPopMatrix();
 		glPushMatrix();
 		{
-			glTranslatef(sb -> width / 18 * 9, sb -> height / 2 - sb -> fnt -> height / 2, 0.1);
-			sprintf(str, "%02lld : %02lld", sb -> game_mode -> time / 60, sb -> game_mode -> time % 60);
-			Font_RenderString(sb -> fnt, 0, 0, sb -> text_color[0], sb -> text_color[1], sb -> text_color[2], sb -> text_color[3], str);
+			glTranslatef(sb->width / 18 * 9, sb->height / 2 - sb->fnt->height / 2, 0.1);
+			sprintf(str, "%02lld : %02lld", sb->game_mode->time / 60, sb->game_mode->time % 60);
+			Font_RenderString(sb->fnt, 0, 0, sb->text_color[0], sb->text_color[1], sb->text_color[2], sb->text_color[3], str);
 		}
 		glPopMatrix();
-		glPushMatrix();
+		const weapon *wp = Game_CharacterCurrentWeapon(sb->game_mode->characters + sb->game_mode->current_character);
+		if(wp)
 		{
-			glTranslatef(sb -> width / 18 * 15, sb -> height / 2 - sb -> fnt -> height / 2, 0.1);
-			sprintf(str, "%d / %d", sb -> game_mode -> characters[sb -> game_mode -> current_character].current_weapon.ammo, sb -> game_mode -> characters[sb -> game_mode -> current_character].current_weapon.ammo_total_count >= 0 ? sb -> game_mode -> characters[sb -> game_mode -> current_character].current_weapon.ammo_total_count - sb -> game_mode -> characters[sb -> game_mode -> current_character].current_weapon.ammo : -1);
-			Font_RenderString(sb -> fnt, 0, 0, sb -> text_color[0], sb -> text_color[1], sb -> text_color[2], sb -> text_color[3], str);
+			glPushMatrix();
+			{
+				glTranslatef(sb->width / 18 * 15, sb->height / 2 - sb->fnt->height / 2, 0.1);
+				sprintf(str, "%d / %d", wp->ammo, wp->ammo_total_count >= 0 ? wp->ammo_total_count - wp->ammo : -1);
+				Font_RenderString(sb->fnt, 0, 0, sb->text_color[0], sb->text_color[1], sb->text_color[2], sb->text_color[3], str);
+			}
+			glPopMatrix();
 		}
-		glPopMatrix();
 	}
 
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -139,20 +143,20 @@ void delete_character_status_bar(character_status_bar *sb)
 {
 	if(!sb)
 		return;
-	sb -> fnt = NULL;
-	sb -> game_mode = NULL;
+	sb->fnt = NULL;
+	sb->game_mode = NULL;
 
 	int i;
 	for(i = vertex_buffer_type; i < total_buffer_type; i++)
 	{
-		if(glIsBuffer(sb -> buffers[i]))
-			glDeleteBuffers(1, sb -> buffers + i);
-		if(glIsBuffer(sb -> health_buffers[i]))
-			glDeleteBuffers(1, sb -> health_buffers + i);
-		if(glIsBuffer(sb -> clock_buffers[i]))
-			glDeleteBuffers(1, sb -> clock_buffers + i);
-		if(glIsBuffer(sb -> ammo_buffers[i]))
-			glDeleteBuffers(1, sb -> ammo_buffers + i);
+		if(glIsBuffer(sb->buffers[i]))
+			glDeleteBuffers(1, sb->buffers + i);
+		if(glIsBuffer(sb->health_buffers[i]))
+			glDeleteBuffers(1, sb->health_buffers + i);
+		if(glIsBuffer(sb->clock_buffers[i]))
+			glDeleteBuffers(1, sb->clock_buffers + i);
+		if(glIsBuffer(sb->ammo_buffers[i]))
+			glDeleteBuffers(1, sb->ammo_buffers + i);
 	}
 }
 

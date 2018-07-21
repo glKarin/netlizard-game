@@ -6,11 +6,33 @@
 
 extern GLenum last_error;
 
+typedef struct _OpenGL_alphatest_attrib
+{
+	GLboolean alphatest_enabled;
+	GLint alphatest_func;
+	GLfloat alphatest_ref;
+} OpenGL_alphatest_attrib;
+
+typedef struct _OpenGL_depthtest_attrib
+{
+	GLboolean depthtest_enabled;
+	GLint depthtest_func;
+	GLfloat depthtest_ref;
+	GLboolean depthmask;
+} OpenGL_depthtest_attrib;
+
+typedef struct _OpenGL_blend_attrib
+{
+	GLboolean blend_enabled;
+	GLint blend_src;
+	GLint blend_dst;
+} OpenGL_blend_attrib;
+
 typedef struct _OpenGL_scissor_attrib
 {
-	GLboolean scissor_enabled;
-	GLint scissor_box[4];
-} OpenGL_scissor_attrib;
+	GLboolean scissortest_enabled;
+	GLint scissortest_box[4];
+} OpenGL_scissortest_attrib;
 
 typedef struct _OpenGL_current_attrib
 {
@@ -33,6 +55,7 @@ typedef struct _OpenGL_point_attrib
 typedef struct _OpenGL_polygon_attrib
 {
 	GLboolean cullface_enabled;
+	GLint cullface_mode;
 } OpenGL_polygon_attrib;
 
 typedef struct _OpenGL_attrib
@@ -42,7 +65,10 @@ typedef struct _OpenGL_attrib
 	OpenGL_line_attrib line;
 	OpenGL_point_attrib point;
 	OpenGL_polygon_attrib polygon;
-	OpenGL_scissor_attrib scissor;
+	OpenGL_scissortest_attrib scissortest;
+	OpenGL_alphatest_attrib alphatest;
+	OpenGL_depthtest_attrib depthtest;
+	OpenGL_blend_attrib blend;
 } OpenGL_attrib;
 
 GLuint attrib_stack_current_depth = 0;
@@ -56,30 +82,48 @@ GLvoid gl2PushAttrib(GLbitfield mask)
 		return;
 	}
 	attrib_stack_current_depth++;
-	attrib_stack[attrib_stack_current_depth - 1].mask = mask;
+	OpenGL_attrib *a = attrib_stack + (attrib_stack_current_depth - 1);
+	a->mask = mask;
 	if(mask & GL2_ALL_ATTRIB_BITS || mask & GL2_CURRENT_BIT)
 	{
-		gl2GetFloatv(GL2_CURRENT_COLOR, attrib_stack[attrib_stack_current_depth - 1].current.rgba_color);
+		gl2GetFloatv(GL2_CURRENT_COLOR, a->current.rgba_color);
 		//glG2etFloatv(GL2_CURRENT_RASTER_POSITION, attrib_stack[attrib_stack_current_depth - 1].current.raster_pos);
 	}
 	if(mask & GL2_ALL_ATTRIB_BITS || mask & GL2_LINE_BIT)
 	{
-		glGetFloatv(GL_LINE_WIDTH, &attrib_stack[attrib_stack_current_depth - 1].line.line_width);
-		attrib_stack[attrib_stack_current_depth - 1].line.line_smooth = gl2IsEnabled(GL2_LINE_SMOOTH);
+		glGetFloatv(GL_LINE_WIDTH, &a->line.line_width);
+		a->line.line_smooth = gl2IsEnabled(GL2_LINE_SMOOTH);
 	}
 	if(mask & GL2_POINT_BIT)
 	{
-		gl2GetFloatv(GL2_POINT_SIZE, &attrib_stack[attrib_stack_current_depth - 1].point.point_size);
-		attrib_stack[attrib_stack_current_depth - 1].point.point_smooth = gl2IsEnabled(GL2_POINT_SMOOTH);
+		gl2GetFloatv(GL2_POINT_SIZE, &a->point.point_size);
+		a->point.point_smooth = gl2IsEnabled(GL2_POINT_SMOOTH);
 	}
 	if(mask & GL2_ALL_ATTRIB_BITS || mask & GL2_POLYGON_BIT)
 	{
-		attrib_stack[attrib_stack_current_depth - 1].polygon.cullface_enabled = glIsEnabled(GL_CULL_FACE);
+		a->polygon.cullface_enabled = glIsEnabled(GL_CULL_FACE);
+		glGetIntegerv(GL_CULL_FACE_MODE, &a->polygon.cullface_mode);
 	}
 	if(mask & GL2_ALL_ATTRIB_BITS || mask & GL2_SCISSOR_BIT)
 	{
-		attrib_stack[attrib_stack_current_depth - 1].scissor.scissor_enabled = glIsEnabled(GL_SCISSOR_TEST);
-		glGetIntegerv(GL_SCISSOR_BOX, attrib_stack[attrib_stack_current_depth - 1].scissor.scissor_box);
+		a->scissortest.scissortest_enabled = glIsEnabled(GL_SCISSOR_TEST);
+		glGetIntegerv(GL_SCISSOR_BOX, a->scissortest.scissortest_box);
+	}
+	if(mask & GL_ALL_ATTRIB_BITS || mask & GL_COLOR_BUFFER_BIT)
+	{
+		a->alphatest.alphatest_enabled = gl2IsEnabled(GL2_ALPHA_TEST);
+		gl2GetIntegerv(GL2_ALPHA_TEST_FUNC, &a->alphatest.alphatest_func);
+		gl2GetFloatv(GL2_ALPHA_TEST_REF, &a->alphatest.alphatest_ref);
+
+		a->blend.blend_enabled = glIsEnabled(GL_BLEND);
+		glGetIntegerv(GL_BLEND_SRC, &a->blend.blend_src);
+		glGetIntegerv(GL_BLEND_DST, &a->blend.blend_dst);
+	}
+	if(mask & GL_ALL_ATTRIB_BITS || mask & GL_DEPTH_BUFFER_BIT)
+	{
+		a->depthtest.depthtest_enabled = glIsEnabled(GL_DEPTH_TEST);
+		glGetIntegerv(GL_DEPTH_FUNC, &a->depthtest.depthtest_func);
+		glGetBooleanv(GL_DEPTH_WRITEMASK, &a->depthtest.depthmask);
 	}
 #if 0
 	if(mask & GL2_ALL_ATTRIB_BITS || mask & GL2_POLYGON_STIPPLE_BIT)
@@ -92,9 +136,6 @@ GLvoid gl2PushAttrib(GLbitfield mask)
 	{
 	}
 	if(mask & GL2_ALL_ATTRIB_BITS || mask & GL2_FOG_BIT)
-	{
-	}
-	if(mask & GL2_ALL_ATTRIB_BITS || mask & GL2_DEPTH_BUFFER_BIT)
 	{
 	}
 	if(mask & GL2_ALL_ATTRIB_BITS || mask & GL2_ACCUM_BUFFER_BIT)
@@ -110,9 +151,6 @@ GLvoid gl2PushAttrib(GLbitfield mask)
 	{
 	}
 	if(mask & GL2_ALL_ATTRIB_BITS || mask & GL2_ENABLE_BIT)
-	{
-	}
-	if(mask & GL2_ALL_ATTRIB_BITS || mask & GL2_COLOR_BUFFER_BIT)
 	{
 	}
 	if(mask & GL2_ALL_ATTRIB_BITS || mask & GL2_HINT_BIT)
@@ -142,55 +180,89 @@ GLvoid gl2PopAttrib(GLvoid)
 		last_error = GL2_STACK_UNDERFLOW;
 		return;
 	}
-	if(attrib_stack[attrib_stack_current_depth - 1].mask & GL2_ALL_ATTRIB_BITS || attrib_stack[attrib_stack_current_depth - 1].mask & GL2_CURRENT_BIT)
+	OpenGL_attrib *a = attrib_stack + (attrib_stack_current_depth - 1);
+	if(a->mask & GL2_ALL_ATTRIB_BITS || a->mask & GL2_CURRENT_BIT)
 	{
-		glColor4fv(attrib_stack[attrib_stack_current_depth - 1].current.rgba_color);
+		glColor4fv(a->current.rgba_color);
 		//glRasterPos4fv(attrib_stack[attrib_stack_current_depth - 1].current.raster_pos);
 	}
-	if(attrib_stack[attrib_stack_current_depth - 1].mask & GL2_ALL_ATTRIB_BITS || attrib_stack[attrib_stack_current_depth - 1].mask & GL2_LINE_BIT)
+	if(a->mask & GL2_ALL_ATTRIB_BITS || a->mask & GL2_LINE_BIT)
 	{
-		glLineWidth(attrib_stack[attrib_stack_current_depth - 1].line.line_width);
-		if(attrib_stack[attrib_stack_current_depth - 1].line.line_smooth != gl2IsEnabled(GL2_LINE_SMOOTH))
+		glLineWidth(a->line.line_width);
+		if(a->line.line_smooth != gl2IsEnabled(GL2_LINE_SMOOTH))
 		{
-			if(attrib_stack[attrib_stack_current_depth - 1].line.line_smooth)
+			if(a->line.line_smooth)
 				gl2Enable(GL2_LINE_SMOOTH);
 			else
 				gl2Disable(GL2_LINE_SMOOTH);
 		}
 	}
-	if(attrib_stack[attrib_stack_current_depth - 1].mask & GL2_ALL_ATTRIB_BITS || attrib_stack[attrib_stack_current_depth - 1].mask & GL2_POINT_BIT)
+	if(a->mask & GL2_ALL_ATTRIB_BITS || a->mask & GL2_POINT_BIT)
 	{
-		glPointSize(attrib_stack[attrib_stack_current_depth - 1].point.point_size);
-		if(attrib_stack[attrib_stack_current_depth - 1].point.point_smooth != gl2IsEnabled(GL2_POINT_SMOOTH))
+		glPointSize(a->point.point_size);
+		if(a->point.point_smooth != gl2IsEnabled(GL2_POINT_SMOOTH))
 		{
-			if(attrib_stack[attrib_stack_current_depth - 1].point.point_smooth)
+			if(a->point.point_smooth)
 				gl2Enable(GL2_POINT_SMOOTH);
 			else
 				gl2Disable(GL2_POINT_SMOOTH);
 		}
 	}
-	if(attrib_stack[attrib_stack_current_depth - 1].mask & GL2_ALL_ATTRIB_BITS || attrib_stack[attrib_stack_current_depth - 1].mask & GL2_POLYGON_BIT)
+	if(a->mask & GL2_ALL_ATTRIB_BITS || a->mask & GL2_POLYGON_BIT)
 	{
-		if(attrib_stack[attrib_stack_current_depth - 1].polygon.cullface_enabled != glIsEnabled(GL_CULL_FACE))
+		if(a->polygon.cullface_enabled != glIsEnabled(GL_CULL_FACE))
 		{
-			if(attrib_stack[attrib_stack_current_depth - 1].polygon.cullface_enabled)
+			if(a->polygon.cullface_enabled)
 				glEnable(GL_CULL_FACE);
 			else
 				glDisable(GL_CULL_FACE);
 		}
+		glCullFace(a->polygon.cullface_mode);
 	}
-	if(attrib_stack[attrib_stack_current_depth - 1].mask & GL2_ALL_ATTRIB_BITS || attrib_stack[attrib_stack_current_depth - 1].mask & GL2_SCISSOR_BIT)
+	if(a->mask & GL2_ALL_ATTRIB_BITS || a->mask & GL2_SCISSOR_BIT)
 	{
-		if(attrib_stack[attrib_stack_current_depth - 1].scissor.scissor_enabled != glIsEnabled(GL_SCISSOR_TEST))
+		if(a->scissortest.scissortest_enabled != glIsEnabled(GL_SCISSOR_TEST))
 		{
-			if(attrib_stack[attrib_stack_current_depth - 1].scissor.scissor_enabled)
+			if(a->scissortest.scissortest_enabled)
 				glEnable(GL_SCISSOR_TEST);
 			else
 				glDisable(GL_SCISSOR_TEST);
 		}
-		glScissor(attrib_stack[attrib_stack_current_depth - 1].scissor.scissor_box[0], attrib_stack[attrib_stack_current_depth - 1].scissor.scissor_box[1], attrib_stack[attrib_stack_current_depth - 1].scissor.scissor_box[2], attrib_stack[attrib_stack_current_depth - 1].scissor.scissor_box[3]);
+		glScissor(a->scissortest.scissortest_box[0], a->scissortest.scissortest_box[1], a->scissortest.scissortest_box[2], a->scissortest.scissortest_box[3]);
 	}
-	memset(attrib_stack + (attrib_stack_current_depth - 1), 0, sizeof(OpenGL_attrib));
+	if(a->mask & GL_ALL_ATTRIB_BITS || a->mask & GL_COLOR_BUFFER_BIT)
+	{
+		if(a->alphatest.alphatest_enabled != gl2IsEnabled(GL2_ALPHA_TEST))
+		{
+			if(a->alphatest.alphatest_enabled)
+				gl2Enable(GL2_ALPHA_TEST);
+			else
+				gl2Disable(GL2_ALPHA_TEST);
+		}
+		gl2AlphaFunc(a->alphatest.alphatest_func, a->alphatest.alphatest_ref);
+
+		if(a->blend.blend_enabled != glIsEnabled(GL_BLEND))
+		{
+			if(a->blend.blend_enabled)
+				glEnable(GL_BLEND);
+			else
+				glDisable(GL_BLEND);
+		}
+		glBlendFunc(a->blend.blend_src, a->blend.blend_dst);
+	}
+	if(a->mask & GL_ALL_ATTRIB_BITS || a->mask & GL_DEPTH_BUFFER_BIT)
+	{
+		if(a->depthtest.depthtest_enabled != glIsEnabled(GL_DEPTH_TEST))
+		{
+			if(a->depthtest.depthtest_enabled)
+				glEnable(GL_DEPTH_TEST);
+			else
+				glDisable(GL_DEPTH_TEST);
+		}
+		glDepthFunc(a->depthtest.depthtest_func);
+		glDepthMask(a->depthtest.depthmask);
+	}
+	memset(a, 0, sizeof(OpenGL_attrib));
 	attrib_stack_current_depth--;
 }
 

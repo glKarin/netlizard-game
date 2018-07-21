@@ -3,10 +3,10 @@
 
 #include "vector3.h"
 
-#define printfli(x) printf(#x" -> "); Line_Print(&(x));
-#define printfpl(x) printf(#x" -> "); Plane_Print(&(x));
-#define printfab(x) printf(#x" -> "); AABB_Print(&(x));
-#define printfcy(x) printf(#x" -> "); Cylinder_Print(&(x));
+#define printfli(x) printf(#x"->"); Line_Print(&(x));
+#define printfpl(x) printf(#x"->"); Plane_Print(&(x));
+#define printfab(x) printf(#x"->"); AABB_Print(&(x));
+#define printfcy(x) printf(#x"->"); Cylinder_Print(&(x));
 
 typedef struct _plane_t
 {

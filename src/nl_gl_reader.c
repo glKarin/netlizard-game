@@ -175,10 +175,10 @@ GL_NETLizard_3D_Model * NETLizard_ReadGLCT3DEp3MapModelFile(const char *name, in
 	if(model)
 	{
 		int i;
-		for(i = 0; i < model -> item_count; i++)
+		for(i = 0; i < model->item_count; i++)
 		{
-			if(model -> item_meshes[i].item_type == Item_DoorV_Type)
-				model -> item_meshes[i].item_type = Item_Tiny_Type;
+			if(model->item_meshes[i].item_type == Item_DoorV_Type)
+				model->item_meshes[i].item_type = Item_Tiny_Type;
 			// TODO: now no item event support for this game map's door.
 		}
 	}

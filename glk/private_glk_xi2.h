@@ -17,7 +17,7 @@ static int xi_opcode = 0;
 
 static Bool karinMultiMouseEvent(int which, int button, Bool pressed, int x, int y)
 {
-	//printf("Finger -> %d\n", which);
+	//printf("Finger->%d\n", which);
 	if(mouseHandler)
 		return mouseHandler(button, pressed, x, y);
 	return 0;
@@ -25,8 +25,8 @@ static Bool karinMultiMouseEvent(int which, int button, Bool pressed, int x, int
 
 static Bool karinMultiMouseMotionEvent(int which, int button, Bool pressed, int x, int y, int dx, int dy)
 {
-	//printf("Finger -> %d\n", which);
-	if(mouseHandler)
+	//printf("Finger->%d\n", which);
+	if(motionHandler)
 		return motionHandler(button, pressed, x, y, dx, dy);
 	return 0;
 }
@@ -79,24 +79,24 @@ static Bool GetMultiMouseState (int which, int *x, int *y)
 {
 	const MultiMouse * const mm = &(multi_mouses[which]);
 	if ( x ) {
-		*x = mm -> MouseX;
+		*x = mm->MouseX;
 	}
 	if ( y ) {
-		*y = mm -> MouseY;
+		*y = mm->MouseY;
 	}
-	return(mm -> ButtonState);
+	return(mm->ButtonState);
 }
 
 static Bool GetRelativeMultiMouseState (int which, int *x, int *y)
 {
 	MultiMouse * const mm = &(multi_mouses[which]);
 	if ( x )
-		*x = mm -> DeltaX;
+		*x = mm->DeltaX;
 	if ( y )
-		*y = mm -> DeltaY;
-	mm -> DeltaX = 0;
-	mm -> DeltaY = 0;
-	return(mm -> ButtonState);
+		*y = mm->DeltaY;
+	mm->DeltaX = 0;
+	mm->DeltaY = 0;
+	return(mm->ButtonState);
 }
 
 static Bool PrivateMultiMouseMotion(int which, Bool buttonstate, int relative, int x, int y)
@@ -108,15 +108,15 @@ static Bool PrivateMultiMouseMotion(int which, Bool buttonstate, int relative, i
 	MultiMouse * const mm = &(multi_mouses[which]);
 	/* Default buttonstate is the current one */
 	if ( ! buttonstate ) {
-		buttonstate = mm -> ButtonState;
+		buttonstate = mm->ButtonState;
 	}
 
 	Xrel = x;
 	Yrel = y;
 	if ( relative ) {
 		/* Push the cursor around */
-		x = (mm -> MouseX + x);
-		y = (mm -> MouseY + y);
+		x = (mm->MouseX + x);
+		y = (mm->MouseY + y);
 	} else {
 		/* Do we need to clip {x,y} ? */
 		//ClipOffset(&x, &y);
@@ -144,8 +144,8 @@ static Bool PrivateMultiMouseMotion(int which, Bool buttonstate, int relative, i
 	   the screen is windowed mode and the mouse is outside the window.
 	*/
 	if ( ! relative ) {
-		Xrel = X - mm -> MouseX;
-		Yrel = Y - mm -> MouseY;
+		Xrel = X - mm->MouseX;
+		Yrel = Y - mm->MouseY;
 	}
 
 	/* Drop events that don't change state */
@@ -157,11 +157,11 @@ printf("Mouse event didn't change state - dropped!\n");
 	}
 
 	/* Update internal mouse state */
-	mm -> ButtonState = buttonstate;
-	mm -> MouseX = X;
-	mm -> MouseY = Y;
-	mm -> DeltaX += Xrel;
-	mm -> DeltaY += Yrel;
+	mm->ButtonState = buttonstate;
+	mm->MouseX = X;
+	mm->MouseY = Y;
+	mm->DeltaX += Xrel;
+	mm->DeltaY += Yrel;
 	/*
 	if (which == 0) {
 		// Redraw main pointer
@@ -221,19 +221,19 @@ static Bool PrivateMultiMouseButton(int which, Bool state, int button/*left butt
 		move_mouse = 0;
 	}
 	if ( ! x )
-		x = mm -> MouseX;
+		x = mm->MouseX;
 	if ( ! y )
-		y = mm -> MouseY;
+		y = mm->MouseY;
 
 	/* Figure out which event to perform */
-	buttonstate = mm -> ButtonState;
+	buttonstate = mm->ButtonState;
 	buttonstate = state;
 
 	/* Update internal mouse state */
-	mm -> ButtonState = buttonstate;
+	mm->ButtonState = buttonstate;
 	if ( move_mouse ) {
-		mm -> MouseX = x;
-		mm -> MouseY = y;
+		mm->MouseX = x;
+		mm->MouseY = y;
 		/*
 		if (which == 0) {
 			//SDL_MoveCursor(x, y);
@@ -428,7 +428,7 @@ static void LookupMultiButtonState(void)
 	for(i = 0; i < MAXMOUSE; i++)
 	{
 		if(multi_mouses[i].ButtonState)
-			printf("Finger -> %d ,Mouse X -> %d ,Mouse Y -> %d , Delta X -> %d ,Delta Y -> %d ,Button State -> %d\n", i, multi_mouses[i].MouseX, multi_mouses[i].MouseY, multi_mouses[i].DeltaX, multi_mouses[i].DeltaY, multi_mouses[i].ButtonState);
+			printf("Finger->%d ,Mouse X->%d ,Mouse Y->%d , Delta X->%d ,Delta Y->%d ,Button State->%d\n", i, multi_mouses[i].MouseX, multi_mouses[i].MouseY, multi_mouses[i].DeltaX, multi_mouses[i].DeltaY, multi_mouses[i].ButtonState);
 	}
 	printf("------------------------------\n");
 }
@@ -490,24 +490,24 @@ Bool karinXI2Event(XEvent *event)
 {
 	if(!event)
 		return False;
-	if(event -> type != GenericEvent)
+	if(event->type != GenericEvent)
 		return False;
 	// Only XInput2 event
 	Bool res = False;
-	if (event -> xcookie.extension == xi_opcode) {
-		if (XGetEventData(dpy, &event -> xcookie)) {
+	if (event->xcookie.extension == xi_opcode) {
+		if (XGetEventData(dpy, &event->xcookie)) {
 			XIDeviceEvent *xi_event = NULL;
 			XIDeviceChangedEvent *xi_changeevent = NULL;
-			switch (((XIEvent *)event -> xcookie.data) ->evtype) {
+			switch (((XIEvent *)event->xcookie.data) ->evtype) {
 				case XI_ButtonPress:
 				case XI_ButtonRelease:
 				case XI_Motion:
-					xi_event = (XIDeviceEvent *)event -> xcookie.data;
+					xi_event = (XIDeviceEvent *)event->xcookie.data;
 					X11_XInput2_DispatchTouchDeviceEvent(xi_event);
 					res = True;
 					break;
 				case XI_DeviceChanged:
-					xi_changeevent = (XIDeviceChangedEvent *)event -> xcookie.data;
+					xi_changeevent = (XIDeviceChangedEvent *)event->xcookie.data;
 					X11_XInput2_DispatchDeviceChangedEvent(xi_changeevent);
 					res = True;
 					break;
@@ -515,7 +515,7 @@ Bool karinXI2Event(XEvent *event)
 					printf("Unhandled XInput2 event %d\n", xi_event->evtype);
 					break;
 			}
-			XFreeEventData(dpy, &event -> xcookie);
+			XFreeEventData(dpy, &event->xcookie);
 		}
 	}
 	return res;;

@@ -40,6 +40,8 @@ const setting_item Setting_Items[total_setting] = {
 
 	{group_count_setting, integer_value_type, GROUP_COUNT_SETTING, "Group count", "2", "2", "4"},
 	{character_count_setting, integer_value_type, CHARACTER_COUNT_SETTING, "Character count", "4", "1", "8"},
+	{lighting_effect_setting, boolean_value_type, LIGHTING_EFFECT_SETTING, "Lighting effect", "false", NULL, NULL},
+	{fog_effect_setting, boolean_value_type, FOG_EFFECT_SETTING, "Fog effect", "false", NULL, NULL},
 	{god_mode_setting, boolean_value_type, GOD_MODE_SETTING, "God mode", "false", NULL, NULL},
 	{open_radar_setting, boolean_value_type, OPEN_RADAR_SETTING, "Open radar", "false", NULL, NULL},
 	{point_target_setting, integer_value_type, POINT_TARGET_SETTING, "Point target", "200", "20", "500"},
@@ -72,11 +74,11 @@ setting_variant Setting_GetSetting(const char *name)
 	for(i = 0; i < settings.count; i++)
 	{
 		const setting_pair *p = List_GetConstDataByIndexT(&settings, i, setting_pair);
-		if(p && p -> name)
+		if(p && p->name)
 		{
-			if(strcmp(p -> name, name) == 0)
+			if(strcmp(p->name, name) == 0)
 			{
-				memcpy(&v, &p -> value, sizeof(setting_variant));
+				memcpy(&v, &p->value, sizeof(setting_variant));
 				break;
 			}
 		}
@@ -95,17 +97,17 @@ void Setting_ReadSetting(const char *file)
 	{
 		printf("Read setting file: %s\n", setting_file);
 		int show_comment = 0;
-		char *data = (char *)(arr -> array);
+		char *data = (char *)(arr->array);
 		char ch;
 		int i = 0;
-		while(i < arr -> length)
+		while(i < arr->length)
 		{
 			while((ch = data[i]) == '\n') i++;
 			if(ch == '[')
 			{
 				i += 1;
 				int j = 0;
-				while(data[i + j] != ']' && i + j < arr -> length)
+				while(data[i + j] != ']' && i + j < arr->length)
 					j++;
 				char *title = NEW_II(char, j + 1);
 				memcpy(title, data + i, sizeof(char) * (j + 1));
@@ -121,7 +123,7 @@ void Setting_ReadSetting(const char *file)
 				i += 1;
 				while(isspace((ch = data[i]))) i++;
 				int j = 0;
-				while(data[i + j] != '\n' && i + j < arr -> length)
+				while(data[i + j] != '\n' && i + j < arr->length)
 					j++;
 				if(show_comment)
 				{
@@ -137,7 +139,7 @@ void Setting_ReadSetting(const char *file)
 			else
 			{
 				int j = 0;
-				while(data[i + j] != '\n' && i + j < arr -> length)
+				while(data[i + j] != '\n' && i + j < arr->length)
 					j++;
 				char *str = NEW_II(char, j + 1);
 				memcpy(str, data + i, sizeof(char) * (j + 1));
@@ -226,9 +228,9 @@ void Setting_FreeSetting(void)
 		setting_pair *p = List_GetDataByIndexT(&settings, i, setting_pair);
 		if(p)
 		{
-			free(p -> name);
-			if(p -> value.type == string_value_type)
-				free(p -> value.value.s);
+			free(p->name);
+			if(p->value.type == string_value_type)
+				free(p->value.value.s);
 		}
 	}
 	List_DeleteAll(&settings);
@@ -241,25 +243,25 @@ void Setting_SetSetting(const char *name, const setting_variant *v)
 		return;
 	if(!name || !v)
 		return;
-	if(v -> type == none_value_type)
+	if(v->type == none_value_type)
 		return;
 	unsigned int i;
 	for(i = 0; i < settings.count; i++)
 	{
 		setting_pair *p = List_GetDataByIndexT(&settings, i, setting_pair);
-		if(p && p -> name)
+		if(p && p->name)
 		{
-			if(strcasecmp(p -> name, name) == 0)
+			if(strcasecmp(p->name, name) == 0)
 			{
-				if(p -> value.type == string_value_type)
-					free(p -> value.value.s);
-				if(v -> type == string_value_type)
+				if(p->value.type == string_value_type)
+					free(p->value.value.s);
+				if(v->type == string_value_type)
 				{
-					p -> value.type = v -> type;
-					p -> value.value.s = strdup(v -> value.s);
+					p->value.type = v->type;
+					p->value.value.s = strdup(v->value.s);
 				}
 				else
-					memcpy(&p -> value, v, sizeof(setting_variant));
+					memcpy(&p->value, v, sizeof(setting_variant));
 				return;
 			}
 		}
@@ -267,10 +269,10 @@ void Setting_SetSetting(const char *name, const setting_variant *v)
 
 	setting_pair n;
 	ZERO(&n, setting_pair);
-	if(v -> type == string_value_type)
+	if(v->type == string_value_type)
 	{
-		n.value.type = v -> type;
-		n.value.value.s = strdup(v -> value.s);
+		n.value.type = v->type;
+		n.value.value.s = strdup(v->value.s);
 	}
 	else
 		memcpy(&n.value, v, sizeof(setting_variant));
@@ -302,10 +304,10 @@ void Setting_WriteSetting(const char *file)
 	for(i = 0; i < settings.count; i++)
 	{
 		setting_pair *p = List_GetDataByIndexT(&settings, i, setting_pair);
-		if(p && p -> name && p -> value.type != none_value_type)
+		if(p && p->name && p->value.type != none_value_type)
 		{
 			char ch = 'u';
-			switch(p -> value.type)
+			switch(p->value.type)
 			{
 				case integer_value_type:
 					ch = 'i';
@@ -329,30 +331,30 @@ void Setting_WriteSetting(const char *file)
 					continue;
 			}
 			char *str = NULL;
-			switch(p -> value.type)
+			switch(p->value.type)
 			{
 				case integer_value_type:
-					str = itostr(p -> value.value.i);
+					str = itostr(p->value.value.i);
 					break;
 				case character_value_type:
 					str = NEW_II(char, 2);
-					str[0] = p -> value.value.c;
+					str[0] = p->value.value.c;
 					str[1] = '\0';
 					break;
 				case boolean_value_type:
-					if(p -> value.value.b)
+					if(p->value.value.b)
 						str = strdup("true");
 					else
 						str = strdup("false");
 					break;
 				case float_value_type:
-					str = ftostr(p -> value.value.f);
+					str = ftostr(p->value.value.f);
 					break;
 				case string_value_type:
-					str = strdup(p -> value.value.s);
+					str = strdup(p->value.value.s);
 					break;
 				case time_value_type:
-					str = lltostr(p -> value.value.ll);
+					str = lltostr(p->value.value.ll);
 					break;
 				default:
 					continue;
@@ -362,7 +364,7 @@ void Setting_WriteSetting(const char *file)
 			fwrite(&ch, sizeof(char), 1, out);
 			ln = ':';
 			fwrite(&ln, sizeof(char), 1, out);
-			fwrite(p -> name, sizeof(char), strlen(p -> name), out);
+			fwrite(p->name, sizeof(char), strlen(p->name), out);
 			ln = '=';
 			fwrite(&ln, sizeof(char), 1, out);
 			fwrite(str, sizeof(char), strlen(str), out);
@@ -390,26 +392,26 @@ void Setting_Print(unsigned int index, const void *data)
 	if(!data)
 		return;
 	setting_pair *p = (setting_pair *)data;
-	switch(p -> value.type)
+	switch(p->value.type)
 	{
 		case integer_value_type:
-			printf("%d : %s = %d\n", index, p -> name, p -> value.value.i);
+			printf("%d : %s = %d\n", index, p->name, p->value.value.i);
 			break;
 		case character_value_type:
-			printf("%d : %s = %c\n", index, p -> name, p -> value.value.c);
+			printf("%d : %s = %c\n", index, p->name, p->value.value.c);
 			break;
 		case boolean_value_type:
-			printf("%d : %s = %s\n", index, p -> name, p -> value.value.b ? "true" : "false");
+			printf("%d : %s = %s\n", index, p->name, p->value.value.b ? "true" : "false");
 			break;
 		case float_value_type:
-			printf("%d : %s = %f\n", index, p -> name, p -> value.value.f);
+			printf("%d : %s = %f\n", index, p->name, p->value.value.f);
 			break;
 		case string_value_type:
-			printf("%d : %s = %s\n", index, p -> name, p -> value.value.s);
+			printf("%d : %s = %s\n", index, p->name, p->value.value.s);
 			break;
 		case time_value_type:
-			printf("%d : %s = ", index, p -> name);
-			char *str = lltotime_second(p -> value.value.ll);
+			printf("%d : %s = ", index, p->name);
+			char *str = lltotime_second(p->value.value.ll);
 			printf("%s\n", str);
 			free(str);
 			break;

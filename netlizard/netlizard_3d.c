@@ -153,21 +153,21 @@ void delete_NETLizard_3D_Mesh(NETLizard_3D_Mesh *mesh)
 {
 	if(!mesh)
 		return;
-	delete_array(mesh -> vertex);
-	free(mesh -> vertex);
-	delete_array(mesh -> primitive);
-	free(mesh -> primitive);
-	delete_array(mesh -> plane);
-	free(mesh -> plane);
-	delete_array(mesh -> bsp);
-	free(mesh -> bsp);
+	delete_array(mesh->vertex);
+	free(mesh->vertex);
+	delete_array(mesh->primitive);
+	free(mesh->primitive);
+	delete_array(mesh->plane);
+	free(mesh->plane);
+	delete_array(mesh->bsp);
+	free(mesh->bsp);
 }
 
 void delete_NETLizard_3D_Item_Mesh(NETLizard_3D_Item_Mesh *mesh)
 {
 	if(!mesh)
 		return;
-	delete_NETLizard_3D_Mesh(&mesh -> item_mesh);
+	delete_NETLizard_3D_Mesh(&mesh->item_mesh);
 }
 
 void delete_NETLizard_3D_Model(NETLizard_3D_Model *model)
@@ -175,30 +175,30 @@ void delete_NETLizard_3D_Model(NETLizard_3D_Model *model)
 	if(!model)
 		return;
 	int i;
-	if(model -> data)
+	if(model->data)
 	{
-		for(i = 0; i < model -> data -> length; i++)
-			delete_NETLizard_3D_Mesh(((NETLizard_3D_Mesh *)(model -> data -> array)) + i);
-		delete_array(model -> data);
-		free(model -> data);
+		for(i = 0; i < model->data->length; i++)
+			delete_NETLizard_3D_Mesh(((NETLizard_3D_Mesh *)(model->data->array)) + i);
+		delete_array(model->data);
+		free(model->data);
 	}
-	if(model -> item_data)
+	if(model->item_data)
 	{
-		for(i = 0; i < model -> item_data -> length; i++)
-			delete_NETLizard_3D_Item_Mesh(((NETLizard_3D_Item_Mesh *)(model -> item_data -> array)) + i);
-		delete_array(model -> item_data);
-		free(model -> item_data);
+		for(i = 0; i < model->item_data->length; i++)
+			delete_NETLizard_3D_Item_Mesh(((NETLizard_3D_Item_Mesh *)(model->item_data->array)) + i);
+		delete_array(model->item_data);
+		free(model->item_data);
 	}
-	if(model -> bsp_data)
+	if(model->bsp_data)
 	{
-		delete_array(model -> bsp_data);
-		free(model -> bsp_data);
+		delete_array(model->bsp_data);
+		free(model->bsp_data);
 	}
 }
 
 NETLizard_Texture_Type nlCheckPNGType(const array *data)
 {
-	if(!data || !data -> array)
+	if(!data || !data->array)
 		return Texture_Unknow_Type;
 	if(nlIsPNG(data))
 		return Texture_NormalPNG_Type;
@@ -211,12 +211,12 @@ NETLizard_Texture_Type nlCheckPNGType(const array *data)
 		png_texture *t = nlReadTextureV3_Memory(data, -1);
 		if(t)
 		{
-			array *arr = t -> color_index;
+			array *arr = t->color_index;
 			NETLizard_Texture_Type type = Texture_3DEngineV3_Type;
 			int i;
-			for(i = 0; i < arr -> length; i++)
+			for(i = 0; i < arr->length; i++)
 			{
-				if(((signed char*)(arr -> array))[i] < 0)
+				if(((signed char*)(arr->array))[i] < 0)
 				{
 					type = Texture_3DEngineV3Compress_Type;
 					break;

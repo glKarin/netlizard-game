@@ -162,8 +162,8 @@ int karinXErrorHandler(Display *d, XErrorEvent *eev)
 {
 #define ERROR_STRING_LEN 200
 	char str[ERROR_STRING_LEN];
-	XGetErrorText(d, eev -> error_code, str, 99);
-	fprintf(stderr, "[ err -> %d - %s (%s)]\n", eev -> error_code, str, __func__);
+	XGetErrorText(d, eev->error_code, str, 99);
+	fprintf(stderr, "[ err->%d - %s (%s)]\n", eev->error_code, str, __func__);
 	str[ERROR_STRING_LEN - 1] = '\0';
 	return 0;
 }
@@ -281,7 +281,7 @@ unsigned karinXEventLoop(void)
 				break;
 #endif
 			default:
-				printf("Unhandle XEvent -> %d - %s\n", xev.type, karinX11EventString(xev.type));
+				printf("Unhandle XEvent->%d - %s\n", xev.type, karinX11EventString(xev.type));
 				break;
 		}
 	}
@@ -348,7 +348,7 @@ float karinCastFPS(void)
 	frames++;
 	if (totaltime > 2.0f)
 	{
-		printf("%4d frames rendered in %1.4f seconds -> FPS=%3.4f\n", frames, totaltime, frames/totaltime);
+		printf("%4d frames rendered in %1.4f seconds->FPS=%3.4f\n", frames, totaltime, frames/totaltime);
 		totaltime -= 2.0f;
 		frames = 0;
 	}
@@ -453,13 +453,13 @@ unsigned long long karinGetTimeUSec(void)
 void karinPrintGLInfo()
 {
 	printf("------------------ OpenGL -----------------"); KARIN_ENDL
-		printf("Version -> %s", glGetString(GL_VERSION)); KARIN_ENDL
-		printf("Vendor -> %s", glGetString(GL_VENDOR)); KARIN_ENDL
-		printf("Renderer -> %s", glGetString(GL_RENDERER)); KARIN_ENDL
+		printf("Version->%s", glGetString(GL_VERSION)); KARIN_ENDL
+		printf("Vendor->%s", glGetString(GL_VENDOR)); KARIN_ENDL
+		printf("Renderer->%s", glGetString(GL_RENDERER)); KARIN_ENDL
 #ifndef _HARMATTAN_OPENGLES
-		printf("Shading Language Version -> %s", glGetString(GL_SHADING_LANGUAGE_VERSION)); KARIN_ENDL
+		printf("Shading Language Version->%s", glGetString(GL_SHADING_LANGUAGE_VERSION)); KARIN_ENDL
 #endif
-		printf("Extensions -> "); KARIN_ENDL
+		printf("Extensions->"); KARIN_ENDL
 		char *gl_extensions = strdup((const char *)glGetString(GL_EXTENSIONS));
 	char *s = NULL;
 	printf("  %s\n", strtok(gl_extensions, " "));
@@ -468,8 +468,8 @@ void karinPrintGLInfo()
 
 #ifdef _HARMATTAN_OPENGL
 	printf("------------------ GLU -----------------"); KARIN_ENDL
-		printf("Version -> %s", gluGetString(GLU_VERSION)); KARIN_ENDL
-		printf("Extensions -> "); KARIN_ENDL
+		printf("Version->%s", gluGetString(GLU_VERSION)); KARIN_ENDL
+		printf("Extensions->"); KARIN_ENDL
 		char *glu_extensions = strdup((const char *)gluGetString(GLU_EXTENSIONS));
 	printf("  %s\n", strtok(glu_extensions, " "));
 	while((s = strtok(NULL, " ")))

@@ -20,6 +20,7 @@
 #include "local/file_system.h"
 #include "weapon_chooser.h"
 #include "character_model_chooser.h"
+#include "mdl_viewer.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -33,6 +34,7 @@ static void MainGame_OpenSetting(void);
 static void MainGame_OpenKeyMapSetting(void);
 static void MainGame_OpenWeaponChooser(void);
 static void MainGame_OpenCharacterModelChooser(void);
+static void MainGame_OpenMDLViewer(void);
 static void MainGame_OpenAbout(void);
 static void MainGame_OpenHelp(void);
 static void MainGame_Quit(void);
@@ -64,6 +66,7 @@ void MainGame_Run(void)
 	SignalSlot_Init();
 	SignalSlot_AddAction(OPEN_WEAPON_CHOOSER, MainGame_OpenWeaponChooser);
 	SignalSlot_AddAction(OPEN_CHARACTER_MODEL_CHOOSER, MainGame_OpenCharacterModelChooser);
+	SignalSlot_AddAction(OPEN_MDL_VIEWER, MainGame_OpenMDLViewer);
 	SignalSlot_AddAction(OPEN_KEYMAP_SETTING, MainGame_OpenKeyMapSetting);
 	SignalSlot_AddAction(OPEN_SETTING, MainGame_OpenSetting);
 	SignalSlot_AddAction(OPEN_RUN_SETTING, MainGame_OpenRunSetting);
@@ -178,16 +181,16 @@ void MainGame_GoToMainMenu(void)
 
 void MainGame_OpenAbout(void)
 {
-	const char title[] = "About NETLizard Game";
-	const char content[] = _KARIN_APPLICATION
+	const char title[] = "About "_KARIN_APPNAME;
+	const char content[] = _KARIN_APPNAME
 		" is a util for NETLizard game.\n"
 		"It has a game resource parse engine, and a game.\n"
-		"Feature :\n"
+		"Feature:\n"
 		"Decode / Encode texture of 2D games and 3D games.\n"
 		"Decode game text.\n"
 		"View 3D map, item and animation.\n"
 		"\n"
-		"Now support 3D games :\n"
+		"Now support 3D games:\n"
 		"Contr Terrorism 3D\n"
 		"Army Rangers 3D : Operation Arctic\n"
 		"Contr Terrorism 3D Episode-2\n"
@@ -196,12 +199,21 @@ void MainGame_OpenAbout(void)
 		"Contr Terrorism 3D Episode-3\n"
 		"Racing Evolution 3D\n"
 		"\n"
+		"Player models:\n"
+		"NETLizard game model\n"
+		"Half-Life model(supply by CSOL)\n"
+		"LOL model(supply by LOLKing)\n"
+		"\n"
 		"NETLizard Game is name of the package, and is also a part of package.\n"
 		"Is a simple 3D game like death game, use NETLizard 3D model.\n"
 		"\n"
-		"Developer : "_KARIN_DEVELOPER"\n"
+		"\n"
+		"Package : "_KARIN_APPBIN"\n"
 		"Version : "_KARIN_VERSION"\n"
-		"Release : "_KARIN_RELEASE"\n";
+		"Release : "_KARIN_RELEASE"\n"
+		"Code : "_KARIN_DEVCODE"\n"
+		"Email : "_KARIN_EMAIL"\n"
+		"Developer : "_KARIN_DEVELOPER"\n";
 	Menu_SetMenuSaveState(menu_last_state);
 	Menu_InitAbout();
 	Menu_SetAboutTitleAndContent(title, content);
@@ -231,26 +243,34 @@ void MainGame_OpenHelp(void)
 	const char title[] = "Help";
 	const char content[] = "The map file of key is in "_KARIN_RESOURCE_DIR"resource/\n"
 		"Default key map is :\n"
-		"w - move forward\n"
-		"s - move backward\n"
+		"w - Move forward\n"
+		"s - Move backward\n"
 		"a - move left\n"
 		"d - move right\n"
 		"space - jump\n"
-		"return - attack\n"
-		"x - open/close radar\n"
-		"t - open score table\n"
-		"r - reload\n"
-		"f - open light\n"
-		"m - change view between first person and third person\n"
-		"i - zoom in\n"
-		"o - zoom out\n"
-		"j - operate AI to forward\n"
-		"k - operate AI to backward\n"
-		"l - operate AI to stand by\n"
-		"up - turn up\n"
-		"down - turn down\n"
-		"left - turn left\n"
-		"right - turn right\n"
+		"return - Attack\n"
+		"x - Open radar\n"
+		"t - Open score table\n"
+		"r - Reload\n"
+		"f - Open light\n"
+		"m - Change view between first person and third person\n"
+		"i - Zoom in\n"
+		"o - Zoom out\n"
+		"j - Operate forward\n"
+		"k - Operate backward\n"
+		"l - Operate standby\n"
+		"y - Previous weapon\n"
+		"u - Next weapon\n"
+		"v - view center\n"
+		"z - Free look\n"
+		"up - Turn up\n"
+		"down - Turn down\n"
+		"left - Turn left\n"
+		"right - Turn right\n"
+		"p - Free look up\n"
+		"' - Free look down\n"
+		", - Free look left\n"
+		". - Free look right\n"
 		"\n";
 	Menu_SetMenuSaveState(menu_last_state);
 	Menu_InitAbout();
@@ -348,6 +368,13 @@ void MainGame_OpenCharacterModelChooser(void)
 {
 	Menu_InitCharacterModelChooser();
 	Menu_CharacterModelChooserRegisterFunction();
+	MainGame_SetGameState(game_in_setting_state);
+}
+
+void MainGame_OpenMDLViewer(void)
+{
+	Menu_InitMDLViewer();
+	Menu_MDLViewerRegisterFunction();
 	MainGame_SetGameState(game_in_setting_state);
 }
 

@@ -27,47 +27,47 @@ matrix44_t Matrix44_MakeWithValue(NLfloat a, NLfloat b, NLfloat c, NLfloat d, NL
 matrix44_t Matrix44_TransposeOpenGLMatrix(const matrix44_t *mat)
 {
 	matrix44_t m = Matrix44_Make();
-	m.x[0][0] = mat -> x[0][0];
-	m.x[1][0] = mat -> x[0][1];
-	m.x[2][0] = mat -> x[0][2];
-	m.x[3][0] = mat -> x[0][3];
+	m.x[0][0] = mat->x[0][0];
+	m.x[1][0] = mat->x[0][1];
+	m.x[2][0] = mat->x[0][2];
+	m.x[3][0] = mat->x[0][3];
 
-	m.x[0][1] = mat -> x[1][0];
-	m.x[1][1] = mat -> x[1][1];
-	m.x[2][1] = mat -> x[1][2];
-	m.x[3][1] = mat -> x[1][3];
+	m.x[0][1] = mat->x[1][0];
+	m.x[1][1] = mat->x[1][1];
+	m.x[2][1] = mat->x[1][2];
+	m.x[3][1] = mat->x[1][3];
 
-	m.x[0][2] = mat -> x[2][0];
-	m.x[1][2] = mat -> x[2][1];
-	m.x[2][2] = mat -> x[2][2];
-	m.x[3][2] = mat -> x[2][3];
+	m.x[0][2] = mat->x[2][0];
+	m.x[1][2] = mat->x[2][1];
+	m.x[2][2] = mat->x[2][2];
+	m.x[3][2] = mat->x[2][3];
 
-	m.x[0][3] = mat -> x[3][0];
-	m.x[1][3] = mat -> x[3][1];
-	m.x[2][3] = mat -> x[3][2];
-	m.x[3][3] = mat -> x[3][3];
+	m.x[0][3] = mat->x[3][0];
+	m.x[1][3] = mat->x[3][1];
+	m.x[2][3] = mat->x[3][2];
+	m.x[3][3] = mat->x[3][3];
 
 	return m;
 }
 
 void Matrix44_Identity(matrix44_t *m)
 {
-	m -> x[0][0] = 1;
-	m -> x[0][1] = 0;
-	m -> x[0][2] = 0;
-	m -> x[0][3] = 0;
-	m -> x[1][0] = 0;
-	m -> x[1][1] = 1;
-	m -> x[1][2] = 0;
-	m -> x[1][3] = 0;
-	m -> x[2][0] = 0;
-	m -> x[2][1] = 0;
-	m -> x[2][2] = 1;
-	m -> x[2][3] = 0;
-	m -> x[3][0] = 0;
-	m -> x[3][1] = 0;
-	m -> x[3][2] = 0;
-	m -> x[3][3] = 1;
+	m->x[0][0] = 1;
+	m->x[0][1] = 0;
+	m->x[0][2] = 0;
+	m->x[0][3] = 0;
+	m->x[1][0] = 0;
+	m->x[1][1] = 1;
+	m->x[1][2] = 0;
+	m->x[1][3] = 0;
+	m->x[2][0] = 0;
+	m->x[2][1] = 0;
+	m->x[2][2] = 1;
+	m->x[2][3] = 0;
+	m->x[3][0] = 0;
+	m->x[3][1] = 0;
+	m->x[3][2] = 0;
+	m->x[3][3] = 1;
 }
 
 matrix44_t Matrix44_Make()
@@ -188,8 +188,8 @@ matrix44_t Matrix44_MultiplyMatrix44(const matrix44_t *a, const matrix44_t *b)
 	if(!a || !b)
 		return Matrix44_Make();
 	matrix44_t c = Matrix44_Make();
-	/*register*/ const NLfloat * /* restrict */ ap = &a -> x[0][0];
-	/*register*/ const NLfloat * /* restrict */ bp = &b -> x[0][0];
+	/*register*/ const NLfloat * /* restrict */ ap = &a->x[0][0];
+	/*register*/ const NLfloat * /* restrict */ bp = &b->x[0][0];
 	/*register*/       NLfloat * /* restrict */ cp = &c.x[0][0];
 
 	register NLfloat a0, a1, a2, a3;
@@ -248,7 +248,7 @@ void Matrix44_Print(const matrix44_t *m)
 		int j;
 		for(j = 0; j < 4; j++)
 		{
-			printf("  %f", m -> x[i][j]);
+			printf("  %f", m->x[i][j]);
 		}
 		printf("\n");
 	}
@@ -257,19 +257,19 @@ void Matrix44_Print(const matrix44_t *m)
 
 void Matrix44_Scale(matrix44_t *m, NLfloat s)
 {
-    m -> x[0][0] *= s;
-    m -> x[0][1] *= s;
-    m -> x[0][2] *= s;
-    m -> x[0][3] *= s;
+    m->x[0][0] *= s;
+    m->x[0][1] *= s;
+    m->x[0][2] *= s;
+    m->x[0][3] *= s;
 
-    m -> x[1][0] *= s;
-    m -> x[1][1] *= s;
-    m -> x[1][2] *= s;
-    m -> x[1][3] *= s;
+    m->x[1][0] *= s;
+    m->x[1][1] *= s;
+    m->x[1][2] *= s;
+    m->x[1][3] *= s;
 
-    m -> x[2][0] *= s;
-    m -> x[2][1] *= s;
-    m -> x[2][2] *= s;
-    m -> x[2][3] *= s;
+    m->x[2][0] *= s;
+    m->x[2][1] *= s;
+    m->x[2][2] *= s;
+    m->x[2][3] *= s;
 
 }

@@ -10,7 +10,7 @@ void delete_array(array *arr)
 {
 	if(!arr)
 		return;
-	free(arr -> array);
+	free(arr->array);
 }
 
 array * new_array(datatype type, size_t length, void *data, size_t s)
@@ -56,11 +56,11 @@ array * new_array(datatype type, size_t length, void *data, size_t s)
 	}
 	array *arr = NEW(array);
 	ZERO(arr, array);
-	arr -> type = type;
-	arr -> array = ptr;
-	arr -> length = length;
+	arr->type = type;
+	arr->array = ptr;
+	arr->length = length;
 	if(data)
-		memcpy(arr -> array, data, size * length);
+		memcpy(arr->array, data, size * length);
 	return arr;
 }
 

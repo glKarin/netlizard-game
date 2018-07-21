@@ -8,8 +8,8 @@
 
 // clone 3d glo version
 
-#define dprintfsi(s, d) nlprintf("Clone 3D : "#s" -> %d\n", d)
-#define dprintfsii(s, d, d2) nlprintf("Clone 3D : ""%d - "#s" -> %d\n", d, d2)
+#define dprintfsi(s, d) nlprintf("Clone 3D : "#s"->%d\n", d)
+#define dprintfsii(s, d, d2) nlprintf("Clone 3D : ""%d - "#s"->%d\n", d, d2)
 #define dprintfss(s) nlprintf("Clone 3D : "#s"\n")
 
 typedef struct _class__c__scene
@@ -103,57 +103,57 @@ NETLizard_3D_Model * nlReadClone3DItemModelFile(const char* name, int index)
 	ZERO(model, NETLizard_3D_Model);
 
 	class__i__item obj;
-	class_g__function_P_void__item(&obj, arr -> array, index);
+	class_g__function_P_void__item(&obj, arr->array, index);
 	array *item_meshes = new_array(nl_user, 1, NULL, sizeof(NETLizard_3D_Item_Mesh));
-	NETLizard_3D_Item_Mesh *mesh = ((NETLizard_3D_Item_Mesh *)(item_meshes -> array));
-	mesh -> item_mesh.vertex = NULL;
-	mesh -> item_mesh.primitive = NULL;
-	mesh -> pos[0] = 0;
-	mesh -> pos[1] = 0;
-	mesh -> pos[2] = 0;
-	mesh -> angle[0] = 0;
-	mesh -> angle[1] = 0;
-	mesh -> obj_index = index;
+	NETLizard_3D_Item_Mesh *mesh = ((NETLizard_3D_Item_Mesh *)(item_meshes->array));
+	mesh->item_mesh.vertex = NULL;
+	mesh->item_mesh.primitive = NULL;
+	mesh->pos[0] = 0;
+	mesh->pos[1] = 0;
+	mesh->pos[2] = 0;
+	mesh->angle[0] = 0;
+	mesh->angle[1] = 0;
+	mesh->obj_index = index;
 	if(obj.short_array_3__a__vertex && obj.short_array_16__b__primitive)
 	{
-		mesh -> item_mesh.vertex = new_array(nl_int, obj.short_array_3__a__vertex -> length, NULL, 0);
-		int *im_v = (int *)(mesh -> item_mesh.vertex -> array);
-		short *i_a = (short *)(obj.short_array_3__a__vertex -> array);
+		mesh->item_mesh.vertex = new_array(nl_int, obj.short_array_3__a__vertex->length, NULL, 0);
+		int *im_v = (int *)(mesh->item_mesh.vertex->array);
+		short *i_a = (short *)(obj.short_array_3__a__vertex->array);
 		int j;
-		for(j = 0; j < obj.short_array_3__a__vertex -> length; j++)
+		for(j = 0; j < obj.short_array_3__a__vertex->length; j++)
 		{
 			im_v[j] = i_a[j];
 		}
-		mesh -> item_mesh.primitive = new_array(nl_user, obj.short_array_16__b__primitive -> length / 16, NULL, sizeof(NETLizard_3D_Primitive));
-		short *i_b = (short *)(obj.short_array_16__b__primitive -> array);
+		mesh->item_mesh.primitive = new_array(nl_user, obj.short_array_16__b__primitive->length / 16, NULL, sizeof(NETLizard_3D_Primitive));
+		short *i_b = (short *)(obj.short_array_16__b__primitive->array);
 		int k = 0;
-		for(j = 0; j < obj.short_array_16__b__primitive -> length; j += 16)
+		for(j = 0; j < obj.short_array_16__b__primitive->length; j += 16)
 		{
-			NETLizard_3D_Primitive *p = ((NETLizard_3D_Primitive *)(mesh -> item_mesh.primitive -> array)) + k;
-			p -> index[0] = i_b[j];
-			p -> index[1] = i_b[j + 1];
-			p -> index[2] = i_b[j + 2];
-			p -> texcoord[0] = i_b[j + 3];
-			p -> texcoord[1] = i_b[j + 4];
-			p -> texcoord[2] = i_b[j + 5];
-			p -> texcoord[3] = i_b[j + 6];
-			p -> texcoord[4] = i_b[j + 7];
-			p -> texcoord[5] = i_b[j + 8];
-			p -> tex_index = i_b[j + 9];
-			p -> plane.position[0] = i_a[p -> index[0]];
-			p -> plane.position[1] = i_a[p -> index[0] + 1];
-			p -> plane.position[2] = i_a[p -> index[0] + 2];
-			p -> plane.normal[0] = i_b[j + 10];
-			p -> plane.normal[1] = i_b[j + 11];
-			p -> plane.normal[2] = i_b[j + 12];
+			NETLizard_3D_Primitive *p = ((NETLizard_3D_Primitive *)(mesh->item_mesh.primitive->array)) + k;
+			p->index[0] = i_b[j];
+			p->index[1] = i_b[j + 1];
+			p->index[2] = i_b[j + 2];
+			p->texcoord[0] = i_b[j + 3];
+			p->texcoord[1] = i_b[j + 4];
+			p->texcoord[2] = i_b[j + 5];
+			p->texcoord[3] = i_b[j + 6];
+			p->texcoord[4] = i_b[j + 7];
+			p->texcoord[5] = i_b[j + 8];
+			p->tex_index = i_b[j + 9];
+			p->plane.position[0] = i_a[p->index[0]];
+			p->plane.position[1] = i_a[p->index[0] + 1];
+			p->plane.position[2] = i_a[p->index[0] + 2];
+			p->plane.normal[0] = i_b[j + 10];
+			p->plane.normal[1] = i_b[j + 11];
+			p->plane.normal[2] = i_b[j + 12];
 			k++;
 		}
-		mesh -> item_mesh.ortho[0] = obj.int__e__aabb >> 16;
-		mesh -> item_mesh.ortho[1] = obj.int__f__aabb >> 16;
-		mesh -> item_mesh.ortho[2] = obj.int__g__aabb >> 16;
-		mesh -> item_mesh.ortho[3] = obj.int__h__aabb >> 16;
-		mesh -> item_mesh.ortho[4] = obj.int__i__aabb >> 16;
-		mesh -> item_mesh.ortho[5] = obj.int__j__aabb >> 16;
+		mesh->item_mesh.ortho[0] = obj.int__e__aabb >> 16;
+		mesh->item_mesh.ortho[1] = obj.int__f__aabb >> 16;
+		mesh->item_mesh.ortho[2] = obj.int__g__aabb >> 16;
+		mesh->item_mesh.ortho[3] = obj.int__h__aabb >> 16;
+		mesh->item_mesh.ortho[4] = obj.int__i__aabb >> 16;
+		mesh->item_mesh.ortho[5] = obj.int__j__aabb >> 16;
 	}
 
 	delete_array(obj.short_array_3__a__vertex);
@@ -162,10 +162,10 @@ NETLizard_3D_Model * nlReadClone3DItemModelFile(const char* name, int index)
 	free(obj.short_array_16__b__primitive);
 	delete_array(arr);
 	free(arr);
-	model -> data = NULL;
-	model -> item_data = item_meshes;
-	model -> game = Clone_3D_Item;
-	model -> has_sky = 0;
+	model->data = NULL;
+	model->item_data = item_meshes;
+	model->game = Clone_3D_Item;
+	model->has_sky = 0;
 	return model;
 }
 
@@ -174,10 +174,10 @@ void nlReadClone3DMapItems(array *i_e)
 	if(!i_e)
 		return;
 	int i;
-	for(i = 0; i < i_e -> length; i++)
+	for(i = 0; i < i_e->length; i++)
 	{
-		class__i__item *e = ((class__i__item *)(i_e -> array)) + i;
-		int i11 = e -> byte__s__obj;
+		class__i__item *e = ((class__i__item *)(i_e->array)) + i;
+		int i11 = e->byte__s__obj;
 		char subfix[strlen(CLONE3D_OBJ_SUBFIX) + 1];
 		memset(subfix, '\0', sizeof(char) * (strlen(subfix) + 1));
 		sprintf(subfix, CLONE3D_OBJ_SUBFIX, i11);
@@ -194,14 +194,14 @@ void nlReadClone3DMapItems(array *i_e)
 		free(name);
 		if(arr)
 		{
-			class_g__function_P_void__item(e, arr -> array, i11);
+			class_g__function_P_void__item(e, arr->array, i11);
 			delete_array(arr);
 			free(arr);
 		}
 		else
 		{
-			e -> short_array_3__a__vertex = NULL;
-			e -> short_array_16__b__primitive = NULL;
+			e->short_array_3__a__vertex = NULL;
+			e->short_array_16__b__primitive = NULL;
 		}
 	}
 }
@@ -213,158 +213,158 @@ NETLizard_3D_Model * nlReadClone3DModelFile(const char* name)
 	array *arr = nlReadFile(name);
 	if(!arr)
 		return NULL;
-	byte *arrayOfByte = (byte *)(arr -> array);
+	byte *arrayOfByte = (byte *)(arr->array);
 	class__g__lvl * lv = class_g__function_i_1int__scene(arrayOfByte);
 	if(lv)
 	{
 		NETLizard_3D_Model *model = NEW(NETLizard_3D_Model);
 		ZERO(model, NETLizard_3D_Model);
-		array *c_g = lv -> class_c_array__g__scene;
-		array *meshes = new_array(nl_user, c_g -> length, NULL, sizeof(NETLizard_3D_Mesh));
-		short *bG = (short *)(lv -> short_array__bG__texcoord -> array);
+		array *c_g = lv->class_c_array__g__scene;
+		array *meshes = new_array(nl_user, c_g->length, NULL, sizeof(NETLizard_3D_Mesh));
+		short *bG = (short *)(lv->short_array__bG__texcoord->array);
 		int i;
-		for(i = 0; i < c_g -> length; i++)
+		for(i = 0; i < c_g->length; i++)
 		{
-			class__c__scene *obj = (class__c__scene *)(c_g -> array) + i;
-			NETLizard_3D_Mesh *mesh = ((NETLizard_3D_Mesh *)(meshes -> array)) + i;
-			mesh -> vertex = new_array(nl_int, obj -> short_array_3__a__vertex -> length, NULL, 0);
-			int *m_v = (int *)(mesh -> vertex -> array);
-			short *s_a = (short *)(obj -> short_array_3__a__vertex -> array);
+			class__c__scene *obj = (class__c__scene *)(c_g->array) + i;
+			NETLizard_3D_Mesh *mesh = ((NETLizard_3D_Mesh *)(meshes->array)) + i;
+			mesh->vertex = new_array(nl_int, obj->short_array_3__a__vertex->length, NULL, 0);
+			int *m_v = (int *)(mesh->vertex->array);
+			short *s_a = (short *)(obj->short_array_3__a__vertex->array);
 			int j;
-			for(j = 0; j < obj -> short_array_3__a__vertex -> length; j++)
+			for(j = 0; j < obj->short_array_3__a__vertex->length; j++)
 			{
 				m_v[j] = s_a[j];
 			}
-			mesh -> primitive = NULL;
-			if(obj -> short_array_7__b__primitive)
+			mesh->primitive = NULL;
+			if(obj->short_array_7__b__primitive)
 			{
-				mesh -> primitive = new_array(nl_user, obj -> short_array_7__b__primitive -> length / 7, NULL, sizeof(NETLizard_3D_Primitive));
-				short *s_b = (short *)(obj -> short_array_7__b__primitive -> array);
+				mesh->primitive = new_array(nl_user, obj->short_array_7__b__primitive->length / 7, NULL, sizeof(NETLizard_3D_Primitive));
+				short *s_b = (short *)(obj->short_array_7__b__primitive->array);
 				int k = 0;
-				for(j = 0; j < obj -> short_array_7__b__primitive -> length; j += 7)
+				for(j = 0; j < obj->short_array_7__b__primitive->length; j += 7)
 				{
-					NETLizard_3D_Primitive *p = ((NETLizard_3D_Primitive *)(mesh -> primitive -> array)) + k;
-					p -> index[0] = s_b[j];
-					p -> index[1] = s_b[j + 1];
-					p -> index[2] = s_b[j + 2];
-					p -> texcoord[0] = bG[(s_b[j + 3])];
-					p -> texcoord[1] = bG[(s_b[j + 3]) + 1];
-					p -> texcoord[2] = bG[(s_b[j + 4])];
-					p -> texcoord[3] = bG[(s_b[j + 4]) + 1];
-					p -> texcoord[4] = bG[(s_b[j + 5])];
-					p -> texcoord[5] = bG[(s_b[j + 5]) + 1];
-					p -> tex_index = (s_b[j + 6]) & 0xff;
+					NETLizard_3D_Primitive *p = ((NETLizard_3D_Primitive *)(mesh->primitive->array)) + k;
+					p->index[0] = s_b[j];
+					p->index[1] = s_b[j + 1];
+					p->index[2] = s_b[j + 2];
+					p->texcoord[0] = bG[(s_b[j + 3])];
+					p->texcoord[1] = bG[(s_b[j + 3]) + 1];
+					p->texcoord[2] = bG[(s_b[j + 4])];
+					p->texcoord[3] = bG[(s_b[j + 4]) + 1];
+					p->texcoord[4] = bG[(s_b[j + 5])];
+					p->texcoord[5] = bG[(s_b[j + 5]) + 1];
+					p->tex_index = (s_b[j + 6]) & 0xff;
 					k++;
 				}
 			}
-			mesh -> plane = NULL;
-			if(obj -> int_array_2__j__plane)
+			mesh->plane = NULL;
+			if(obj->int_array_2__j__plane)
 			{
-				mesh -> plane = new_array(nl_user, obj -> int_array_2__j__plane -> length / 2, NULL, sizeof(NETLizard_3D_Plane));
-				int *c = (int *)(lv -> int_array__c__normal -> array);
-				int *j_array = (int *)(obj -> int_array_2__j__plane -> array);
+				mesh->plane = new_array(nl_user, obj->int_array_2__j__plane->length / 2, NULL, sizeof(NETLizard_3D_Plane));
+				int *c = (int *)(lv->int_array__c__normal->array);
+				int *j_array = (int *)(obj->int_array_2__j__plane->array);
 				int k = 0;
-				for(j = 0; j < obj -> int_array_2__j__plane -> length; j += 2)
+				for(j = 0; j < obj->int_array_2__j__plane->length; j += 2)
 				{
 					int normal_index = j_array[j];
 					int position_index = j_array[j + 1];
-					NETLizard_3D_Plane *plane = ((NETLizard_3D_Plane *)(mesh -> plane -> array)) + k;
-					plane -> normal[0] = c[normal_index];
-					plane -> normal[1] = c[normal_index + 1];
-					plane -> normal[2] = c[normal_index + 2];
-					plane -> position[0] = s_a[position_index];
-					plane -> position[1] = s_a[position_index + 1];
-					plane -> position[2] = s_a[position_index + 2];
+					NETLizard_3D_Plane *plane = ((NETLizard_3D_Plane *)(mesh->plane->array)) + k;
+					plane->normal[0] = c[normal_index];
+					plane->normal[1] = c[normal_index + 1];
+					plane->normal[2] = c[normal_index + 2];
+					plane->position[0] = s_a[position_index];
+					plane->position[1] = s_a[position_index + 1];
+					plane->position[2] = s_a[position_index + 2];
 					k++;
 				}
 			}
-			mesh -> ortho[0] = obj -> int__d__aabb >> 16;
-			mesh -> ortho[1] = obj -> int__e__aabb >> 16;
-			mesh -> ortho[2] = obj -> int__f__aabb >> 16;
-			mesh -> ortho[3] = obj -> int__g__aabb >> 16;
-			mesh -> ortho[4] = obj -> int__h__aabb >> 16;
-			mesh -> ortho[5] = obj -> int__i__aabb >> 16;
-			mesh -> item_index_range[0] = obj -> short__o__begin;
-			mesh -> item_index_range[1] = obj -> short__c__end;
+			mesh->ortho[0] = obj->int__d__aabb >> 16;
+			mesh->ortho[1] = obj->int__e__aabb >> 16;
+			mesh->ortho[2] = obj->int__f__aabb >> 16;
+			mesh->ortho[3] = obj->int__g__aabb >> 16;
+			mesh->ortho[4] = obj->int__h__aabb >> 16;
+			mesh->ortho[5] = obj->int__i__aabb >> 16;
+			mesh->item_index_range[0] = obj->short__o__begin;
+			mesh->item_index_range[1] = obj->short__c__end;
 
-			mesh -> bsp = NULL;
-			if(obj -> int__n__bsp)
+			mesh->bsp = NULL;
+			if(obj->int__n__bsp)
 			{
-				mesh -> bsp = new_array(nl_int, obj -> int__n__bsp, NULL, 0);
-				int *bsp_index = (int *)(mesh -> bsp -> array);
-				for(j = 0; j < obj -> int__n__bsp; j++)
+				mesh->bsp = new_array(nl_int, obj->int__n__bsp, NULL, 0);
+				int *bsp_index = (int *)(mesh->bsp->array);
+				for(j = 0; j < obj->int__n__bsp; j++)
 				{
-					bsp_index[j] = obj -> byte_array_9__m__bsp[j];
+					bsp_index[j] = obj->byte_array_9__m__bsp[j];
 				}
 			}
 		}
 
-		array *i_e = lv -> class_i_array__e__item;
-		array *item_meshes = new_array(nl_user, i_e -> length, NULL, sizeof(NETLizard_3D_Item_Mesh));
-		for(i = 0; i < i_e -> length; i++)
+		array *i_e = lv->class_i_array__e__item;
+		array *item_meshes = new_array(nl_user, i_e->length, NULL, sizeof(NETLizard_3D_Item_Mesh));
+		for(i = 0; i < i_e->length; i++)
 		{
-			NETLizard_3D_Item_Mesh *mesh = ((NETLizard_3D_Item_Mesh *)(item_meshes -> array)) + i;
-			class__i__item *obj = ((class__i__item *)(i_e -> array)) + i;
-			if(!obj -> short_array_3__a__vertex || !obj -> short_array_16__b__primitive)
+			NETLizard_3D_Item_Mesh *mesh = ((NETLizard_3D_Item_Mesh *)(item_meshes->array)) + i;
+			class__i__item *obj = ((class__i__item *)(i_e->array)) + i;
+			if(!obj->short_array_3__a__vertex || !obj->short_array_16__b__primitive)
 			{
-				mesh -> item_mesh.vertex = NULL;
-				mesh -> item_mesh.primitive = NULL;
+				mesh->item_mesh.vertex = NULL;
+				mesh->item_mesh.primitive = NULL;
 				continue;
 			}
-			mesh -> pos[0] = obj -> int__l__translation >> 16;
-			mesh -> pos[1] = obj -> int__m__translation >> 16;
-			mesh -> pos[2] = obj -> int__n__translation >> 16;
-			mesh -> angle[0] = obj -> int__o__rotation;
-			mesh -> angle[1] = obj -> int__p__rotation;
-			mesh -> obj_index = obj -> byte__s__obj;
-			mesh -> item_mesh.vertex = new_array(nl_int, obj -> short_array_3__a__vertex -> length, NULL, 0);
-			int *im_v = (int *)(mesh -> item_mesh.vertex -> array);
-			short *i_a = (short *)(obj -> short_array_3__a__vertex -> array);
+			mesh->pos[0] = obj->int__l__translation >> 16;
+			mesh->pos[1] = obj->int__m__translation >> 16;
+			mesh->pos[2] = obj->int__n__translation >> 16;
+			mesh->angle[0] = obj->int__o__rotation;
+			mesh->angle[1] = obj->int__p__rotation;
+			mesh->obj_index = obj->byte__s__obj;
+			mesh->item_mesh.vertex = new_array(nl_int, obj->short_array_3__a__vertex->length, NULL, 0);
+			int *im_v = (int *)(mesh->item_mesh.vertex->array);
+			short *i_a = (short *)(obj->short_array_3__a__vertex->array);
 			int j;
-			for(j = 0; j < obj -> short_array_3__a__vertex -> length; j++)
+			for(j = 0; j < obj->short_array_3__a__vertex->length; j++)
 			{
 				im_v[j] = i_a[j];
 			}
-			mesh -> item_mesh.primitive = new_array(nl_user, obj -> short_array_16__b__primitive -> length / 16, NULL, sizeof(NETLizard_3D_Primitive));
-			short *i_b = (short *)(obj -> short_array_16__b__primitive -> array);
+			mesh->item_mesh.primitive = new_array(nl_user, obj->short_array_16__b__primitive->length / 16, NULL, sizeof(NETLizard_3D_Primitive));
+			short *i_b = (short *)(obj->short_array_16__b__primitive->array);
 			int k = 0;
-			for(j = 0; j < obj -> short_array_16__b__primitive -> length; j += 16)
+			for(j = 0; j < obj->short_array_16__b__primitive->length; j += 16)
 			{
-				NETLizard_3D_Primitive *p = ((NETLizard_3D_Primitive *)(mesh -> item_mesh.primitive -> array)) + k;
-				p -> index[0] = i_b[j];
-				p -> index[1] = i_b[j + 1];
-				p -> index[2] = i_b[j + 2];
-				p -> texcoord[0] = i_b[j + 3];
-				p -> texcoord[1] = i_b[j + 4];
-				p -> texcoord[2] = i_b[j + 5];
-				p -> texcoord[3] = i_b[j + 6];
-				p -> texcoord[4] = i_b[j + 7];
-				p -> texcoord[5] = i_b[j + 8];
-				p -> tex_index = i_b[j + 9];
-				p -> plane.position[0] = i_a[p -> index[0]];
-				p -> plane.position[1] = i_a[p -> index[0] + 1];
-				p -> plane.position[2] = i_a[p -> index[0] + 2];
-				p -> plane.normal[0] = i_b[j + 10];
-				p -> plane.normal[1] = i_b[j + 11];
-				p -> plane.normal[2] = i_b[j + 12];
+				NETLizard_3D_Primitive *p = ((NETLizard_3D_Primitive *)(mesh->item_mesh.primitive->array)) + k;
+				p->index[0] = i_b[j];
+				p->index[1] = i_b[j + 1];
+				p->index[2] = i_b[j + 2];
+				p->texcoord[0] = i_b[j + 3];
+				p->texcoord[1] = i_b[j + 4];
+				p->texcoord[2] = i_b[j + 5];
+				p->texcoord[3] = i_b[j + 6];
+				p->texcoord[4] = i_b[j + 7];
+				p->texcoord[5] = i_b[j + 8];
+				p->tex_index = i_b[j + 9];
+				p->plane.position[0] = i_a[p->index[0]];
+				p->plane.position[1] = i_a[p->index[0] + 1];
+				p->plane.position[2] = i_a[p->index[0] + 2];
+				p->plane.normal[0] = i_b[j + 10];
+				p->plane.normal[1] = i_b[j + 11];
+				p->plane.normal[2] = i_b[j + 12];
 				k++;
 			}
-			mesh -> item_mesh.ortho[0] = obj -> int__e__aabb >> 16;
-			mesh -> item_mesh.ortho[1] = obj -> int__f__aabb >> 16;
-			mesh -> item_mesh.ortho[2] = obj -> int__g__aabb >> 16;
-			mesh -> item_mesh.ortho[3] = obj -> int__h__aabb >> 16;
-			mesh -> item_mesh.ortho[4] = obj -> int__i__aabb >> 16;
-			mesh -> item_mesh.ortho[5] = obj -> int__j__aabb >> 16;
+			mesh->item_mesh.ortho[0] = obj->int__e__aabb >> 16;
+			mesh->item_mesh.ortho[1] = obj->int__f__aabb >> 16;
+			mesh->item_mesh.ortho[2] = obj->int__g__aabb >> 16;
+			mesh->item_mesh.ortho[3] = obj->int__h__aabb >> 16;
+			mesh->item_mesh.ortho[4] = obj->int__i__aabb >> 16;
+			mesh->item_mesh.ortho[5] = obj->int__j__aabb >> 16;
 		}
 
-	model -> bsp_data = NULL;
-	if(lv -> class_k_array__f__bsp)
+	model->bsp_data = NULL;
+	if(lv->class_k_array__f__bsp)
 	{
-		class__k__bsp *bsp = (class__k__bsp *)(lv -> class_k_array__f__bsp -> array);
-		model -> bsp_data = new_array(nl_user, lv -> class_k_array__f__bsp -> length, NULL, sizeof(NETLizard_BSP_Tree_Node));
-		NETLizard_BSP_Tree_Node *bsp_data = (NETLizard_BSP_Tree_Node *)(model -> bsp_data -> array);
+		class__k__bsp *bsp = (class__k__bsp *)(lv->class_k_array__f__bsp->array);
+		model->bsp_data = new_array(nl_user, lv->class_k_array__f__bsp->length, NULL, sizeof(NETLizard_BSP_Tree_Node));
+		NETLizard_BSP_Tree_Node *bsp_data = (NETLizard_BSP_Tree_Node *)(model->bsp_data->array);
 		int j;
-		for(j = 0; j < lv -> class_k_array__f__bsp -> length; j++)
+		for(j = 0; j < lv->class_k_array__f__bsp->length; j++)
 		{
 			int k;
 			for(k = 0; k < 4; k++)
@@ -382,44 +382,44 @@ NETLizard_3D_Model * nlReadClone3DModelFile(const char* name)
 		}
 	}
 
-		model -> data = meshes;
-		model -> item_data = item_meshes;
-		model -> start_angle[0] = lv -> int__Z__rotation;
-		model -> start_angle[1] = lv -> int__aa__rotation;
-		model -> start_pos[0] = lv -> int_array__ab__translation[0] >> 16;
-		model -> start_pos[1] = lv -> int_array__ab__translation[1] >> 16;
-		model -> start_pos[2] = lv -> int_array__ab__translation[2] >> 16;
-		model -> game = Clone_3D_Map;
-		model -> has_sky = 0;
+		model->data = meshes;
+		model->item_data = item_meshes;
+		model->start_angle[0] = lv->int__Z__rotation;
+		model->start_angle[1] = lv->int__aa__rotation;
+		model->start_pos[0] = lv->int_array__ab__translation[0] >> 16;
+		model->start_pos[1] = lv->int_array__ab__translation[1] >> 16;
+		model->start_pos[2] = lv->int_array__ab__translation[2] >> 16;
+		model->game = Clone_3D_Map;
+		model->has_sky = 0;
 
-		for(i = 0; i < lv -> class_c_array__g__scene -> length; i++)
+		for(i = 0; i < lv->class_c_array__g__scene->length; i++)
 		{
-			class__c__scene *obj = ((class__c__scene *)(lv -> class_c_array__g__scene -> array)) + i;
-			delete_array(obj -> short_array_3__a__vertex);
-			delete_array(obj -> short_array_7__b__primitive);
-			delete_array(obj -> int_array_2__j__plane);
-			free(obj -> short_array_3__a__vertex);
-			free(obj -> short_array_7__b__primitive);
-			free(obj -> int_array_2__j__plane);
+			class__c__scene *obj = ((class__c__scene *)(lv->class_c_array__g__scene->array)) + i;
+			delete_array(obj->short_array_3__a__vertex);
+			delete_array(obj->short_array_7__b__primitive);
+			delete_array(obj->int_array_2__j__plane);
+			free(obj->short_array_3__a__vertex);
+			free(obj->short_array_7__b__primitive);
+			free(obj->int_array_2__j__plane);
 		}
-		delete_array(lv -> class_c_array__g__scene);
-		free(lv -> class_c_array__g__scene);
-		delete_array(lv -> int_array__c__normal);
-		free(lv -> int_array__c__normal);
-		for(i = 0; i < lv -> class_i_array__e__item -> length; i++)
+		delete_array(lv->class_c_array__g__scene);
+		free(lv->class_c_array__g__scene);
+		delete_array(lv->int_array__c__normal);
+		free(lv->int_array__c__normal);
+		for(i = 0; i < lv->class_i_array__e__item->length; i++)
 		{
-			class__i__item *obj = ((class__i__item *)(lv -> class_i_array__e__item -> array)) + i;
-			delete_array(obj -> short_array_3__a__vertex);
-			delete_array(obj -> short_array_16__b__primitive);
-			free(obj -> short_array_3__a__vertex);
-			free(obj -> short_array_16__b__primitive);
+			class__i__item *obj = ((class__i__item *)(lv->class_i_array__e__item->array)) + i;
+			delete_array(obj->short_array_3__a__vertex);
+			delete_array(obj->short_array_16__b__primitive);
+			free(obj->short_array_3__a__vertex);
+			free(obj->short_array_16__b__primitive);
 		}
-		delete_array(lv -> class_i_array__e__item);
-		free(lv -> class_i_array__e__item);
-		delete_array(lv -> short_array__bG__texcoord);
-		free(lv -> short_array__bG__texcoord);
-		delete_array(lv -> class_k_array__f__bsp);
-		free(lv -> class_k_array__f__bsp);
+		delete_array(lv->class_i_array__e__item);
+		free(lv->class_i_array__e__item);
+		delete_array(lv->short_array__bG__texcoord);
+		free(lv->short_array__bG__texcoord);
+		delete_array(lv->class_k_array__f__bsp);
+		free(lv->class_k_array__f__bsp);
 		free(lv);
 		return model;
 	}
@@ -437,72 +437,72 @@ NETLizard_3D_Model * nlReadClone3DRoleModelFile(const char* name, int index)
 	ZERO(model, NETLizard_3D_Model);
 
 	class__t__role obj;
-	class_g__function_b_1int__role(&obj, arr -> array, index);
-	array *item_meshes = new_array(nl_user, obj.short_2_array_3__a__vertex -> length, NULL, sizeof(NETLizard_3D_Item_Mesh));
+	class_g__function_b_1int__role(&obj, arr->array, index);
+	array *item_meshes = new_array(nl_user, obj.short_2_array_3__a__vertex->length, NULL, sizeof(NETLizard_3D_Item_Mesh));
 	int i;
-	for(i = 0; i < obj.short_2_array_3__a__vertex -> length; i++)
+	for(i = 0; i < obj.short_2_array_3__a__vertex->length; i++)
 	{
-		NETLizard_3D_Item_Mesh *mesh = ((NETLizard_3D_Item_Mesh *)(item_meshes -> array)) + i;
-		mesh -> item_mesh.vertex = NULL;
-		mesh -> item_mesh.primitive = NULL;
-		mesh -> pos[0] = 0;
-		mesh -> pos[1] = 0;
-		mesh -> pos[2] = 0;
-		mesh -> angle[0] = 0;
-		mesh -> angle[1] = 0;
-		mesh -> obj_index = index;
-		array *a = ((array **)(obj.short_2_array_3__a__vertex -> array))[i];
+		NETLizard_3D_Item_Mesh *mesh = ((NETLizard_3D_Item_Mesh *)(item_meshes->array)) + i;
+		mesh->item_mesh.vertex = NULL;
+		mesh->item_mesh.primitive = NULL;
+		mesh->pos[0] = 0;
+		mesh->pos[1] = 0;
+		mesh->pos[2] = 0;
+		mesh->angle[0] = 0;
+		mesh->angle[1] = 0;
+		mesh->obj_index = index;
+		array *a = ((array **)(obj.short_2_array_3__a__vertex->array))[i];
 		if(a && obj.short_array_16__b__primitive)
 		{
-			mesh -> item_mesh.vertex = new_array(nl_int, a -> length, NULL, 0);
-			int *m_v = (int *)(mesh -> item_mesh.vertex -> array);
-			short *r_a = (short *)(a -> array);
+			mesh->item_mesh.vertex = new_array(nl_int, a->length, NULL, 0);
+			int *m_v = (int *)(mesh->item_mesh.vertex->array);
+			short *r_a = (short *)(a->array);
 			int j;
-			for(j = 0; j < a -> length; j++)
+			for(j = 0; j < a->length; j++)
 			{
 				m_v[j] = r_a[j];
 			}
-			mesh -> item_mesh.primitive = new_array(nl_user, obj.short_array_16__b__primitive -> length / 16, NULL, sizeof(NETLizard_3D_Primitive));
-			short *r_b = (short *)(obj.short_array_16__b__primitive -> array);
+			mesh->item_mesh.primitive = new_array(nl_user, obj.short_array_16__b__primitive->length / 16, NULL, sizeof(NETLizard_3D_Primitive));
+			short *r_b = (short *)(obj.short_array_16__b__primitive->array);
 			int k = 0;
-			for(j = 0; j < obj.short_array_16__b__primitive -> length; j += 16)
+			for(j = 0; j < obj.short_array_16__b__primitive->length; j += 16)
 			{
-				NETLizard_3D_Primitive *p = ((NETLizard_3D_Primitive *)(mesh -> item_mesh.primitive -> array)) + k;
-				p -> index[0] = r_b[j];
-				p -> index[1] = r_b[j + 1];
-				p -> index[2] = r_b[j + 2];
-				p -> texcoord[0] = r_b[j + 3];
-				p -> texcoord[1] = r_b[j + 4];
-				p -> texcoord[2] = r_b[j + 5];
-				p -> texcoord[3] = r_b[j + 6];
-				p -> texcoord[4] = r_b[j + 7];
-				p -> texcoord[5] = r_b[j + 8];
-				p -> tex_index = r_b[j + 9];
+				NETLizard_3D_Primitive *p = ((NETLizard_3D_Primitive *)(mesh->item_mesh.primitive->array)) + k;
+				p->index[0] = r_b[j];
+				p->index[1] = r_b[j + 1];
+				p->index[2] = r_b[j + 2];
+				p->texcoord[0] = r_b[j + 3];
+				p->texcoord[1] = r_b[j + 4];
+				p->texcoord[2] = r_b[j + 5];
+				p->texcoord[3] = r_b[j + 6];
+				p->texcoord[4] = r_b[j + 7];
+				p->texcoord[5] = r_b[j + 8];
+				p->tex_index = r_b[j + 9];
 				k++;
 			}
 		}
 	}
 
-	for(i = 0; i < obj.short_2_array_3__a__vertex -> length; i++)
+	for(i = 0; i < obj.short_2_array_3__a__vertex->length; i++)
 	{
-		delete_array(((array **)(obj.short_2_array_3__a__vertex -> array))[i]);
+		delete_array(((array **)(obj.short_2_array_3__a__vertex->array))[i]);
 	}
 	delete_array(obj.short_2_array_3__a__vertex);
 	free(obj.short_2_array_3__a__vertex);
 	delete_array(obj.short_array_16__b__primitive);
 	free(obj.short_array_16__b__primitive);
-	for(i = 0; i < obj.c -> length; i++)
+	for(i = 0; i < obj.c->length; i++)
 	{
-		delete_array(((array **)(obj.c -> array))[i]);
+		delete_array(((array **)(obj.c->array))[i]);
 	}
 	delete_array(obj.c);
 	free(obj.c);
 	delete_array(arr);
 	free(arr);
-	model -> data = NULL;
-	model -> item_data = item_meshes;
-	model -> game = Clone_3D_Role;
-	model -> has_sky = 0;
+	model->data = NULL;
+	model->item_data = item_meshes;
+	model->game = Clone_3D_Role;
+	model->has_sky = 0;
 	return model;
 }
 
@@ -581,7 +581,7 @@ class__g__lvl * class_g__function_i_1int__scene(const byte paramInt[])
 	i2 = nlMargeDigit(paramInt[i1], paramInt[(i1 + 1)]);
 	dprintfsi("Map normal count", i2);
 	int_c = new_array(nl_int, i2, NULL, 0);
-	int *c = (int *)(int_c -> array);
+	int *c = (int *)(int_c->array);
 	for (i4 = 0; i4 < i2; i4 += 3)
 	{
 		i1 += 2;
@@ -596,7 +596,7 @@ class__g__lvl * class_g__function_i_1int__scene(const byte paramInt[])
 	i2 = nlMargeDigit(paramInt[i1], paramInt[(i1 + 1)]);
 	dprintfsi("Texcoord count", i2);
 	short_bG = new_array(nl_short, i2, NULL, 0);
-	short *bG = (short *)(short_bG -> array);
+	short *bG = (short *)(short_bG->array);
 	for (i4 = 0; i4 < i2; i4 += 2)
 	{
 		i1 += 2;
@@ -606,7 +606,7 @@ class__g__lvl * class_g__function_i_1int__scene(const byte paramInt[])
 	}
 	dprintfss("Get map texcoord");
 	c_g = new_array(nl_user, Y, NULL, sizeof(class__c__scene));
-	class__c__scene *g = (class__c__scene *)(c_g -> array);
+	class__c__scene *g = (class__c__scene *)(c_g->array);
 	//Q = NEW_II(byte, Y);
 	int i5;
 	for (i5 = 0; i5 < Y; i5++)
@@ -632,14 +632,14 @@ class__g__lvl * class_g__function_i_1int__scene(const byte paramInt[])
 		i2 = nlMargeDigit(paramInt[i1], paramInt[(i1 + 1)]);
 		dprintfsi("Scene primitive count", i2);
 		g[i5].short_array_3__a__vertex = new_array(nl_short, i4 * 3, NULL, 0);
-		short *a = (short *)(g[i5].short_array_3__a__vertex -> array);
+		short *a = (short *)(g[i5].short_array_3__a__vertex->array);
 		g[i5].int__k__vertex_count = i4;
 		g[i5].short_array_7__b__primitive = NULL;
 		short *b = NULL;
 		if(i2 != 0)
 		{
 			g[i5].short_array_7__b__primitive = new_array(nl_short, i2 * 7, NULL, 0);
-			b = (short *)(g[i5].short_array_7__b__primitive -> array);
+			b = (short *)(g[i5].short_array_7__b__primitive->array);
 		}
 		g[i5].int__l__primitive_count = i2;
 		int i6;
@@ -655,7 +655,7 @@ class__g__lvl * class_g__function_i_1int__scene(const byte paramInt[])
 		dprintfss("Get scene vertex coord");
 		short *arrayOfShort = NULL;
 		if(g[i5].short_array_7__b__primitive)
-			arrayOfShort = ((short *)(g[i5].short_array_7__b__primitive -> array));
+			arrayOfShort = ((short *)(g[i5].short_array_7__b__primitive->array));
 		for (i6 = 0; i6 < i2; i6++)
 		{
 			i4 = i6 * 7;
@@ -674,7 +674,7 @@ class__g__lvl * class_g__function_i_1int__scene(const byte paramInt[])
 		if(i4)
 		{
 			g[i5].int_array_2__j__plane = new_array(nl_int, i4 << 1, NULL, 0);
-			int *j = (int *)(g[i5].int_array_2__j__plane -> array);
+			int *j = (int *)(g[i5].int_array_2__j__plane->array);
 			for (i6 = 0; i6 < i4; i6++)
 			{
 				i1 += 2;
@@ -726,7 +726,7 @@ class__g__lvl * class_g__function_i_1int__scene(const byte paramInt[])
 	i1 += 2;
 	i2 = nlMargeDigit(paramInt[i1], paramInt[(i1 + 1)]);
 	array *class_k_array__f__bsp = new_array(nl_user, i2, NULL, sizeof(class__k__bsp));
-	class__k__bsp *f = (class__k__bsp *)(class_k_array__f__bsp -> array);
+	class__k__bsp *f = (class__k__bsp *)(class_k_array__f__bsp->array);
 	dprintfsi("Map BSP tree node count", i2);
 	int i7;
 	for (i7 = 0; i7 < i2; i7++)
@@ -776,7 +776,7 @@ class__g__lvl * class_g__function_i_1int__scene(const byte paramInt[])
 	N = (short)nlMargeDigit(paramInt[i1], paramInt[(i1 + 1)]);
 	dprintfsi("Map item count", N);
 	i_e = new_array(nl_user, N, NULL, sizeof(class__i__item));
-	class__i__item *e = (class__i__item *)(i_e -> array);
+	class__i__item *e = (class__i__item *)(i_e->array);
 	//bb = NEW_II(short, Y);
 	int i6 = 0;
 	for (i7 = 0; i7 < Y; i7++)
@@ -836,10 +836,10 @@ class__g__lvl * class_g__function_i_1int__scene(const byte paramInt[])
 			if (e[i6].d < 0)
 			{
 				class__i__item *tmp2756_2755 = e + i6;
-				tmp2756_2755 -> d = ((short)(tmp2756_2755 -> d + 256));
+				tmp2756_2755->d = ((short)(tmp2756_2755->d + 256));
 			}
 			class__i__item *tmp2774_2773 = e + i6;
-			tmp2774_2773 -> d = ((short)(tmp2774_2773 -> d & 0xFF));
+			tmp2774_2773->d = ((short)(tmp2774_2773->d & 0xFF));
 			if (e[i6].d < 70) {
 				e[i6].d = 70;
 			}
@@ -1037,16 +1037,16 @@ class__g__lvl * class_g__function_i_1int__scene(const byte paramInt[])
 	nlReadClone3DMapItems(i_e);
 	class__g__lvl *lv = NEW(class__g__lvl);
 	ZERO(lv, class__g__lvl);
-	lv -> int__aa__rotation = aa;
-	lv -> int__Z__rotation = Z;
-	lv -> int_array__ab__translation[0] = ab[0];
-	lv -> int_array__ab__translation[1] = ab[1];
-	lv -> int_array__ab__translation[2] = ab[2];
-	lv -> class_c_array__g__scene = c_g;
-	lv -> short_array__bG__texcoord = short_bG;
-	lv -> class_i_array__e__item = i_e;
-	lv -> class_k_array__f__bsp = class_k_array__f__bsp;
-	lv -> int_array__c__normal = int_c;
+	lv->int__aa__rotation = aa;
+	lv->int__Z__rotation = Z;
+	lv->int_array__ab__translation[0] = ab[0];
+	lv->int_array__ab__translation[1] = ab[1];
+	lv->int_array__ab__translation[2] = ab[2];
+	lv->class_c_array__g__scene = c_g;
+	lv->short_array__bG__texcoord = short_bG;
+	lv->class_i_array__e__item = i_e;
+	lv->class_k_array__f__bsp = class_k_array__f__bsp;
+	lv->int_array__c__normal = int_c;
 	return lv;
 }
 
@@ -1054,20 +1054,20 @@ void class_g__function_P_void__item(class__i__item *e, const byte arrayOfByte1[]
 {
 	int i1 = -2;
 	i1 += 2;
-	e -> int__e__aabb = (nlMargeDigit(arrayOfByte1[0], arrayOfByte1[1]) << 16);
+	e->int__e__aabb = (nlMargeDigit(arrayOfByte1[0], arrayOfByte1[1]) << 16);
 	i1 += 2;
-	e -> int__f__aabb = (nlMargeDigit(arrayOfByte1[2], arrayOfByte1[3]) << 16);
+	e->int__f__aabb = (nlMargeDigit(arrayOfByte1[2], arrayOfByte1[3]) << 16);
 	i1 += 2;
-	e -> int__g__aabb = (nlMargeDigit(arrayOfByte1[4], arrayOfByte1[5]) << 16);
+	e->int__g__aabb = (nlMargeDigit(arrayOfByte1[4], arrayOfByte1[5]) << 16);
 	i1 += 2;
-	e -> int__h__aabb = (nlMargeDigit(arrayOfByte1[6], arrayOfByte1[7]) << 16);
+	e->int__h__aabb = (nlMargeDigit(arrayOfByte1[6], arrayOfByte1[7]) << 16);
 	i1 += 2;
-	e -> int__i__aabb = (nlMargeDigit(arrayOfByte1[8], arrayOfByte1[9]) << 16);
+	e->int__i__aabb = (nlMargeDigit(arrayOfByte1[8], arrayOfByte1[9]) << 16);
 	i1 += 2;
-	e -> int__j__aabb = (nlMargeDigit(arrayOfByte1[10], arrayOfByte1[11]) << 16);
-	int i2 = e -> int__e__aabb >> 16;
-	int i3 = e -> int__f__aabb >> 16;
-	int i5 = e -> int__g__aabb >> 16;
+	e->int__j__aabb = (nlMargeDigit(arrayOfByte1[10], arrayOfByte1[11]) << 16);
+	int i2 = e->int__e__aabb >> 16;
+	int i3 = e->int__f__aabb >> 16;
+	int i5 = e->int__g__aabb >> 16;
 	i2 = i2 * i2 + i3 * i3 + i5 * i5;
 	i3 = 65536;
 	i5 = 0;
@@ -1076,8 +1076,8 @@ void class_g__function_P_void__item(class__i__item *e, const byte arrayOfByte1[]
 			i5 += i3;
 		}
 	}
-	e -> d = ((i5 << 3) * 240 << 1);
-	e -> c = ((i5 << 1) * 252);
+	e->d = ((i5 << 3) * 240 << 1);
+	e->c = ((i5 << 1) * 252);
 	//printf("%d %d %d\n", i5, ((i5 << 3) * 240 << 1), ((i5 << 1) * 252));
 	i1 += 2;
 	i1 += 2;
@@ -1089,11 +1089,11 @@ void class_g__function_P_void__item(class__i__item *e, const byte arrayOfByte1[]
 	i2 = nlMargeDigit(arrayOfByte1[22], arrayOfByte1[23]);
 	i1 += 2;
 	i5 = nlMargeDigit(arrayOfByte1[24], arrayOfByte1[25]);
-	e -> k = i3;
-	e -> short_array_3__a__vertex = new_array(nl_short, i3 * 3, NULL, 0);
-	e -> short_array_16__b__primitive = new_array(nl_short, i2 << 4, NULL, 0);
-	short *a = (short *)(e -> short_array_3__a__vertex -> array);
-	short *b = (short *)(e -> short_array_16__b__primitive -> array);
+	e->k = i3;
+	e->short_array_3__a__vertex = new_array(nl_short, i3 * 3, NULL, 0);
+	e->short_array_16__b__primitive = new_array(nl_short, i2 << 4, NULL, 0);
+	short *a = (short *)(e->short_array_3__a__vertex->array);
+	short *b = (short *)(e->short_array_16__b__primitive->array);
 	i5 <<= 1;
 	int *arrayOfInt = NEW_II(int, i5);
 	int i6 = 0;
@@ -1233,20 +1233,20 @@ void class_g__function_b_1int__role(class__t__role *obj, const byte arrayOfByte[
 	int i5 = nlMargeDigit(arrayOfByte[16], arrayOfByte[17]);
 	i1 += 2;
 	int i6 = nlMargeDigit(arrayOfByte[18], arrayOfByte[19]);
-	obj -> short_2_array_3__a__vertex = new_array(nl_pointer, i6, NULL, 0); // short[][];
-	obj -> c = new_array(nl_pointer, i6, NULL, 0); // byte[][];
-	obj -> d = i4;
-	obj -> e = i3;
+	obj->short_2_array_3__a__vertex = new_array(nl_pointer, i6, NULL, 0); // short[][];
+	obj->c = new_array(nl_pointer, i6, NULL, 0); // byte[][];
+	obj->d = i4;
+	obj->e = i3;
 	int i7;
 	for (i7 = 0; i7 < i6; i7++)
 	{
-		array **a = (array **)(obj -> short_2_array_3__a__vertex -> array);
-		array **c = (array **)(obj -> c -> array);
+		array **a = (array **)(obj->short_2_array_3__a__vertex->array);
+		array **c = (array **)(obj->c->array);
 		c[i7] = new_array(nl_byte, i3 * 3, NULL, 0);
 		a[i7] = new_array(nl_short, (i4 + 13) * 3, NULL, 0);
 	}
-	obj -> short_array_16__b__primitive = new_array(nl_short, (i3 + 22) << 4, NULL, 0);
-	short *b = (short *)(obj -> short_array_16__b__primitive -> array);
+	obj->short_array_16__b__primitive = new_array(nl_short, (i3 + 22) << 4, NULL, 0);
+	short *b = (short *)(obj->short_array_16__b__primitive->array);
 	i5 <<= 1;
 	short *arrayOfShort = NEW_II(short, i5);
 	int i9 = 1;
@@ -1260,8 +1260,8 @@ void class_g__function_b_1int__role(class__t__role *obj, const byte arrayOfByte[
 	int i12;
 	int i11;
 	for (i11 = 0; i11 < i6; i11++) {
-		array *arr = ((array **)(obj -> short_2_array_3__a__vertex -> array))[i11];
-		short *a = (short *)(arr -> array);
+		array *arr = ((array **)(obj->short_2_array_3__a__vertex->array))[i11];
+		short *a = (short *)(arr->array);
 		for (i12 = 0; i12 < i4; i12++)
 		{
 			i1 += 2;
@@ -1287,7 +1287,7 @@ void class_g__function_b_1int__role(class__t__role *obj, const byte arrayOfByte[
 	for (i11 = 0; i11 < i6; i11++) {
 		for (i12 = 0; i12 < i4; i12 += 3)
 		{
-			byte *c = (byte *)((((array **)(obj -> c -> array))[i11]) -> array);
+			byte *c = (byte *)((((array **)(obj->c->array))[i11])->array);
 			i1++;
 			c[i12] = ((byte)(arrayOfByte[i1] * i9));
 			i1++;

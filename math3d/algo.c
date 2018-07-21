@@ -20,32 +20,32 @@ vector3_t Math3D_GetTriangleNormal(const vector3_t *v0, const vector3_t *v1, con
 
 NLfloat Math3D_PointToPlaneDistance(const vector3_t *point, const plane_t *plane)
 {
-	NLfloat distance = Vector3_DotVector3(&(plane -> normal), &(plane -> position));
-	return Vector3_DotVector3(point, &(plane -> normal)) - distance;
+	NLfloat distance = Vector3_DotVector3(&(plane->normal), &(plane->position));
+	return Vector3_DotVector3(point, &(plane->normal)) - distance;
 }
 // OpenEXR Imath
 int Math3D_LineToPlaneIntersect(const line_t *line, const plane_t *plane, vector3_t *point)
 {
-    NLfloat d = Vector3_DotVector3(&(plane -> normal), &(line -> direction));
+    NLfloat d = Vector3_DotVector3(&(plane->normal), &(line->direction));
     //if ( d == 0.0 ) return 0;
 		if((d <= COLLISION_ZERO) && (d >= -COLLISION_ZERO)) 
 			return 0;
 		if(d == 0)
 			return 0;
-		NLfloat distance = Vector3_DotVector3(&(plane -> normal), &(plane -> position));
-    NLfloat t = - (Vector3_DotVector3(&(plane -> normal), &(line -> position)) - distance) / d;
+		NLfloat distance = Vector3_DotVector3(&(plane->normal), &(plane->position));
+    NLfloat t = - (Vector3_DotVector3(&(plane->normal), &(line->position)) - distance) / d;
 		if(point)
 		{
-			point -> x = line -> position.x + line -> direction.x * t;
-			point -> y = line -> position.y + line -> direction.y * t;
-			point -> z = line -> position.z + line -> direction.z * t;
+			point->x = line->position.x + line->direction.x * t;
+			point->y = line->position.y + line->direction.y * t;
+			point->z = line->position.z + line->direction.z * t;
 		}
 		return 1;
 }
 
 int Math3D_LineToPlaneCollision(const line_t *line, const plane_t *plane, NLfloat *lamda, vector3_t *normal)
 {
-	NLfloat dotProduct = Vector3_DotVector3(&(line -> direction), &(plane -> normal));
+	NLfloat dotProduct = Vector3_DotVector3(&(line->direction), &(plane->normal));
 	NLfloat l2;
 
 	//判断是否平行于平面
@@ -55,14 +55,14 @@ int Math3D_LineToPlaneCollision(const line_t *line, const plane_t *plane, NLfloa
 	if(dotProduct == 0)
 		return 0;
 
-	vector3_t vec = Vector3_SubtractVector3(&(plane -> position), &(line -> position));
-	l2 = (Vector3_DotVector3(&(plane -> normal), &vec)) / dotProduct;
+	vector3_t vec = Vector3_SubtractVector3(&(plane->position), &(line->position));
+	l2 = (Vector3_DotVector3(&(plane->normal), &vec)) / dotProduct;
 
 	if (l2 <= -COLLISION_ZERO)
 		return 0;
 
 	if(normal)
-		*normal = plane -> normal;
+		*normal = plane->normal;
 	if(lamda)
 		*lamda = l2;
 	return 1;
@@ -72,12 +72,12 @@ int Math3D_PointInAABB(const vector3_t *a, const aabb_t *aabb)
 {
 	if(!a || !aabb)
 		return 0;
-	const vector3_t *v1 = &(aabb -> min_position);
-	const vector3_t *v2 = &(aabb -> max_position);
+	const vector3_t *v1 = &(aabb->min_position);
+	const vector3_t *v2 = &(aabb->max_position);
 	return(
-			(a -> x >= v1 -> x && a -> x <= v2 -> x)
-			&& (a -> y >= v1 -> y && a -> y <= v2 -> y)
-			&& (a -> z >= v1 -> z && a -> z <= v2 -> z)
+			(a->x >= v1->x && a->x <= v2->x)
+			&& (a->y >= v1->y && a->y <= v2->y)
+			&& (a->z >= v1->z && a->z <= v2->z)
 			? 1 : 0);
 }
 
@@ -85,11 +85,11 @@ int Math3D_PointInAABB2D(const vector3_t *a, const aabb_t *aabb)
 {
 	if(!a || !aabb)
 		return 0;
-	const vector3_t *v1 = &(aabb -> min_position);
-	const vector3_t *v2 = &(aabb -> max_position);
+	const vector3_t *v1 = &(aabb->min_position);
+	const vector3_t *v2 = &(aabb->max_position);
 	return(
-			(a -> x >= v1 -> x && a -> x <= v2 -> x)
-			&& (a -> y >= v1 -> y && a -> y <= v2 -> y)
+			(a->x >= v1->x && a->x <= v2->x)
+			&& (a->y >= v1->y && a->y <= v2->y)
 			? 1 : 0);
 }
 
@@ -114,7 +114,7 @@ int Math3D_LineToCylinderCollision(const line_t *line, const cylinder_t *cylinde
 	NLfloat out = 0.0;
 
 	// 计算线方向与圆柱体方向的面的的垂直方向
-	n = Vector3_CrossVector3(&line -> direction, &cylinder -> axis);
+	n = Vector3_CrossVector3(&line->direction, &cylinder->axis);
 
 	// 求长度
 	ln = Vector3_Mag(&n);
@@ -127,20 +127,20 @@ int Math3D_LineToCylinderCollision(const line_t *line, const cylinder_t *cylinde
 		return 0;
 	Vector3_Normalize(&n);
 	// 计算线起点与圆柱体位置间的方向
-	RC = Vector3_SubtractVector3(&line -> position, &cylinder -> position);
+	RC = Vector3_SubtractVector3(&line->position, &cylinder->position);
 
 	d = abs(Vector3_DotVector3(&RC, &n));
 
-	if(d <= cylinder -> radius)
+	if(d <= cylinder->radius)
 	{
-		O = Vector3_CrossVector3(&RC, &cylinder -> axis);
+		O = Vector3_CrossVector3(&RC, &cylinder->axis);
 		t = - Vector3_DotVector3(&O, &n) / ln;
-		O = Vector3_CrossVector3(&n, &cylinder -> axis);
+		O = Vector3_CrossVector3(&n, &cylinder->axis);
 		Vector3_Normalize(&O);
-		NLfloat tmp_f2 = Vector3_DotVector3(&line -> direction, &O);
+		NLfloat tmp_f2 = Vector3_DotVector3(&line->direction, &O);
 		if(tmp_f2 == 0)
 			return 0;
-		s = abs(sqrt(cylinder -> radius * cylinder -> radius - d * d) / tmp_f2);
+		s = abs(sqrt(cylinder->radius * cylinder->radius - d * d) / tmp_f2);
 
 		in = t - s;
 		out = t + s;
@@ -161,11 +161,11 @@ int Math3D_LineToCylinderCollision(const line_t *line, const cylinder_t *cylinde
 				else
 					lamda = out;
 
-		vector3_t tmp = Vector3_Scale(&line -> direction, lamda);
-		new_pos = Vector3_PlusVector3(&line -> position, &tmp);
-		vector3_t HB = Vector3_SubtractVector3(&new_pos, &cylinder -> position);
-		NLfloat tmp_f = Vector3_DotVector3(&HB, &cylinder -> axis);
-		tmp = Vector3_Scale(&cylinder -> axis, tmp_f);
+		vector3_t tmp = Vector3_Scale(&line->direction, lamda);
+		new_pos = Vector3_PlusVector3(&line->position, &tmp);
+		vector3_t HB = Vector3_SubtractVector3(&new_pos, &cylinder->position);
+		NLfloat tmp_f = Vector3_DotVector3(&HB, &cylinder->axis);
+		tmp = Vector3_Scale(&cylinder->axis, tmp_f);
 		normal = Vector3_SubtractVector3(&HB, &tmp);
 		Vector3_Normalize(&normal);
 
@@ -194,22 +194,22 @@ void Math3D_GetAABBPlanes(const aabb_t *ab, plane_t *r)
 		return;
 	memset(r, 0, sizeof(plane_t) * 6);
 	// bottom
-	r[0].position = ab -> min_position;
+	r[0].position = ab->min_position;
 	COPY_NORMAL(r[0].normal, 0.0, 0.0, 1.0)
 	// left
-	r[1].position = ab -> min_position;
+	r[1].position = ab->min_position;
 	COPY_NORMAL(r[1].normal, 1.0, 0.0, 0.0)
 	// front
-	r[2].position = ab -> min_position;
+	r[2].position = ab->min_position;
 	COPY_NORMAL(r[2].normal, 0.0, 1.0, 0.0)
 	// top
-	r[3].position = ab -> max_position;
+	r[3].position = ab->max_position;
 	COPY_NORMAL(r[3].normal, 0.0, 0.0, -1.0)
 	// right
-	r[4].position = ab -> max_position;
+	r[4].position = ab->max_position;
 	COPY_NORMAL(r[4].normal, -1.0, 0.0, 0.0)
 	// back
-	r[5].position = ab -> max_position;
+	r[5].position = ab->max_position;
 	COPY_NORMAL(r[5].normal, 0.0, -1.0, 0.0)
 #undef COPY_NORMAL
 }

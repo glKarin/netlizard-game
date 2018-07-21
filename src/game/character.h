@@ -6,8 +6,12 @@
 #include "game_algo.h"
 #include "game_ai.h"
 #include "weapon.h"
+#include "hlsdk.h"
 
-#define NETLIZARD_ANIMATION_FPS 12
+#define CHARACTER_VIEW_FOV 120.0
+
+#define NETLIZARD_ANIMATION_FPS 20
+#define CHARACTER_WEAPON_COUNT 4
 
 /*
 #define CAITLYN_ARCTIC_WARFARE_ANIM _KARIN_RESOURCE_DIR"resource/model/caitlyn_arctic_warfare.lanim"
@@ -28,6 +32,27 @@
 #define JINX_ORIGINAL_MESH _KARIN_RESOURCE_DIR"resource/model/jinx_original.lmesh"
 #define JINX_ORIGINAL_PNG _KARIN_RESOURCE_DIR"resource/model/jinx_original.png"
 
+#define NATASHA2_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/natasha2.mdl"
+#define CHOIJIYOON_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/choijiyoon.mdl"
+#define JESSICA_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/jennifer.mdl"
+#define JESSICA2_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/jennifer2.mdl"
+#define LUCIA_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/marinegirl.mdl"
+
+#define TR1_TERROR_MDL _KARIN_RESOURCE_DIR"resource/model/TR/terror.mdl"
+#define TR2_LEET_MDL _KARIN_RESOURCE_DIR"resource/model/TR/leet.mdl"
+#define TR3_ARCTIC_MDL _KARIN_RESOURCE_DIR"resource/model/TR/arctic.mdl"
+#define TR4_GUERILLA_MDL _KARIN_RESOURCE_DIR"resource/model/TR/guerilla.mdl"
+#define TR5_MILITIA_MDL _KARIN_RESOURCE_DIR"resource/model/TR/militia.mdl"
+#define TR2_LEET2_MDL _KARIN_RESOURCE_DIR"resource/model/TR/leet2.mdl"
+
+#define CT1_URBAN_MDL _KARIN_RESOURCE_DIR"resource/model/CT/urban.mdl"
+#define CT2_GSG9_MDL _KARIN_RESOURCE_DIR"resource/model/CT/gsg9.mdl"
+#define CT3_SAS_MDL _KARIN_RESOURCE_DIR"resource/model/CT/sas.mdl"
+#define CT4_GIGN_MDL _KARIN_RESOURCE_DIR"resource/model/CT/gign.mdl"
+#define CT5_SPETSNAZ_MDL _KARIN_RESOURCE_DIR"resource/model/CT/spetsnaz.mdl"
+
+
+#define NATASHA_CHARACTER_SCALE 3.8
 #define CAITLYN_CHARACTER_SCALE 1.9
 #define JINX_CHARACTER_SCALE 1.3
 #define NETLIZARD_CHARACTER_SCALE 1
@@ -51,9 +76,33 @@ typedef enum _netlizard_role_model_type
 	clone3d_damage_machine
 } netlizard_role_model_type;
 
+typedef enum _csol_role_model_type
+{
+	natasha2 = clone3d_damage_machine,
+	choijiyoon,
+	jessica,
+	jessica2,
+	lucia,
+
+	TR1_terror,
+	TR2_leet,
+	TR3_arctic,
+	TR4_guerilla,
+	TR5_militia,
+	TR2_leet2,
+
+	CT1_urban,
+	CT2_gsg9,
+	CT3_sas,
+	CT4_gign,
+	CT5_spetsnaz,
+
+	csol_total_model
+} csol_role_model_type;
+
 typedef enum _lol_role_model_type
 {
-	caitlyn_original = clone3d_damage_machine,
+	caitlyn_original = csol_total_model,
 	jinx_original,
 	lol_total_model
 } lol_role_model_type;
@@ -69,7 +118,8 @@ typedef enum _model_source_type
 {
 	unavailable_model_type = 0,
 	netlizard_model_type,
-	lol_model_type
+	lol_model_type,
+	csol_model_type
 } model_source_type;
 
 typedef	struct _character_animation_data
@@ -82,6 +132,16 @@ typedef	struct _character_animation_data
 	int fps;
 	float last_play_time;
 } character_animation_data;
+
+typedef struct _csol_game_character
+{
+	model_source_type source;
+	float scale;
+	float x_offset;
+	float y_offset;
+	float z_offset;
+	StudioModel *model;
+} csol_game_character;
 
 typedef struct _lol_game_character
 {
@@ -109,13 +169,14 @@ typedef union _game_character_model
 	model_source_type source;
 	lol_game_character lol_character;
 	netlizard_game_character netlizard_character;
+	csol_game_character csol_character;
 } game_character_model;
 
 typedef struct _game_character
 {
 	game_character_model model; // 角色模型数据 模型 动画
 	float position[3]; // 位置坐标，脚部坐标，NETLizard地图的场景坐标
-	float direction[3]; // 当前方向法线，暂不使用
+	float direction[3]; // 当前方向法线
 	float x_angle; // X轴旋转角度 0 - 180
 	float y_angle; // 竖直z轴旋转角度 0 - 360
 	float move_unit; // 单位移动距离
@@ -138,7 +199,7 @@ typedef struct _game_character
 	int health_full; // 生命值
 	character_animation_data animation; // 动画数据
 	character_status_type status; // 当前状态
-	game_ai ai; // 简单人工智能数据，自动计算和人工指挥
+	game_ai ai; // 简单AI数据，自动计算和人工指挥
 	int group; // 所属阵营
 	int index;
 	char *name;
@@ -149,7 +210,12 @@ typedef struct _game_character
 		int killed_character;
 		int kill_character;
 	}score;
-	weapon current_weapon; // 当前武器
+	struct{
+		weapon *wpons;
+		unsigned int wp_count;
+		unsigned mask;
+		int current_weapon;
+	} weapons; // 当前武器
 	//weapon *weapons; // 所有武器
 	//int weapon_count; // 武器数量
 	//int current_weapon_index; // 当前武器索引
@@ -165,17 +231,25 @@ extern const char *Character_Model_Name[lol_total_model];
 
 game_character * new_lol_game_character(game_character *c, const char *meshf, const char *ddsf[], int count, const char *animf, float x, float y, float z, float xr, float yr, float f, float w, float h, float th, float mu, float tu, float speed, int scene);
 game_character * new_netlizard_game_character(game_character *c, const char *game, const char *file, int index, float x, float y, float z, float xr, float yr, float f, float w, float h, float th, float mu, float tu, float speed, int scene);
+game_character * new_csol_game_character(game_character *c, const char *mdlfile, float x, float y, float z, float xr, float yr, float f, float w, float h, float th, float mu, float tu, float speed, int scene);
 
 void delete_game_character(game_character *gamer);
 
 void Game_CharacterPlayAnimation(game_character *gamer, long long time, int fps, float delta);
 void Game_RenderGameCharacter(const game_character *gamer);
-void Game_UpdateCharacterPositionAndDirection(game_character *gamer, float x, float y, float z, float xr, float yr);
-game_character * new_game_character(game_character *c, int type, float x, float y, float z, float xr, float yr, int id, const char *name, int scene, weapon_model_type wt);
+void Game_UpdateCharacterPositionAndDirection(game_character *gamer, float x, float y, float z, float xr, float yr, unsigned up_wp);
+void Game_UpdateCharacterCurrentWeaponPositionAndDirection(game_character *gamer);
+game_character * new_game_character(game_character *c, int type, float x, float y, float z, float xr, float yr, int id, const char *name, int scene, const weapon_model_type wt[], unsigned int max);
 int Game_MakeGameCharacterModel(game_character_model *game_model, unsigned int type);
 void Game_FreeCharacterModel(game_character_model *game_model);
 int Game_GetNETLizardAnimationIndex(GL_NETLizard_3D_Animation_Model *model, NETLizard_3D_Animation_Type type);
 int Game_GetAnimationNextFrame(const character_animation_data *data, int f);
-int Game_ComputeAnimationPlayFrameCount(model_source_type type, character_animation_data *animation, int fps, float delta);
+float Game_ComputeAnimationPlayFrameCount(model_source_type type, character_animation_data *animation, int fps, float delta);
+int Game_GetWeapon(game_character *gamer, const weapon_model_type types[], unsigned int count);
+void Game_FreeCharacterWeapons(game_character *gamer);
+weapon * Game_CharacterCurrentWeapon(game_character *gamer);
+int Game_PrevWeapon(game_character *gamer, unsigned skip);
+int Game_NextWeapon(game_character *gamer, unsigned skip);
+int Game_PreferWeapon(game_character *gamer);
 
 #endif

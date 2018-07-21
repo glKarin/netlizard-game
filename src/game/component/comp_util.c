@@ -32,8 +32,8 @@ GLvoid UI_ButtonUpdateText(GLvoid *comp, const char *text, GLboolean hl)
 	if(!comp)
 		return;
 	button *btn = (button *)comp;
-	SET_TEXT(btn -> text, text)
-		btn -> highlight = hl;
+	SET_TEXT(btn->text, text)
+		btn->highlight = hl;
 }
 
 GLvoid UI_GetWidgetGeometry(const GLvoid *comp, GLfloat *w, GLfloat *h)
@@ -42,9 +42,9 @@ GLvoid UI_GetWidgetGeometry(const GLvoid *comp, GLfloat *w, GLfloat *h)
 		return;
 	base_widget *b = (base_widget *)comp;
 	if(w)
-		*w = b -> width;
+		*w = b->width;
 	if(h)
-		*h = b -> height;
+		*h = b->height;
 }
 
 	RENDER_CONST_COMPONENT(Switcher, switcher)

@@ -76,6 +76,10 @@ void Menu_AboutInitFunc(void)
 	oglEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.1);
 	oglEnable(GL_TEXTURE_2D);
+#ifndef _HARMATTAN_OPENGLES2
+	oglDisable(GL_LIGHTING);
+#endif
+	oglDisable(GL_FOG);
 }
 
 void Menu_AboutDrawFunc(void)
@@ -87,15 +91,12 @@ void Menu_AboutDrawFunc(void)
 	OpenGL_Render3DOrtho(0.0, width, 0.0, height);
 	{
 		//glPolygonMode(GL_FRONT, GL_LINE);
-		oglEnable(GL_SCISSOR_TEST);
-		glScissor(tb.base.x, tb.base.y, tb.base.width, tb.base.height);
 		glPushMatrix();
 		{
 			glTranslatef(tb.base.x, tb.base.y, tb.base.z);
 			UI_RenderTextBrowser(&tb);
 		}
 		glPopMatrix();
-		oglDisable(GL_SCISSOR_TEST);
 		glPushMatrix();
 		{
 			glTranslatef(back_btn.base.x, back_btn.base.y, back_btn.base.z);

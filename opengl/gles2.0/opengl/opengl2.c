@@ -70,11 +70,11 @@ GLvoid gl2GetFloatv(GLenum pname, GLfloat *params)
 			break;
 		case GL2_MODELVIEW_MATRIX:
 			m = gl2GetTopMatrixByMode(GL2_MODELVIEW);
-			arrcpy16(params, m -> m);
+			arrcpy16(params, m->m);
 			break;
 		case GL2_PROJECTION_MATRIX:
 			m = gl2GetTopMatrixByMode(GL2_PROJECTION);
-			arrcpy16(params, m -> m);
+			arrcpy16(params, m->m);
 			break;
 		case GL2_TEXTURE_MATRIX:
 			break;

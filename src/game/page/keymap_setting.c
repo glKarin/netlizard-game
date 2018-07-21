@@ -12,10 +12,6 @@
 #define LIST_VIEW_Y 100
 #define LIST_VIEW_W 554
 #define LIST_VIEW_H 300
-#define BUTTON_ADD_X 80
-#define BUTTON_ADD_Y 10
-#define BUTTON_CLEAR_X 240
-#define BUTTON_CLEAR_Y 10
 #define BUTTON_W 400
 #define BUTTON_H 40
 #define TEXT_VIEW_X 600
@@ -26,15 +22,20 @@
 #define SCAN_TEXT_VIEW_Y 100
 #define SCAN_TEXT_VIEW_W 254
 #define SCAN_TEXT_VIEW_H 100
-#define ACTION_BUTTON_W 120
-#define ACTION_BUTTON_H 60
-#define BUTTON_SURE_X 550
-#define BUTTON_SURE_Y 10
-#define BUTTON_BACK_X 700
-#define BUTTON_BACK_Y 10
+#define BTN_W 120
+#define BTN_H 60
 #define LABEL_H 80
 
 #define IDLE_TIME_DELAY 0.4
+
+typedef enum _menu_action
+{
+	enter_action = 0,
+	edit_action,
+	clear_action,
+	back_action,
+	total_action_type
+} menu_action;
 
 static const char Scan_Label[] = "Press a key: \n";
 
@@ -51,17 +52,21 @@ static void Menu_KeyMapSettingFreeFunc(void);
 static void Menu_ResetKeyMapSetting(void);
 static void Menu_MakeKeyMapListViewData(int update);
 static void Menu_ViewKeyMap(void *);
-static void Menu_AddKeyMap(void);
-static void Menu_BackAction(void);
-static void Menu_UpdateKeyMap(void);
-static void Menu_ClearKeyMap(void);
+static void Menu_AddKeyMap(void *data);
+static void Menu_BackAction(void *data);
+static void Menu_UpdateKeyMap(void *data);
+static void Menu_ClearKeyMap(void *data);
 static void Menu_SetKeyMapSettingPageSize(GLsizei w, GLsizei h);
 
+static const button_initilizer Btn_Infos[] = {
+	{550, 10, BTN_W, BTN_H, "Sure", Menu_UpdateKeyMap, NULL},
+	{80, 10, BTN_W, BTN_H, "Edit", Menu_AddKeyMap, NULL},
+	{240, 10, BTN_W, BTN_H, "Clear", Menu_ClearKeyMap, NULL},
+	{700, 10, BTN_W, BTN_H, "Back", Menu_BackAction, NULL},
+};
+
 static button btn;
-static button add_btn;
-static button clear_btn;
-static button sure_btn;
-static button back_btn;
+static button btns[total_action_type];
 static list_view lst;
 static label lb;
 static text_browser tb;
@@ -87,10 +92,9 @@ void Menu_SetKeyMapSettingPageSize(GLsizei w, GLsizei h)
 	if(has_init)
 	{
 		UI_ResizeButton(&btn, BUTTON_W, BUTTON_H);
-		UI_ResetButtonGeometry(&add_btn, BUTTON_ADD_X, BUTTON_ADD_Y, ACTION_BUTTON_W, ACTION_BUTTON_H);
-		UI_ResetButtonGeometry(&clear_btn, BUTTON_CLEAR_X, BUTTON_CLEAR_Y, ACTION_BUTTON_W, ACTION_BUTTON_H);
-		UI_ResetButtonGeometry(&sure_btn, BUTTON_SURE_X, BUTTON_SURE_Y, ACTION_BUTTON_W, ACTION_BUTTON_H);
-		UI_ResetButtonGeometry(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, ACTION_BUTTON_W, ACTION_BUTTON_H);
+		int i;
+		for(i = 0; i < total_action_type; i++)
+			UI_ResetButtonGeometry(btns + i, Btn_Infos[i].x, Btn_Infos[i].y, Btn_Infos[i].w, Btn_Infos[i].h);
 		UI_ResetListViewGeometry(&lst, LIST_VIEW_X, LIST_VIEW_Y, LIST_VIEW_W, LIST_VIEW_H);
 		UI_ResetTextBrowserGeometry(&tb, TEXT_VIEW_X, TEXT_VIEW_Y, TEXT_VIEW_W, TEXT_VIEW_H);
 		UI_ResetTextBrowserGeometry(&scan_tb, SCAN_TEXT_VIEW_X, SCAN_TEXT_VIEW_Y, SCAN_TEXT_VIEW_W, SCAN_TEXT_VIEW_H);
@@ -133,6 +137,10 @@ void Menu_KeyMapSettingInitFunc(void)
 	oglEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.1);
 	oglEnable(GL_TEXTURE_2D);
+#ifndef _HARMATTAN_OPENGLES2
+	oglDisable(GL_LIGHTING);
+#endif
+	oglDisable(GL_FOG);
 }
 
 void Menu_KeyMapSettingDrawFunc(void)
@@ -144,15 +152,12 @@ void Menu_KeyMapSettingDrawFunc(void)
 	OpenGL_Render3DOrtho(0.0, width, 0.0, height);
 	{
 		//glPolygonMode(GL_FRONT, GL_LINE);
-		oglEnable(GL_SCISSOR_TEST);
-		glScissor(lst.base.x, lst.base.y, lst.base.width, lst.base.height);
 		glPushMatrix();
 		{
 			glTranslatef(lst.base.x, lst.base.y, lst.base.z);
 			UI_RenderListView(&lst);
 		}
 		glPopMatrix();
-		glScissor(tb.base.x, tb.base.y, tb.base.width, tb.base.height);
 		glPushMatrix();
 		{
 			glTranslatef(tb.base.x, tb.base.y, tb.base.z);
@@ -169,36 +174,33 @@ void Menu_KeyMapSettingDrawFunc(void)
 			}
 			glPopMatrix();
 		}
-		oglDisable(GL_SCISSOR_TEST);
 
 		if(!scan_mode)
 		{
-			glPushMatrix();
+			int i;
+			for(i = edit_action; i <= clear_action; i++)
 			{
-				glTranslatef(add_btn.base.x, add_btn.base.y, add_btn.base.z);
-				UI_RenderButton(&add_btn);
+				glPushMatrix();
+				{
+					glTranslatef(btns[i].base.x, btns[i].base.y, btns[i].base.z);
+					UI_RenderButton(btns + i);
+				}
+				glPopMatrix();
 			}
-			glPopMatrix();
-			glPushMatrix();
-			{
-				glTranslatef(clear_btn.base.x, clear_btn.base.y, clear_btn.base.z);
-				UI_RenderButton(&clear_btn);
-			}
-			glPopMatrix();
 		}
 		else
 		{
 			glPushMatrix();
 			{
-				glTranslatef(sure_btn.base.x, sure_btn.base.y, sure_btn.base.z);
-				UI_RenderButton(&sure_btn);
+				glTranslatef(btns[enter_action].base.x, btns[enter_action].base.y, btns[enter_action].base.z);
+				UI_RenderButton(btns + enter_action);
 			}
 			glPopMatrix();
 		}
 		glPushMatrix();
 		{
-			glTranslatef(back_btn.base.x, back_btn.base.y, back_btn.base.z);
-			UI_RenderButton(&back_btn);
+			glTranslatef(btns[back_action].base.x, btns[back_action].base.y, btns[back_action].base.z);
+			UI_RenderButton(btns + back_action);
 		}
 		glPopMatrix();
 
@@ -225,10 +227,9 @@ void Menu_KeyMapSettingFreeFunc(void)
 		return;
 
 	delete_button(&btn);
-	delete_button(&add_btn);
-	delete_button(&sure_btn);
-	delete_button(&back_btn);
-	delete_button(&clear_btn);
+	int m;
+	for(m = 0; m < total_action_type; m++)
+		delete_button(btns + m);
 	delete_label(&lb);
 	delete_list_view(&lst);
 	delete_text_browser(&tb);
@@ -290,7 +291,7 @@ int Menu_KeyMapSettingKeyEventFunc(int key, int act, int pressed, int x, int y)
 			case Harmattan_K_Escape:
 				if(pressed)
 				{
-					Menu_BackAction();
+					Menu_BackAction(NULL);
 					return 1;
 				}
 				break;
@@ -322,25 +323,14 @@ int Menu_KeyMapSettingMouseEventFunc(int button, int pressed, int x, int y)
 	if(!has_init)
 		return 0;
 	int gl_y = height - y;
-	if(UI_PointInWidget(&add_btn.base, x, gl_y))
+	int i;
+	for(i = 0; i < total_action_type; i++)
 	{
-		add_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
-	}
-	else if(UI_PointInWidget(&clear_btn.base, x, gl_y))
-	{
-		clear_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
-	}
-	else if(UI_PointInWidget(&sure_btn.base, x, gl_y))
-	{
-		sure_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
-	}
-	else if(UI_PointInWidget(&back_btn.base, x, gl_y))
-	{
-		back_btn.highlight = pressed ? GL_TRUE : GL_FALSE;
-		return 1;
+		if(UI_PointInWidget(&btns[i].base, x, gl_y))
+		{
+			btns[i].highlight = pressed ? GL_TRUE : GL_FALSE;
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -361,14 +351,14 @@ int Menu_KeyMapSettingMouseMotionEventFunc(int button, int pressed, int x, int y
 			{
 				res |= UI_SlideTextBrowser(&scan_tb, -dy);
 			}
-			if(UI_PointInWidget(&sure_btn.base, x, gl_y) && !UI_PointInWidget(&sure_btn.base, last_x, last_gl_y))
+			if(UI_PointInWidget(&btns[enter_action].base, x, gl_y) && !UI_PointInWidget(&btns[enter_action].base, last_x, last_gl_y))
 			{
-				sure_btn.highlight = GL_TRUE;
+				btns[enter_action].highlight = GL_TRUE;
 				res |= 1;
 			}
-			else if(!UI_PointInWidget(&sure_btn.base, x, gl_y) && UI_PointInWidget(&sure_btn.base, last_x, last_gl_y))
+			else if(!UI_PointInWidget(&btns[enter_action].base, x, gl_y) && UI_PointInWidget(&btns[enter_action].base, last_x, last_gl_y))
 			{
-				sure_btn.highlight = GL_FALSE;
+				btns[enter_action].highlight = GL_FALSE;
 				res |= 1;
 			}
 		}
@@ -382,35 +372,29 @@ int Menu_KeyMapSettingMouseMotionEventFunc(int button, int pressed, int x, int y
 			{
 				res |= UI_SlideTextBrowser(&tb, -dy);
 			}
-			if(UI_PointInWidget(&add_btn.base, x, gl_y) && !UI_PointInWidget(&add_btn.base, last_x, last_gl_y))
+			int i;
+			for(i = edit_action; i <= clear_action; i++)
 			{
-				add_btn.highlight = GL_TRUE;
-				res |= 1;
-			}
-			else if(!UI_PointInWidget(&add_btn.base, x, gl_y) && UI_PointInWidget(&add_btn.base, last_x, last_gl_y))
-			{
-				add_btn.highlight = GL_FALSE;
-				res |= 1;
-			}
-			if(UI_PointInWidget(&clear_btn.base, x, gl_y) && !UI_PointInWidget(&clear_btn.base, last_x, last_gl_y))
-			{
-				clear_btn.highlight = GL_TRUE;
-				res |= 1;
-			}
-			else if(!UI_PointInWidget(&clear_btn.base, x, gl_y) && UI_PointInWidget(&clear_btn.base, last_x, last_gl_y))
-			{
-				clear_btn.highlight = GL_FALSE;
-				res |= 1;
+				if(UI_PointInWidget(&btns[i].base, x, gl_y) && !UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+				{
+					btns[i].highlight = GL_TRUE;
+					res |= 1;
+				}
+				else if(!UI_PointInWidget(&btns[i].base, x, gl_y) && UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
+				{
+					btns[i].highlight = GL_FALSE;
+					res |= 1;
+				}
 			}
 		}
-		if(UI_PointInWidget(&back_btn.base, x, gl_y) && !UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
+		if(UI_PointInWidget(&btns[back_action].base, x, gl_y) && !UI_PointInWidget(&btns[back_action].base, last_x, last_gl_y))
 		{
-			back_btn.highlight = GL_TRUE;
+			btns[back_action].highlight = GL_TRUE;
 			res |= 1;
 		}
-		else if(!UI_PointInWidget(&back_btn.base, x, gl_y) && UI_PointInWidget(&back_btn.base, last_x, last_gl_y))
+		else if(!UI_PointInWidget(&btns[back_action].base, x, gl_y) && UI_PointInWidget(&btns[back_action].base, last_x, last_gl_y))
 		{
-			back_btn.highlight = GL_FALSE;
+			btns[back_action].highlight = GL_FALSE;
 			res |= 1;
 		}
 	}
@@ -462,8 +446,8 @@ void Menu_MakeKeyMapListViewData(int update)
 		char str[200];
 		memset(str, '\0', 200 * sizeof(char));
 		char *p = str;
-		strcat(p, info -> desc);
-		p += strlen(info -> desc);
+		strcat(p, info->desc);
+		p += strlen(info->desc);
 		strcat(p, " : ");
 		p += 3;
 		int has = 0;
@@ -472,7 +456,7 @@ void Menu_MakeKeyMapListViewData(int update)
 		{
 			if(key_action[j] == -1)
 				continue;
-			if((Game_Action)key_action[j] == info -> action)
+			if((Game_Action)key_action[j] == info->action)
 			{
 				if(has)
 				{
@@ -502,8 +486,8 @@ void Menu_ViewKeyMap(void *args)
 	char *p = str;
 	strcat(p, "< ");
 	p += 2;
-	strcat(p, info -> desc);
-	p += strlen(info -> desc);
+	strcat(p, info->desc);
+	p += strlen(info->desc);
 	strcat(p, " > :\n\n");
 	p += 6;
 	int index = 0;
@@ -512,7 +496,7 @@ void Menu_ViewKeyMap(void *args)
 	{
 		if(key_action[j] == -1)
 			continue;
-		if((Game_Action)key_action[j] == info -> action)
+		if((Game_Action)key_action[j] == info->action)
 		{
 			char *n = itostr(index);
 			strcat(p, n);
@@ -531,7 +515,7 @@ void Menu_ViewKeyMap(void *args)
 	UI_SetBrowserText(&tb, str);
 }
 
-void Menu_AddKeyMap(void)
+void Menu_AddKeyMap(void *data)
 {
 	if(!has_init)
 		return;
@@ -547,7 +531,7 @@ void Menu_AddKeyMap(void)
 	scan_tb.base.visible = GL_TRUE;
 }
 
-void Menu_BackAction(void)
+void Menu_BackAction(void *data)
 {
 	if(!has_init)
 		return;
@@ -573,9 +557,12 @@ int Menu_KeyMapSettingMouseClickEventFunc(int button, int x, int y)
 	int gl_y = height - y;
 	if(scan_mode)
 	{
-		if(UI_PointInWidget(&sure_btn.base, x, gl_y))
+		if(UI_PointInWidget(&btns[enter_action].base, x, gl_y))
 		{
-			Menu_UpdateKeyMap();
+			if(Btn_Infos[enter_action].func)
+			{
+				Btn_Infos[enter_action].func(Btn_Infos[enter_action].data);
+			}
 			return 1;
 		}
 	}
@@ -586,20 +573,25 @@ int Menu_KeyMapSettingMouseClickEventFunc(int button, int x, int y)
 			UI_ClickListView(&lst, x - lst.base.x, gl_y - lst.base.y);
 			return 1;
 		}
-		else if(UI_PointInWidget(&add_btn.base, x, gl_y))
+		int i;
+		for(i = edit_action; i <= clear_action; i++)
 		{
-			Menu_AddKeyMap();
-			return 1;
-		}
-		else if(UI_PointInWidget(&clear_btn.base, x, gl_y))
-		{
-			Menu_ClearKeyMap();
-			return 1;
+			if(UI_PointInWidget(&btns[i].base, x, gl_y))
+			{
+				if(Btn_Infos[i].func)
+				{
+					Btn_Infos[i].func(Btn_Infos[i].data);
+				}
+				return 1;
+			}
 		}
 	}
-	if(UI_PointInWidget(&back_btn.base, x, gl_y))
+	if(UI_PointInWidget(&btns[back_action].base, x, gl_y))
 	{
-		Menu_BackAction();
+		if(Btn_Infos[back_action].func)
+		{
+			Btn_Infos[back_action].func(Btn_Infos[back_action].data);
+		}
 		return 1;
 	}
 	return 0;
@@ -610,15 +602,14 @@ void Menu_InitKeyMapSetting(void)
 	if(has_init)
 		return;
 	new_button(&btn, 0.0, 0.0, 0.0, BUTTON_W, BUTTON_H, 2.0, X11_COLOR(lightskyblue), X11_COLOR(green), X11_COLOR(lightseagreen), X11_COLOR(pink), X11_COLOR(darkgreen), X11_COLOR(seagreen), NULL);
-	new_button(&add_btn, BUTTON_ADD_X, BUTTON_ADD_Y, 0.3, ACTION_BUTTON_W, ACTION_BUTTON_H, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), "Add");
-	new_button(&clear_btn, BUTTON_CLEAR_X, BUTTON_CLEAR_Y, 0.3, ACTION_BUTTON_W, ACTION_BUTTON_H, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), "Clear");
-	new_button(&sure_btn, BUTTON_SURE_X, BUTTON_SURE_Y, 0.3, ACTION_BUTTON_W, ACTION_BUTTON_H, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), "Sure");
-	new_button(&back_btn, BUTTON_BACK_X, BUTTON_BACK_Y, 0.3, ACTION_BUTTON_W, ACTION_BUTTON_H, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), "Back");
+	btn.base.clip = GL_FALSE;
+	int m;
+	for(m = 0; m < total_action_type; m++)
+	{
+		new_button(btns + m, Btn_Infos[m].x, Btn_Infos[m].y, 0.3, Btn_Infos[m].w, Btn_Infos[m].h, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), Btn_Infos[m].label);
+		btns[m].fnt = &fnt;
+	}
 	btn.fnt = &fnt;
-	add_btn.fnt = &fnt;
-	clear_btn.fnt = &fnt;
-	sure_btn.fnt = &fnt;
-	back_btn.fnt = &fnt;
 	new_list_view(&lst, LIST_VIEW_X, LIST_VIEW_Y, 0.0, LIST_VIEW_W, LIST_VIEW_H, 10, 20, 15, Color_GetColor(black_color, 0.0), X11_COLOR(lightgreen), X11_COLOR(darkgreen));
 	lst.delegate.component = &btn;
 	lst.delegate.update_func = UI_ButtonUpdateText;
@@ -648,7 +639,7 @@ void Menu_ResetKeyMapSetting(void)
 	idle_time = 0.0f;
 }
 
-void Menu_UpdateKeyMap(void)
+void Menu_UpdateKeyMap(void *data)
 {
 	if(!has_init)
 		return;
@@ -664,7 +655,7 @@ void Menu_UpdateKeyMap(void)
 	Menu_ViewKeyMap(NULL);
 }
 
-void Menu_ClearKeyMap(void)
+void Menu_ClearKeyMap(void *data)
 {
 	if(!has_init)
 		return;
@@ -678,10 +669,10 @@ void Menu_ClearKeyMap(void)
 	{
 		if(key_action[j] == -1)
 			continue;
-		if((Game_Action)key_action[j] == info -> action)
+		if((Game_Action)key_action[j] == info->action)
 			key_action[j] = -1;
 	}
-	key_action[info -> def_key] = info -> action;
+	key_action[info->def_key] = info->action;
 	Menu_MakeKeyMapListViewData(1);
 	Menu_ViewKeyMap(NULL);
 }

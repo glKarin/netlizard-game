@@ -47,26 +47,26 @@ radar * new_radar(radar *ra, GLfloat w, GLfloat angle, GLfloat range, GLfloat p,
 	index[1 + 1 + count + 2] = 0;
 	index[1 + 1 + count + 3] = count + 2;
 
-	r -> pos[0] = 0.0;
-	r -> pos[1] = 0.0;
-	r -> pos[2] = 0.0;
-	r -> radius = w;
-	r -> rotation = 0.0;
-	r -> line_width = clw;
-	r -> point_width = cpw;
-	COPY_COLOR4(r -> line_color, lc);
-	COPY_COLOR4(r -> parner_point_color, ppc);
-	COPY_COLOR4(r -> vip_point_color, vpc);
-	COPY_COLOR4(r -> enemy_point_color, epc);
-	COPY_COLOR4(r -> bg_color, bgc);
-	r -> buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * (count + 1 + 2), vertex, GL_STATIC_DRAW);
-	r -> buffers[index_buffer_type] = new_OpenGL_buffer_object(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * (1 + 1 + count + 4), index, GL_STATIC_DRAW);
+	r->pos[0] = 0.0;
+	r->pos[1] = 0.0;
+	r->pos[2] = 0.0;
+	r->radius = w;
+	r->rotation = 0.0;
+	r->line_width = clw;
+	r->point_width = cpw;
+	COPY_COLOR4(r->line_color, lc);
+	COPY_COLOR4(r->parner_point_color, ppc);
+	COPY_COLOR4(r->vip_point_color, vpc);
+	COPY_COLOR4(r->enemy_point_color, epc);
+	COPY_COLOR4(r->bg_color, bgc);
+	r->buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * (count + 1 + 2), vertex, GL_STATIC_DRAW);
+	r->buffers[index_buffer_type] = new_OpenGL_buffer_object(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * (1 + 1 + count + 4), index, GL_STATIC_DRAW);
 	free(vertex);
 	free(index);
-	r -> count = count;
-	r -> point_pos = NULL;
-	r -> point_count = 0;
-	r -> range = range;
+	r->count = count;
+	r->point_pos = NULL;
+	r->point_count = 0;
+	r->range = range;
 	return r;
 }
 
@@ -77,13 +77,13 @@ void delete_radar(radar *r)
 	int i;
 	for(i = 0; i < total_buffer_type; i++)
 	{
-		if(glIsBuffer(r -> buffers[i]))
+		if(glIsBuffer(r->buffers[i]))
 		{
-			glDeleteBuffers(1, r -> buffers + i);
+			glDeleteBuffers(1, r->buffers + i);
 		}
 	}
-	if(r -> point_pos)
-		free(r -> point_pos);
+	if(r->point_pos)
+		free(r->point_pos);
 }
 
 void UI_RenderRadar(const radar *r)
@@ -94,46 +94,46 @@ void UI_RenderRadar(const radar *r)
 	{
 		glPushAttrib(GL_CURRENT_BIT | GL_LINE_BIT | GL_POINT_BIT);
 		{
-			glTranslatef(r -> pos[0], r -> pos[1], r -> pos[2]);
+			glTranslatef(r->pos[0], r->pos[1], r->pos[2]);
 			glEnableClientState(GL_VERTEX_ARRAY);
-			glBindBuffer(GL_ARRAY_BUFFER, r -> buffers[vertex_buffer_type]);
+			glBindBuffer(GL_ARRAY_BUFFER, r->buffers[vertex_buffer_type]);
 			glVertexPointer(2, GL_FLOAT, 0, NULL);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r -> buffers[index_buffer_type]);
-			glColor4fv(r -> bg_color);
-			oglDrawElements(GL_TRIANGLE_FAN, r -> count + 2, GL_UNSIGNED_SHORT, NULL);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r->buffers[index_buffer_type]);
+			glColor4fv(r->bg_color);
+			oglDrawElements(GL_TRIANGLE_FAN, r->count + 2, GL_UNSIGNED_SHORT, NULL);
 
 			oglEnable(GL_POINT_SMOOTH);
 			oglEnable(GL_LINE_SMOOTH);
-			glColor4fv(r -> line_color);
-			glLineWidth(r -> line_width);
-			oglDrawElements(GL_LINES, 4, GL_UNSIGNED_SHORT, (GLushort *)NULL + r -> count + 2);
+			glColor4fv(r->line_color);
+			glLineWidth(r->line_width);
+			oglDrawElements(GL_LINES, 4, GL_UNSIGNED_SHORT, (GLushort *)NULL + r->count + 2);
 
-			if(r -> point_pos && r -> point_count)
+			if(r->point_pos && r->point_count)
 			{
-				glPointSize(r -> point_width);
-				float per = r -> radius / r -> range;
+				glPointSize(r->point_width);
+				float per = r->radius / r->range;
 				unsigned int i;
-				for(i = 0; i < r -> point_count; i++)
+				for(i = 0; i < r->point_count; i++)
 				{
-					vector2_t v2 = {r -> point_pos[i * 4], r -> point_pos[i * 4 + 1]};
+					vector2_t v2 = {r->point_pos[i * 4], r->point_pos[i * 4 + 1]};
 					float len = Vector2_Mag(&v2);
-					if(len > r -> range)
+					if(len > r->range)
 						continue;
 					float a = 0.0;
 					Algo_GetNormalAngle2D(&v2, &a);
-					a = ator(Algo_FormatAngle(-(r -> rotation - a - 90.0) - 180.0));
+					a = ator(Algo_FormatAngle(-(r->rotation - a - 90.0) - 180.0));
 					v2.x = cos(a) * len;
 					v2.y = sin(a) * len;
 					v2 = Vector2_Scale(&v2, per);
 					glPushMatrix();
 					{
 						glTranslatef(v2.x, v2.y, 0.0);
-						if(r -> point_pos[i * 4 + 3] == 1)
-							glColor4fv(r -> parner_point_color);
-						else if(r -> point_pos[i * 4 + 3] == 2)
-							glColor4fv(r -> enemy_point_color);
+						if(r->point_pos[i * 4 + 3] == 1)
+							glColor4fv(r->parner_point_color);
+						else if(r->point_pos[i * 4 + 3] == 2)
+							glColor4fv(r->enemy_point_color);
 						else
-							glColor4fv(r -> vip_point_color);
+							glColor4fv(r->vip_point_color);
 						oglDrawElements(GL_POINTS, 1, GL_UNSIGNED_SHORT, NULL);
 					}
 					glPopMatrix();

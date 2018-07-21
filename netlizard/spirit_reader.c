@@ -20,11 +20,11 @@ array * nlReadSpiritMap(const char *file)
 	array *qarr = clone3d_class_g__function_M_void__read_spirit_map(arr);
 	if(qarr)
 	{
-		rarr = new_array(nl_user, qarr -> length, NULL, sizeof(NETLizard_Spirit));
-		NETLizard_Spirit *spirit = (NETLizard_Spirit *)(rarr -> array);
-		short **q = (short **)(qarr -> array);
+		rarr = new_array(nl_user, qarr->length, NULL, sizeof(NETLizard_Spirit));
+		NETLizard_Spirit *spirit = (NETLizard_Spirit *)(rarr->array);
+		short **q = (short **)(qarr->array);
 		int i;
-		for(i = 0; i < qarr -> length; i++)
+		for(i = 0; i < qarr->length; i++)
 		{
 			spirit[i].x = q[i][0];
 			spirit[i].y = q[i][1];
@@ -46,11 +46,11 @@ array * clone3d_class_g__function_M_void__read_spirit_map(const array *arr)
 {
 	if(!arr)
 		return NULL;
-	byte *arrayOfByte = (byte *)(arr -> array);
+	byte *arrayOfByte = (byte *)(arr->array);
 	int i1;
-	int i5 = (short)(i1 = (arr -> length / 6));
+	int i5 = (short)(i1 = (arr->length / 6));
 	array *rarr = new_array(nl_pointer, i5, NULL, 0);
-	short **q = (short **)(rarr -> array);
+	short **q = (short **)(rarr->array);
 	int i2;
 	for (i2 = 0; i2 < i1; i2++)
 	{

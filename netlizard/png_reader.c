@@ -47,8 +47,8 @@ int nlHandlePNG_File2File(const char *from, const char *to)
 			res = 0;
 		else
 		{
-			size_t i = fwrite(data -> array, sizeof(byte), data -> length, file);
-			size_t l = data -> length;
+			size_t i = fwrite(data->array, sizeof(byte), data->length, file);
+			size_t l = data->length;
 			res = (i == l) ? 1 : 0;
 			fflush(file);
 			fclose(file);
@@ -73,8 +73,8 @@ int nlHandlePNG_Memory2File(const array *arr, const char *to)
 			res = 0;
 		else
 		{
-			size_t i = fwrite(data -> array, sizeof(byte), data -> length, file);
-			size_t l = data -> length;
+			size_t i = fwrite(data->array, sizeof(byte), data->length, file);
+			size_t l = data->length;
 			res = (i == l) ? 1 : 0;
 			fflush(file);
 			fclose(file);

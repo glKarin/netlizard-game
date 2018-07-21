@@ -42,12 +42,12 @@ int Ada_LoadPmdModel(ADA_GL_Model *model, const char *files[], int len, const ch
 	}
 	if(!pmds)
 		return 0;
-	model -> model_count = count;
-	model -> models = calloc(model -> model_count, sizeof(ADA_GL_Material_List));
+	model->model_count = count;
+	model->models = calloc(model->model_count, sizeof(ADA_GL_Material_List));
 	int i;
-	for(i = 0; i < model -> model_count; i++)
+	for(i = 0; i < model->model_count; i++)
 	{
-		Ada_MakeGLPmd(model -> models + i, pmds + i, path);
+		Ada_MakeGLPmd(model->models + i, pmds + i, path);
 		Ada_FreePmd(pmds + i);
 	}
 	free(pmds);
@@ -59,6 +59,6 @@ void Ada_RenderStaticModel(const ADA_GL_Model *model)
 	if(!model)
 		return;
 	int i;
-	for(i = 0; i < model -> model_count; i++)
-		Ada_RenderStaticMaterials(model -> models + i);
+	for(i = 0; i < model->model_count; i++)
+		Ada_RenderStaticMaterials(model->models + i);
 }

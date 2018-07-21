@@ -235,7 +235,7 @@ void Algo_ComputeAABBFromOriginalPointSet(array* vertices, vector3_t *min, vecto
 void OpenGL_ExtractFrustum(GLfloat frustum[][4]);
 int Algo_AABBInFrustum(GLfloat frustum[][4], GLfloat x, GLfloat y, GLfloat z, GLfloat x2, GLfloat y2, GLfloat z2);
 
-void OpenGL_InitSimpleFog(GLfloat near, GLfloat far, GLfloat dis, GLfloat color[]);
+void OpenGL_InitFog(GLenum mode, GLfloat near, GLfloat far, GLfloat dis, GLfloat color[]);
 
 void OpenGLU_Project(GLdouble x, GLdouble y, GLdouble z, GLdouble *wx, GLdouble *wy, GLdouble *wz);
 void * OpenGLU_ScaleImage(GLsizei width, GLsizei height, GLenum format, GLenum type, const void *datain, GLenum scale, GLsizei *rw, GLsizei *rh);

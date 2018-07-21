@@ -26,7 +26,7 @@ int Converter_DecodeIntArrayToString(const char *arr)
 	len += 1;
 	//printfi(len);
 	array *a = new_array(nl_int, len, NULL, 0);
-	int *dec = (int *)(a -> array);
+	int *dec = (int *)(a->array);
 	char *s = strtok(cp, Sp);
 	int i = 0;
 	do
@@ -36,9 +36,9 @@ int Converter_DecodeIntArrayToString(const char *arr)
 	}while((s = strtok(NULL, Sp)) != NULL);
 
 	dst_string = nlParseString(a);
-	dst_digit_array = NEW_II(int, a -> length);
-	memcpy(dst_digit_array, a -> array, sizeof(int) * a -> length);
-	dst_digit_size = a -> length;
+	dst_digit_array = NEW_II(int, a->length);
+	memcpy(dst_digit_array, a->array, sizeof(int) * a->length);
+	dst_digit_size = a->length;
 
 	delete_array(a);
 	free(a);
@@ -55,10 +55,10 @@ int Converter_EncodeStringToIntArray(const char *text)
 	if(!arr)
 		return 0;
 	dst_string = strdup(text);
-	dst_digit_array = NEW_II(int, arr -> length);
-	memcpy(dst_digit_array, arr -> array, arr -> length * sizeof(int));
-	dst_digit_size = arr -> length;
-	printf("Text -> %s\n", text);
+	dst_digit_array = NEW_II(int, arr->length);
+	memcpy(dst_digit_array, arr->array, arr->length * sizeof(int));
+	dst_digit_size = arr->length;
+	printf("Text->%s\n", text);
 	delete_array(arr);
 	free(arr);
 	return 1;

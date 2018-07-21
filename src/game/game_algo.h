@@ -14,7 +14,7 @@ typedef enum _character_health_type
 
 typedef enum _character_status_type
 {
-	idle_status_type,
+	idle_status_type = 0,
 	run_status_type,
 	attack_status_type,
 	fighting_status_type,
@@ -41,5 +41,6 @@ extern const char *Character_Status_Name[other_status_type];
 
 int Game_GetStatusPriority(character_status_type status);
 animation_loop_type Game_GetStatusAniamtionLoop(character_status_type status);
+unsigned Game_ChangeStatus(unsigned olds, unsigned news);
 
 #endif

@@ -21,6 +21,17 @@ typedef enum _widget_type
 	widget_flickable_type,
 } widget_type;
 
+typedef void (* Button_Action_Function)(void *);
+typedef struct _button_initilizer
+{
+	GLfloat x;
+	GLfloat y;
+	GLfloat w;
+	GLfloat h;
+	char *label;
+	Button_Action_Function func;
+	void *data;
+} button_initilizer;
 
 typedef GLvoid (*Render_Delegate_Function)(const GLvoid *delegate);
 typedef GLvoid (*Get_Geometry_Function)(const GLvoid *comp, GLfloat *w, GLfloat *h);

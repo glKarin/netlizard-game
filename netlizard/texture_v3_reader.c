@@ -46,11 +46,11 @@ png_texture * nlReadCompressTextureV3_Memory(const array *arr)
 		return NULL;
 	png_texture *tex = NEW(png_texture);
 	ZERO(tex, png_texture);
-	tex -> color_map = class_s__function_a_1byte_array__color_map(arr -> array, &tex -> format);
-	tex -> color_index = class_s__function_a_1byte_array_2bool_3int_4int_5int_6int__color_index(arr, 0, 0, 0, 0, 0, &tex -> width, &tex -> height);
-	tex -> width = class_s__function_a_1byte_array_2byte__get_width_height_depth((byte *)(arr -> array), 0);
-	tex -> height = class_s__function_a_1byte_array_2byte__get_width_height_depth((byte *)(arr -> array), 1);
-	tex -> depth = class_s__function_a_1byte_array_2byte__get_width_height_depth((byte *)(arr -> array), 2);
+	tex->color_map = class_s__function_a_1byte_array__color_map(arr->array, &tex->format);
+	tex->color_index = class_s__function_a_1byte_array_2bool_3int_4int_5int_6int__color_index(arr, 0, 0, 0, 0, 0, &tex->width, &tex->height);
+	tex->width = class_s__function_a_1byte_array_2byte__get_width_height_depth((byte *)(arr->array), 0);
+	tex->height = class_s__function_a_1byte_array_2byte__get_width_height_depth((byte *)(arr->array), 1);
+	tex->depth = class_s__function_a_1byte_array_2byte__get_width_height_depth((byte *)(arr->array), 2);
 
 	return tex;
 }
@@ -74,19 +74,19 @@ png_texture * nlReadTextureV3_Memory(const array *arr, int i1)
 		return NULL;
 	png_texture *tex = NEW(png_texture);
 	ZERO(tex, png_texture);
-	tex -> color_map = class_s__function_a_1byte_array__color_map(arr -> array, &tex -> format);
-	tex -> color_index = class_s__function_a_1byte_array_2bool_3int_4int_5int_6int__color_index(arr, 0, 0, 0, 0, 0, &tex -> width, &tex -> height);
+	tex->color_map = class_s__function_a_1byte_array__color_map(arr->array, &tex->format);
+	tex->color_index = class_s__function_a_1byte_array_2bool_3int_4int_5int_6int__color_index(arr, 0, 0, 0, 0, 0, &tex->width, &tex->height);
 	if (i1 > 6) {
-		class_s__function_a_1byte_array_2int__swap((byte *)(tex -> color_index), 7);
+		class_s__function_a_1byte_array_2int__swap((byte *)(tex->color_index), 7);
 	}
 	else if(i1 < 0)
 	{
 	}
 	else
 	{
-		class_s__function_a_1byte_array_2int__swap((byte *)(tex -> color_index), 8);
+		class_s__function_a_1byte_array_2int__swap((byte *)(tex->color_index), 8);
 	}
-	tex -> depth = 1;
+	tex->depth = 1;
 	return tex;
 }
 
@@ -108,10 +108,10 @@ int nlSaveImage_V3Memory(const png_texture *tex, const char *to, int img_type)
 	if(!tex || !to)
 		return 0;
 	unsigned char *data = nlMakeOpenGLTextureDataRGBA(tex);
-	int channel = tex -> format != nl_rgb ? SOIL_LOAD_RGBA : SOIL_LOAD_RGBA;
+	int channel = tex->format != nl_rgb ? SOIL_LOAD_RGBA : SOIL_LOAD_RGBA;
 	if(data)
 	{
-		int res = SOIL_save_image(to, img_type, tex -> width, tex -> height, channel, data);
+		int res = SOIL_save_image(to, img_type, tex->width, tex->height, channel, data);
 		free(data);
 		return res;
 	}
@@ -261,7 +261,7 @@ int nlSaveTextureV3_Memory(const unsigned char *data, int _i, int width, int hei
 		class_s__function_a_1byte_array_2int__swap(index, 8);
 	}
 
-	nlprintf("Make v3 PNG color map'size -> %d\n", len);
+	nlprintf("Make v3 PNG color map'size->%d\n", len);
 	int j = 3; // 3
 	int m4 = 0; // 4
 	int k = format != nl_rgb ? 1 : 0; // 5
@@ -323,7 +323,7 @@ int nlSaveTextureV3_Memory(const unsigned char *data, int _i, int width, int hei
 	// 2 index
 	unsigned int i1 = width;
 	unsigned int i2 = height;
-	nlprintf("Make v3 PNG -> width: %d, height: %d\n", i1, i2);
+	nlprintf("Make v3 PNG->width: %d, height: %d\n", i1, i2);
 	c = (unsigned char)(i1 << 16 >> 24);
 	fwrite(&c, sizeof(unsigned char), 1, file);
 	c = (unsigned char)(i1 << 24 >> 24);
@@ -372,7 +372,7 @@ int nlSaveTextureV3_File(const char *from, int _i, const char *to)
 	int height;
 	png_texture_format format;
 	unsigned char *data = SOIL_load_image(from, &width, &height, &channel, SOIL_LOAD_AUTO);
-	nlprintf("Read image -> width: %d, height: %d\n", width, height);
+	nlprintf("Read image->width: %d, height: %d\n", width, height);
 	if(!data)
 		return 0;
 	if(channel == SOIL_LOAD_RGB)
@@ -406,9 +406,9 @@ array * class_s__function_a_1byte_array__color_map(const byte paramArrayOfByte[]
 	if ((i = paramArrayOfByte[5]) < 0) {
 		i += 256;
 	}
-	nlprintf("NETLizard 3D engine v3 texture color map'size -> %d\n", i);
+	nlprintf("NETLizard 3D engine v3 texture color map'size->%d\n", i);
 	array *arr = new_array(nl_int, i, NULL, 0);
-	int *arrayOfInt = (int *)(arr -> array);
+	int *arrayOfInt = (int *)(arr->array);
 	if (k == 0)
 	{
 		int m = 0;
@@ -450,7 +450,7 @@ array * class_s__function_a_1byte_array_2bool_3int_4int_5int_6int__color_index(c
 		return NULL;
 	int j = 0;
 	int k = 0;
-	byte *paramArrayOfByte = (byte *)(data -> array);
+	byte *paramArrayOfByte = (byte *)(data->array);
 	if (paramArrayOfByte[3] == 1) {
 		k = 1;
 	}
@@ -487,7 +487,7 @@ array * class_s__function_a_1byte_array_2bool_3int_4int_5int_6int__color_index(c
 		}
 		j++;
 		int i;
-		nlprintf("NETLizard 3D engine v3 texture -> width: %d, height: %d\n", i1, i2);
+		nlprintf("NETLizard 3D engine v3 texture->width: %d, height: %d\n", i1, i2);
 		if (m == 0)
 		{
 			arrayOfByte = NEW_II(byte, (i = i1 * i2));
@@ -501,7 +501,7 @@ array * class_s__function_a_1byte_array_2bool_3int_4int_5int_6int__color_index(c
 		else
 		{
 			j++;
-			arrayOfByte = NEW_II(byte, (i = data -> length - j));
+			arrayOfByte = NEW_II(byte, (i = data->length - j));
 			for (i3 = 0; i3 < i; i3++) {
 				arrayOfByte[i3] = paramArrayOfByte[(j++)];
 			}
@@ -625,10 +625,10 @@ int nlSaveCompressImage_V3Memory(const png_texture *tex, const char *to, int img
 	if(!tex || !to)
 		return 0;
 	unsigned char *data = nlMakeOpenGLTextureDataRGBACompress(tex);
-	int channel = tex -> format != nl_rgb ? SOIL_LOAD_RGBA : SOIL_LOAD_RGBA;
+	int channel = tex->format != nl_rgb ? SOIL_LOAD_RGBA : SOIL_LOAD_RGBA;
 	if(data)
 	{
-		int res = SOIL_save_image(to, img_type, tex -> width, tex -> height, channel, data);
+		int res = SOIL_save_image(to, img_type, tex->width, tex->height, channel, data);
 		free(data);
 		return res;
 	}

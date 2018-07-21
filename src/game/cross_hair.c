@@ -10,7 +10,7 @@ cross_hair * new_optical_sight_cross_hair(cross_hair *cross, GLfloat w, GLfloat 
 {
 	RETURN_PTR(c, cross, cross_hair)
 
-		c -> optical.type = optical_type;
+		c->optical.type = optical_type;
 	GLfloat i;
 	GLuint count = 0;
 	GLfloat per = p;
@@ -49,19 +49,19 @@ cross_hair * new_optical_sight_cross_hair(cross_hair *cross, GLfloat w, GLfloat 
 	index[1 + 1 + count + 2] = count + 3;
 	index[1 + 1 + count + 3] = count + 4;
 
-	c -> optical.pos[0] = 0.0;
-	c -> optical.pos[1] = 0.0;
-	c -> optical.pos[2] = 0.0;
-	c -> optical.radius = w;
-	c -> optical.front_sight_line_width = clw;
-	c -> optical.front_sight_point_width = cpw;
-	COPY_COLOR4(c -> optical.front_sight_line_color, lc);
-	COPY_COLOR4(c -> optical.front_sight_point_color, pc);
-	c -> optical.buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * (count + 1 + 4), vertex, GL_STATIC_DRAW);
-	c -> optical.buffers[index_buffer_type] = new_OpenGL_buffer_object(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * (1 + 1 + count + 4), index, GL_STATIC_DRAW);
+	c->optical.pos[0] = 0.0;
+	c->optical.pos[1] = 0.0;
+	c->optical.pos[2] = 0.0;
+	c->optical.radius = w;
+	c->optical.front_sight_line_width = clw;
+	c->optical.front_sight_point_width = cpw;
+	COPY_COLOR4(c->optical.front_sight_line_color, lc);
+	COPY_COLOR4(c->optical.front_sight_point_color, pc);
+	c->optical.buffers[vertex_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * (count + 1 + 4), vertex, GL_STATIC_DRAW);
+	c->optical.buffers[index_buffer_type] = new_OpenGL_buffer_object(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * (1 + 1 + count + 4), index, GL_STATIC_DRAW);
 	free(vertex);
 	free(index);
-	c -> optical.count = count;
+	c->optical.count = count;
 	return c;
 }
 
@@ -71,15 +71,15 @@ cross_hair * new_normal_cross_hair(cross_hair *cross, cross_hair_type type, cons
 		return NULL;
 
 	RETURN_PTR(c, cross, cross_hair)
-	c -> normal.type = type;
-	COPY_COLOR4(c -> normal.color, color);
-	c -> normal.step = step;
-	c -> normal.width = width;
-	c -> normal.height = height;
-	c -> normal.scale = 0.0;
-	c -> normal.pos[0] = 0.0;
-	c -> normal.pos[1] = 0.0;
-	c -> normal.pos[2] = 0.0;
+	c->normal.type = type;
+	COPY_COLOR4(c->normal.color, color);
+	c->normal.step = step;
+	c->normal.width = width;
+	c->normal.height = height;
+	c->normal.scale = 0.0;
+	c->normal.pos[0] = 0.0;
+	c->normal.pos[1] = 0.0;
+	c->normal.pos[2] = 0.0;
 	return c;
 }
 
@@ -89,17 +89,17 @@ cross_hair * new_ray_cross_hair(cross_hair *cross, cross_hair_type type, const G
 		return NULL;
 	RETURN_PTR(c, cross, cross_hair)
 	
-		c -> ray.type = type;
-	COPY_COLOR4(c -> ray.color, color);
-	c -> ray.line_width = line_width;
-	c -> ray.point_min_width = point_min_width;
-	c -> ray.point_max_width = point_max_width;
-	c -> ray.start_pos[0] = 0.0;
-	c -> ray.start_pos[1] = 0.0;
-	c -> ray.start_pos[2] = 0.0;
-	c -> ray.target_pos[0] = 0.0;
-	c -> ray.target_pos[1] = 0.0;
-	c -> ray.target_pos[2] = 0.0;
+		c->ray.type = type;
+	COPY_COLOR4(c->ray.color, color);
+	c->ray.line_width = line_width;
+	c->ray.point_min_width = point_min_width;
+	c->ray.point_max_width = point_max_width;
+	c->ray.start_pos[0] = 0.0;
+	c->ray.start_pos[1] = 0.0;
+	c->ray.start_pos[2] = 0.0;
+	c->ray.target_pos[0] = 0.0;
+	c->ray.target_pos[1] = 0.0;
+	c->ray.target_pos[2] = 0.0;
 	return c;
 }
 
@@ -109,32 +109,32 @@ void UI_RenderOpticalSightCrossHair(const optical_sight_cross_hair *c, sight_par
 		return;
 	glPushMatrix();
 	{
-		glTranslatef(c -> pos[0], c -> pos[1], c -> pos[2]);
+		glTranslatef(c->pos[0], c->pos[1], c->pos[2]);
 		glEnableClientState(GL_VERTEX_ARRAY);
-		glBindBuffer(GL_ARRAY_BUFFER, c -> buffers[vertex_buffer_type]);
+		glBindBuffer(GL_ARRAY_BUFFER, c->buffers[vertex_buffer_type]);
 		glVertexPointer(2, GL_FLOAT, 0, NULL);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, c -> buffers[index_buffer_type]);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, c->buffers[index_buffer_type]);
 		if(p == sight_optical)
-			oglDrawElements(GL_TRIANGLE_FAN, c -> count + 2, GL_UNSIGNED_SHORT, NULL);
+			oglDrawElements(GL_TRIANGLE_FAN, c->count + 2, GL_UNSIGNED_SHORT, NULL);
 		else
 		{
 			glPushAttrib(GL_CURRENT_BIT | GL_LINE_BIT | GL_POINT_BIT);
 			{
-				glColor4fv(c -> front_sight_line_color);
-				glLineWidth(c -> front_sight_line_width);
+				glColor4fv(c->front_sight_line_color);
+				glLineWidth(c->front_sight_line_width);
 				glPushMatrix();
 				{
-					glTranslatef(-c -> front_sight_line_width / 2, 0.0, 0.0);
-					oglDrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, (GLushort *)NULL + c -> count + 2);
-					glTranslatef(0.0, -c -> front_sight_line_width / 2, 0.0);
-					oglDrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, (GLushort *)NULL + c -> count + 4);
+					glTranslatef(-c->front_sight_line_width / 2, 0.0, 0.0);
+					oglDrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, (GLushort *)NULL + c->count + 2);
+					glTranslatef(0.0, -c->front_sight_line_width / 2, 0.0);
+					oglDrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, (GLushort *)NULL + c->count + 4);
 				}
 				glPopMatrix();
 
 				oglEnable(GL_POINT_SMOOTH);
-				glColor4fv(c -> front_sight_point_color);
-				glPointSize(c -> front_sight_point_width);
-					//glTranslatef(-c -> front_sight_point_width / 2, -c -> front_sight_point_width / 2, 0.0);
+				glColor4fv(c->front_sight_point_color);
+				glPointSize(c->front_sight_point_width);
+					//glTranslatef(-c->front_sight_point_width / 2, -c->front_sight_point_width / 2, 0.0);
 					oglDrawElements(GL_POINTS, 1, GL_UNSIGNED_SHORT, NULL);
 				glPopMatrix();
 			}
@@ -155,21 +155,21 @@ void UI_RenderNormalCrossHair(const normal_cross_hair *c)
 	glPushAttrib(GL_CURRENT_BIT | GL_LINE_BIT | GL_POINT_BIT | GL_DEPTH_BUFFER_BIT);
 	{
 		oglDisable(GL_DEPTH_TEST);
-		glTranslatef(c -> pos[0], c -> pos[1], c -> pos[2]);
-		if(c -> type == point_type)
+		glTranslatef(c->pos[0], c->pos[1], c->pos[2]);
+		if(c->type == point_type)
 		{
-			glPointSize(c -> width);
+			glPointSize(c->width);
 		}
 		else
 		{
-			glLineWidth(c -> width);
+			glLineWidth(c->width);
 		}
 
-		glColor4fv(c -> color);
-		GLfloat strip = c -> scale * c -> step;
+		glColor4fv(c->color);
+		GLfloat strip = c->scale * c->step;
 		glEnableClientState(GL_VERTEX_ARRAY);
 
-		if(c -> type == point_type)
+		if(c->type == point_type)
 		{
 			GLfloat vertex[] = {
 				0.0, strip,
@@ -183,14 +183,14 @@ void UI_RenderNormalCrossHair(const normal_cross_hair *c)
 		else
 		{
 			GLfloat vertex[] = {
-				-c -> width / 2, c -> width * 4 + strip,
-				-c -> width / 2, c -> width * 4 + c -> height + strip,
-				-c -> width / 2, -c -> width * 4 - strip,
-				-c -> width / 2, -c -> width * 4 - c -> height - strip,
-				-c -> width * 4 - strip, -c -> width / 2,
-				-c -> width * 4 - c -> height - strip, -c -> width / 2,
-				c -> width * 4 + strip, -c -> width / 2,
-				c -> width * 4 + c -> height + strip, -c -> width / 2
+				-c->width / 2, c->width * 4 + strip,
+				-c->width / 2, c->width * 4 + c->height + strip,
+				-c->width / 2, -c->width * 4 - strip,
+				-c->width / 2, -c->width * 4 - c->height - strip,
+				-c->width * 4 - strip, -c->width / 2,
+				-c->width * 4 - c->height - strip, -c->width / 2,
+				c->width * 4 + strip, -c->width / 2,
+				c->width * 4 + c->height + strip, -c->width / 2
 			};
 			glVertexPointer(2, GL_FLOAT, 0, vertex);
 			oglDrawArrays(GL_LINES, 0, 8);
@@ -205,12 +205,12 @@ void UI_RenderRayCrossHair(const ray_cross_hair *c)
 	if(!c)
 		return;
 	GLfloat vertex[] = {
-		c -> start_pos[0],
-		c -> start_pos[1],
-		c -> start_pos[2],
-		c -> target_pos[0],
-		c -> target_pos[1],
-		c -> target_pos[2]
+		c->start_pos[0],
+		c->start_pos[1],
+		c->start_pos[2],
+		c->target_pos[0],
+		c->target_pos[1],
+		c->target_pos[2]
 	};
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, vertex);
@@ -219,7 +219,7 @@ void UI_RenderRayCrossHair(const ray_cross_hair *c)
 		glPushAttrib(GL_CURRENT_BIT | GL_LINE_BIT);
 		{
 			oglEnable(GL_LINE_SMOOTH);
-			glColor4fv(c -> color);
+			glColor4fv(c->color);
 			oglDrawArrays(GL_LINES, 0, 2);
 		}
 		glPopAttrib();
@@ -227,15 +227,15 @@ void UI_RenderRayCrossHair(const ray_cross_hair *c)
 	glPushAttrib(GL_CURRENT_BIT | GL_POINT_BIT);
 	{
 #ifndef _HARMATTAN_OPENGLES2
-		glPointSize(c -> point_max_width);
+		glPointSize(c->point_max_width);
 
-		glPointParameteri(GL_POINT_SIZE_MAX, c -> point_max_width);
-		glPointParameteri(GL_POINT_SIZE_MIN, c -> point_min_width);
+		glPointParameteri(GL_POINT_SIZE_MAX, c->point_max_width);
+		glPointParameteri(GL_POINT_SIZE_MIN, c->point_min_width);
 		GLfloat attenuation[] = {0.0, 0.02, 0.0};
 		glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, attenuation);
 #endif
 		oglEnable(GL_POINT_SMOOTH);
-		glColor4fv(c -> color);
+		glColor4fv(c->color);
 		oglDrawArrays(GL_POINTS, 1, 1);
 	}
 	glPopAttrib();
@@ -246,17 +246,17 @@ void UI_RenderCrossHair(const cross_hair *c)
 {
 	if(!c)
 		return;
-	if(c -> type == ray_type)
+	if(c->type == ray_type)
 	{
-		UI_RenderRayCrossHair(&c -> ray);
+		UI_RenderRayCrossHair(&c->ray);
 	}
-	else if(c -> type == optical_type)
+	else if(c->type == optical_type)
 	{
-		UI_RenderOpticalSightCrossHair(&c -> optical, sight_optical);
+		UI_RenderOpticalSightCrossHair(&c->optical, sight_optical);
 	}
 	else
 	{
-		UI_RenderNormalCrossHair(&c -> normal);
+		UI_RenderNormalCrossHair(&c->normal);
 	}
 }
 
@@ -267,9 +267,9 @@ void delete_optical_sight(optical_sight_cross_hair *c)
 	int i;
 	for(i = 0; i < total_buffer_type; i++)
 	{
-		if(glIsBuffer(c -> buffers[i]))
+		if(glIsBuffer(c->buffers[i]))
 		{
-			glDeleteBuffers(1, c -> buffers + i);
+			glDeleteBuffers(1, c->buffers + i);
 		}
 	}
 }

@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define dprintfsi(s, d) nlprintf("RE 3D : "#s" -> %d\n", d)
-#define dprintfsii(s, d, d2) nlprintf("RE 3D : ""%d - "#s" -> %d\n", d, d2)
+#define dprintfsi(s, d) nlprintf("RE 3D : "#s"->%d\n", d)
+#define dprintfsii(s, d, d2) nlprintf("RE 3D : ""%d - "#s"->%d\n", d, d2)
 #define dprintfss(s) nlprintf("RE 3D : "#s"\n")
-#define dprintfsss(s, s2) nlprintf("RE 3D : "#s" -> %s""\n", s2)
+#define dprintfsss(s, s2) nlprintf("RE 3D : "#s"->%s""\n", s2)
 
 static int class_b__function_a__1byte_2byte(byte paramByte1, byte paramByte2);
 static int class_b__function_c__1byte_array_2int(const char paramArrayOfByte[], int paramInt);
@@ -37,10 +37,10 @@ int nlIsRE3DMesh(const array *arr)
 	if(!arr)
 		return 0;
 	
-	size_t l = arr -> length;
+	size_t l = arr->length;
 	if(l < b_length)
 		return 0;
-	byte *arrayOfByte = (byte *)(arr -> array);
+	byte *arrayOfByte = (byte *)(arr->array);
 	int i2 = (strncmp(arrayOfByte, b, b_length) == 0) ? b_length : 0;
 	return i2; // 7
 }
@@ -52,7 +52,7 @@ RE3D_Model * nlReadRE3DMesh(const array *arr)
 	int paramInt = nlIsRE3DMesh(arr);
 	if(!paramInt)
 		return NULL;
-	byte *paramArrayOfByte = (byte *)(arr -> array);
+	byte *paramArrayOfByte = (byte *)(arr->array);
 	int i1 = paramInt; // 7
 	int i2 = 0;
 	int i3 = paramArrayOfByte[(i1++)];
@@ -64,7 +64,7 @@ RE3D_Model * nlReadRE3DMesh(const array *arr)
 	//Appearance[] arrayOfAppearance = new Appearance[i3];
 	int *arrayOfInt = NEW_II(int, i4);
 	array *texes = new_array(nl_pointer, i3, NULL, 0);
-	char **filenames = (char **)(texes -> array);
+	char **filenames = (char **)(texes->array);
 	//t = new String[i3];
 	//s = new Texture2D[i3];
 	//r = 0;
@@ -74,22 +74,22 @@ RE3D_Model * nlReadRE3DMesh(const array *arr)
 	for (i6 = 0; i6 < i3; i6++) {
 		if ((i2 = paramArrayOfByte[(i1++)] & 0xFF) == 225) {
 			i1 = class_e__function_a__1Appearance_2int_3byte_array_4int(filenames + i6, i5++, paramArrayOfByte, i1);
-			dprintfsss("Map texture file", ((char **)(texes -> array))[i6]);
+			dprintfsss("Map texture file", ((char **)(texes->array))[i6]);
 		}
 	}
 	i5 = 0;
 	array *meshes = new_array(nl_user, i4, NULL, sizeof(RE3D_Mesh));
 	for (i7 = 0; i7 < i4; i7++) {
 		if ((i2 = paramArrayOfByte[(i1++)] & 0xFF) == 241) {
-			RE3D_Mesh *mesh = ((RE3D_Mesh *)(meshes -> array)) + i7;
+			RE3D_Mesh *mesh = ((RE3D_Mesh *)(meshes->array)) + i7;
 			i1 = class_e__function_a__1class_k_array_2int_array_3int_4byte_array_5int(mesh, arrayOfInt, i5++, paramArrayOfByte, i1);
 		}
 	}
 	for (i6 = 0; i6 < i4; i6++) {
-		RE3D_Mesh *mesh = ((RE3D_Mesh *)(meshes -> array)) + i6;
+		RE3D_Mesh *mesh = ((RE3D_Mesh *)(meshes->array)) + i6;
 		if ((i7 = arrayOfInt[i6]) < 127)
 		{
-			mesh -> tex_index = i7;
+			mesh->tex_index = i7;
 			/*
 			int i8;
 			if (((i8 = arrayOfAppearance[i7].getUserID()) & 0x4) != 0) {
@@ -98,13 +98,13 @@ RE3D_Model * nlReadRE3DMesh(const array *arr)
 			*/
 		}
 		else
-			mesh -> tex_index = -1;
+			mesh->tex_index = -1;
 	}
 	free(arrayOfInt);
 	RE3D_Model *model = NEW(RE3D_Model);
 	ZERO(model, RE3D_Model);
-	model -> meshes = meshes;
-	model -> texes = texes;
+	model->meshes = meshes;
+	model->texes = texes;
 	return model;
 }
 
@@ -125,14 +125,14 @@ void delete_RE3D_Mesh(RE3D_Mesh *mesh)
 {
 	if(!mesh)
 		return;
-	delete_array(mesh -> vertex);
-	free(mesh -> vertex);
-	delete_array(mesh -> texcoord);
-	free(mesh -> texcoord);
-	delete_array(mesh -> index);
-	free(mesh -> index);
-	delete_array(mesh -> strip);
-	free(mesh -> strip);
+	delete_array(mesh->vertex);
+	free(mesh->vertex);
+	delete_array(mesh->texcoord);
+	free(mesh->texcoord);
+	delete_array(mesh->index);
+	free(mesh->index);
+	delete_array(mesh->strip);
+	free(mesh->strip);
 }
 
 void delete_RE3D_Model(RE3D_Model *model)
@@ -140,16 +140,16 @@ void delete_RE3D_Model(RE3D_Model *model)
 	if(!model)
 		return;
 	int i;
-	for(i = 0; i < model -> meshes -> length; i++)
+	for(i = 0; i < model->meshes->length; i++)
 	{
-		delete_RE3D_Mesh(((RE3D_Mesh *)(model -> meshes -> array)) + i);
+		delete_RE3D_Mesh(((RE3D_Mesh *)(model->meshes->array)) + i);
 	}
-	delete_array(model -> meshes);
-	free(model -> meshes);
-	for(i = 0; i < model -> texes -> length; i++)
-		free(((char **)(model -> texes -> array))[i]);
-	delete_array(model -> texes);
-	free(model -> texes);
+	delete_array(model->meshes);
+	free(model->meshes);
+	for(i = 0; i < model->texes->length; i++)
+		free(((char **)(model->texes->array))[i]);
+	delete_array(model->texes);
+	free(model->texes);
 }
 
 /* ****** static ****** */
@@ -279,8 +279,8 @@ int class_e__function_a__1class_k_array_2int_array_3int_4byte_array_5int(RE3D_Me
 		arrayOfFloat[i6] = class_b__function_a__1byte_array_2int(paramArrayOfByte, i1);
 		i1 += 4;
 	}
-	memcpy(m -> translation, arrayOfFloat, sizeof(float) * 3);
-	//printf("RE 3D map primitive position -> x: %f, y: %f, z: %f\n", arrayOfFloat[0], arrayOfFloat[1], arrayOfFloat[2]);
+	memcpy(m->translation, arrayOfFloat, sizeof(float) * 3);
+	//printf("RE 3D map primitive position->x: %f, y: %f, z: %f\n", arrayOfFloat[0], arrayOfFloat[1], arrayOfFloat[2]);
 	float f1 = class_b__function_a__1byte_array_2int(paramArrayOfByte, i1);
 	i1 += 4;
 	//paramArrayOfk[paramInt1] = new k();
@@ -324,10 +324,10 @@ int class_e__function_a__1class_k_array_2int_array_3int_4byte_array_5int(RE3D_Me
 			vertex[i9] = f2 * (float)i8;
 		}
 		//printf("<%f %f %f>\n", vertex[0], vertex[1], vertex[2]);
-		m -> vertex = new_array(nl_float, i2 * 3, vertex, 0);
+		m->vertex = new_array(nl_float, i2 * 3, vertex, 0);
 		free(localObject);
 		free(vertex);
-		//printf("RE 3D map primitive scale factory -> %f\n", f2);
+		//printf("RE 3D map primitive scale factory->%f\n", f2);
 		//localVertexArray1.set(0, i2, (short[])localObject);
 		//localVertexBuffer.setPositions(localVertexArray1, f2, arrayOfFloat);
 		i7 = paramArrayOfByte[(i1++)] & 0xFF;
@@ -348,7 +348,7 @@ int class_e__function_a__1class_k_array_2int_array_3int_4byte_array_5int(RE3D_Me
 			texcoord[i9 * 2] = 0.003921569F * (float)localObject[i9 * 2];
 			texcoord[i9 * 2 + 1] = 0.003921569F * (float)localObject[i9 * 2 + 1];
 		}
-		m -> texcoord = new_array(nl_float, i2 * 2, texcoord, 0);
+		m->texcoord = new_array(nl_float, i2 * 2, texcoord, 0);
 		free(localObject);
 		free(texcoord);
 		//localVertexArray2.set(0, i2, (short[])localObject);
@@ -365,13 +365,13 @@ int class_e__function_a__1class_k_array_2int_array_3int_4byte_array_5int(RE3D_Me
 		}
 		i7 = paramArrayOfByte[(i1++)] & 0xFF;
 	}
-	m -> index = new_array(nl_unsigned_int, i3, localObject2, 0);
+	m->index = new_array(nl_unsigned_int, i3, localObject2, 0);
 	free(localObject2);
 	//printf("i4 = %d\n", i4);
 	int *arrayOfInt = NEW_II(int, i4);
 	unsigned int *strips = NEW_II(unsigned int, i4);
 	dprintfsi("Scene element strips count", i4);
-	m -> primitive = i4;
+	m->primitive = i4;
 	if (i7 == 246) {
 		int i10;
 		for (i10 = 0; i10 < i4; i10++) {
@@ -380,7 +380,7 @@ int class_e__function_a__1class_k_array_2int_array_3int_4byte_array_5int(RE3D_Me
 			//printf("%d ", arrayOfInt[i10]);
 		}
 	}
-	m -> strip = new_array(nl_unsigned_int, i4, strips, 0);
+	m->strip = new_array(nl_unsigned_int, i4, strips, 0);
 	free(arrayOfInt);
 	free(strips);
 	//TriangleStripArray localTriangleStripArray = new TriangleStripArray((int[])localObject, arrayOfInt);

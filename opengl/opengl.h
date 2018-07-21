@@ -13,6 +13,7 @@
 	#define oglGetFloatv(n, p) glGetFloatv(n, p)
 	#define oglGetIntegerv(n, p) glGetIntegerv(n, p)
 	#define oglBindTexture(o, t) glBindTexture(o, t)
+	#define oglColor4f(r, g, b, a) glColor4f(r, g, b, a)
 #elif defined(_HARMATTAN_OPENGLES2)
 	#include "gles2.0/opengl/opengl2.h"
 //	#include <EGL/egl.h>
@@ -25,6 +26,7 @@
 	#define oglGetFloatv(n, p) gl2GetFloatv(n, p)
 	#define oglGetIntegerv(n, p) gl2GetIntegerv(n, p)
 	#define oglBindTexture(o, t) gl2BindTexture(o, t)
+	#define oglColor4f(r, g, b, a) gl2Color4(r, g, b, a)
 #else
 	#include <GL/gl.h>
 	#include <GL/glext.h>

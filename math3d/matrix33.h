@@ -3,7 +3,7 @@
 
 #include "math3d_std.h"
 
-#define printfm3(x) printf(#x" -> "); Matrix33_Print(&(x));
+#define printfm3(x) printf(#x"->"); Matrix33_Print(&(x));
 
 typedef struct _matrix33_t
 {

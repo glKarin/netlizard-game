@@ -49,7 +49,7 @@ void Viewer_RE3DInitSimpleLight(void)
 		1.0f, 1.0f, 1.0f, 1.0f
 	};
 	GLfloat light_position[] = {
-		-60.0f, -10.0f, 40.0f, 0.0
+		-60.0f, -10.0f, 40.0f, 1.0
 	};
 	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_light);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_light);
@@ -179,7 +179,7 @@ void Viewer_RE3DInitFunc()
 	Viewer_Init3DFunc();
 	is_cross = GL_TRUE;
 	GLfloat color[] = {1.0f, 1.0f, 1.0f, 1.0f};
-	OpenGL_InitSimpleFog(50.0f, 100.0f, 0.01f, color);
+	OpenGL_InitFog(GL_EXP2, 50.0f, 100.0f, 0.01f, color);
 	oglEnable(GL_FOG);
 #ifndef _HARMATTAN_OPENGLES2
 	Viewer_RE3DInitSimpleLight();
@@ -201,7 +201,7 @@ void Viewer_RE3DInitFunc()
 	else
 		return;
 	if(model)
-		bg.tex = model -> bg_tex;
+		bg.tex = model->bg_tex;
 
 	printfs(map_file);
 	printfs(car_file);
@@ -241,16 +241,16 @@ void Viewer_RE3DDrawFunc(void)
 				if(test)
 				{
 					glPointSize(8);
-					//GLfloat f = 1.0 / (model -> count + 1);
+					//GLfloat f = 1.0 / (model->count + 1);
 					int i;
 					for(i = 0; i < 1; i++)
 					{
 						glBegin(GL_POINTS);
 						{
 							glColor3f(0, 0, 1);
-							glVertex3f(model -> meshes[i].ortho[3], model -> meshes[i].ortho[4], model -> meshes[i].ortho[5]);
+							glVertex3f(model->meshes[i].ortho[3], model->meshes[i].ortho[4], model->meshes[i].ortho[5]);
 							glColor3f(1, 0, 0);
-							glVertex3f(model -> meshes[i].ortho[0], model -> meshes[i].ortho[1], model -> meshes[i].ortho[2]);
+							glVertex3f(model->meshes[i].ortho[0], model->meshes[i].ortho[1], model->meshes[i].ortho[2]);
 						}
 						glEnd();
 					}
@@ -297,7 +297,7 @@ void Viewer_RE3DDrawFunc(void)
 	static GLuint frame = 0;
 	//NETLizard_RenderGL3DAnimationModel(role_model, anim, frame);
 	frame++;
-	if(frame >= clone3d_role_model -> anim_frame_count[anim])
+	if(frame >= clone3d_role_model->anim_frame_count[anim])
 	frame = 0;
 	}
 	glPopMatrix();
@@ -312,9 +312,9 @@ void Viewer_RE3DDrawFunc(void)
 		{
 			char str[50];
 			memset(str, '\0', 50 * sizeof(char));
-			sprintf(str, "Pos -> (%.2f, %.2f, %.2f)", x_t_3d, y_t_3d, z_t_3d);
+			sprintf(str, "Pos->(%.2f, %.2f, %.2f)", x_t_3d, y_t_3d, z_t_3d);
 			Font_RenderString(&fnt, 0, 0, 0.0, 0.0, 0.0, 1.0, str);
-			sprintf(str, "Ang -> (%.2f, %.2f)", y_r_3d, x_r_3d);
+			sprintf(str, "Ang->(%.2f, %.2f)", y_r_3d, x_r_3d);
 			Font_RenderString(&fnt, 0, 2 * fnt.height, 0.0, 0.0, 0.0, 1.0, str);
 			sprintf(str, "%s%s", is_cross ? "C " : "", 
 #ifndef _HARMATTAN_OPENGLES2
@@ -325,7 +325,7 @@ void Viewer_RE3DDrawFunc(void)
 					? "F " : "");
 			Font_RenderString(&fnt, 0, height / 2 - fnt.height, 0.0, 0.0, 0.0, 1.0, str);
 			Font_RenderString(&fnt, 0, height - 2 * fnt.height, 0.0, 0.0, 0.0, 1.0, map_file);
-			sprintf(str, "Scene -> (%d)", model -> count);
+			sprintf(str, "Scene->(%d)", model->count);
 			Font_RenderString(&fnt, 0, 6 * fnt.height, 0.0, 0.0, 0.0, 1.0, str);
 			if(scenes)
 			{

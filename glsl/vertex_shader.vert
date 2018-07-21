@@ -13,6 +13,7 @@ struct Fog{
 attribute vec3 vPosition; // 顶点坐标
 attribute vec3 vNormal; // 法线
 attribute vec2 vTexcoord; // 纹理坐标0
+attribute vec4 vColor; // 颜色
 
 uniform mat4 vModelviewMatrix; // 模型视图矩阵
 uniform mat4 vProjectionMatrix; // 投影矩阵
@@ -24,6 +25,7 @@ uniform Fog fFog; // 雾
 varying vec2 fTexcoord; // 纹理坐标
 varying float fFogFactory; // 雾因子
 varying vec4 fFogColor; // 雾颜色
+varying vec4 fPrimaryColor; // 雾颜色
 //varing vec3 fNormal; // 法线
 
 float glFog_Linear(in vec3 pos)
@@ -59,5 +61,6 @@ void main()
 	//vec3 pos = gl_Position.xyz;
 	fFogFactory = fFog.enabled ? glFog_Linear(pos) : 1.0;
 	fFogColor = fFog.color;
+	fPrimaryColor = vColor;
 	//fNormal = vNormal;
 }
