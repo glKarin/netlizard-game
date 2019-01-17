@@ -1,3 +1,21 @@
+netlizard-game (0.9.0harmattan1) unstable; urgency=low
+
+  * Add shadow volume render support.
+  * Add some math function, and OpenGL matrix(Column-major).
+  * Add page stack support.
+  * Fixed some bugs.
+
+ -- Karin Zhao <beyondk2000@gmail.com>  Tue, 15 Jan 2019 16:15:28 +0800
+
+netlizard-game (0.8.0harmattan1) unstable; urgency=low
+
+  * Add CSOL character models.
+  * Add HLSDK model viewer.
+  * Fixed boom effect.
+  * Add 4 weapons playing.
+
+ -- Karin Zhao <beyondk2000@gmail.com>  Sat, 28 Jul 2018 14:32:12 +0800
+
 netlizard-game (0.7.8harmattan1) unstable; urgency=low
 
   * Add joystick on virtual button layer.

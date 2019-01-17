@@ -3,29 +3,9 @@
 
 #include "game_util.h"
 #include "font.h"
-#include <X11/Xlib.h>
+#include "page_stack.h"
 
-typedef int (*Main3DMouseMotionFunction)(int btn, int p, int x, int t, int dx, int dy);
-typedef void (*Main3DInitFunction)(void);
-typedef void (*Main3DReshapeFunction)(int w, int h);
-typedef void (*Main3DDrawFunction)(void);
-typedef void (*Main3DFreeFunction)(void);
-typedef int (*Main3DIdleEventFunction)(void);
-typedef int (*Main3DKeyEventFunction)(int k, int act, int p, int x, int y);
-typedef int (*Main3DMouseFunction)(int button, int pressed, int x, int y);
-typedef int (*Main3DMouseClickFunction)(int button, int x, int y);
-typedef struct _glk_function
-{
-	Main3DInitFunction init_func;
-	Main3DDrawFunction draw_func;
-	Main3DFreeFunction free_func;
-	Main3DIdleEventFunction idle_func;
-	Main3DKeyEventFunction key_func;
-	Main3DMouseMotionFunction motion_func;
-	Main3DReshapeFunction reshape_func;
-	Main3DMouseFunction mouse_func;
-	Main3DMouseClickFunction click_func;
-} glk_function;
+#include <X11/Xlib.h>
 
 extern font fnt;
 extern GLboolean init_glk;
@@ -72,6 +52,8 @@ extern GLboolean key_ignore_case;
 
 void Main3D_InitGLK(int x, int y, int w, int h, const char *title, int fps, int fs);
 void Main3D_ModelViewTransform(person_mode mode, GLfloat tps_y/*left is less 0, right is greater than 0, equals 0 is in middle.*/, GLfloat tps_x, GLfloat tps_factory, int auto_cast);
+
+#if 0
 void Main3D_SetDrawFunction(Main3DDrawFunction f);
 void Main3D_SetInitFunction(Main3DInitFunction f);
 void Main3D_SetFreeFunction(Main3DFreeFunction f);
@@ -81,6 +63,7 @@ void Main3D_SetMouseMotionEventFunction(Main3DMouseMotionFunction f);
 void Main3D_SetReshapeFunction(Main3DReshapeFunction f);
 void Main3D_SetMouseEventFunction(Main3DMouseFunction f);
 void Main3D_SetMouseClickEventFunction(Main3DMouseClickFunction f);
+#endif
 
 void Main3D_RegisterGLKFunction(void);
 void Main3D_Reset(void);
@@ -92,5 +75,13 @@ void Main3D_SsveKeyMap(const char *file);
 Game_Action Main3D_GetActionOfKey(Harmattan_Key key);
 int Main3D_BaseTransform(void);
 void Main3D_ResetKeyAndActionState(void);
+
+// page stack
+void Main3D_PushRenderPage(const char *name, const glk_function *func);	
+void Main3D_InitRenderPage(const char *name, const glk_function *func);	
+void Main3D_PopRenderPage(void);
+void Main3D_FreePageStack(void);
+void Main3D_SetExistsRenderPage(const char *name);
+void Main3D_SetCurRenderPage(const char *name, const glk_function *func);
 
 #endif

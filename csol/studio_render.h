@@ -46,6 +46,9 @@ void drawBox (const vec3_t *v);
 void drawBoxFill (const vec3_t *v);
 void DrawIcosahedron(float x,float y,float z,float size);
 void DrawBones (const StudioModel *mdl);
+void DrawModelcv(StudioModel *mdl, const char *name);
+void DrawModeli(StudioModel *mdl, unsigned int index);
+void DrawPointsi (StudioModel *mdl, unsigned int index);
 
 
 float SetFrame( StudioModel *mdl, float frame);

@@ -8,6 +8,7 @@
 #define OPEN_VKB_SETTING "open_virtual_kb"
 #define SHOW_FPS_SETTING "show_fps"
 
+#define THIRD_PERSON_VIEW_CROSSHAIR_SETTING "third_person_view_crosshair_setting"
 #define THIRD_PERSON_VIEW_X_OFFSET_SETTING "third_person_view_x_offset"
 #define THIRD_PERSON_VIEW_Y_OFFSET_SETTING "third_person_view_y_offset"
 #define THIRD_PERSON_VIEW_DISTANCE_SETTING "third_person_view_distance"
@@ -45,6 +46,7 @@ typedef enum _setting_item_type
 	zoom_auto_setting,
 	open_vkb_setting,
 	show_fps_setting,
+	third_person_view_crosshair_setting,
 	third_person_view_x_offset_setting,
 	third_person_view_y_offset_setting,
 	third_person_view_distance_setting,

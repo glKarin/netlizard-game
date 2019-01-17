@@ -6,6 +6,8 @@
 #include "game_std.h"
 #include "action_signal_slot.h"
 
+#define PAGE_NAME GAME_MENU_PAGE_NAME
+
 #define LIST_VIEW_X 150
 #define LIST_VIEW_Y 100
 #define LIST_VIEW_W 554
@@ -31,30 +33,32 @@ static const struct _game_menu_action
 	char *func;
 } Game_Menu_Action[] = {
 	{"Continue", CLOSE_GAME_MENU},
-	{"Back to menu", OPEN_MAIN_MENU},
+	{"Back to menu", INIT_MAIN_MENU},
 	{"Quit", QUIT}
 };
 
-static int GameMenu_IdleEventFunc(void);
-static int GameMenu_KeyEventFunc(int k, int a, int p, int x, int y);
-static int GameMenu_MouseEventFunc(int b, int p, int x, int y);
-static int GameMenu_MouseClickEventFunc(int b, int x, int y);
-static int GameMenu_MouseMotionEventFunc(int b, int p, int x, int y, int dx, int dy);
-static void GameMenu_DrawFunc(void);
-static void GameMenu_ReshapeFunc(int w, int h);
-static void GameMenu_InitFunc(void);
-static void GameMenu_FreeFunc(void);
-static void GameMenu_ResetGameMenu(void);
+static int UI_IdleFunc(void);
+static int UI_KeyFunc(int k, int a, int p, int x, int y);
+static int UI_MouseFunc(int b, int p, int x, int y);
+static int UI_ClickFunc(int b, int x, int y);
+static int UI_MotionFunc(int b, int p, int x, int y, int dx, int dy);
+static void UI_DrawFunc(void);
+static void UI_ReshapeFunc(int w, int h);
+static void UI_InitFunc(void);
+static void UI_FreeFunc(void);
+static void UI_StoreFunc(void);
+static void UI_RestoreFunc(void);
 
-static void GameMenu_MakeListViewData(void);
-static void GameMenu_InitListView(void);
-static void GameMenu_EnterAction(void *data);
-static void GameMenu_BackAction(void *data);
-static void GameMenu_SetPageSize(GLsizei w, GLsizei h);
+static void UI_ResetGameMenu(void);
+static void UI_MakeListViewData(void);
+static void UI_InitListView(void);
+static void UI_EnterAction(void *data);
+static void UI_BackAction(void *data);
+static void UI_SetPageSize(GLsizei w, GLsizei h);
 
 static const button_initilizer Btn_Infos[] = {
-	{100, 40, BTN_W, BTN_H, "Sure", GameMenu_EnterAction, NULL},
-	{555, 40, BTN_W, BTN_H, "Back", GameMenu_BackAction, NULL},
+	{100, 40, BTN_W, BTN_H, "Sure", UI_EnterAction, NULL},
+	{555, 40, BTN_W, BTN_H, "Back", UI_BackAction, NULL},
 };
 
 static button btn;
@@ -72,7 +76,7 @@ static GLsizei page_width = HARMATTAN_FULL_WIDTH;
 static GLsizei page_height = HARMATTAN_FULL_HEIGHT;
 static float idle_time = 0.0f;
 
-void GameMenu_SetPageSize(GLsizei w, GLsizei h)
+void UI_SetPageSize(GLsizei w, GLsizei h)
 {
 	if(page_width == w && page_height == h)
 		return;
@@ -91,7 +95,7 @@ void GameMenu_SetPageSize(GLsizei w, GLsizei h)
 	}
 }
 
-int GameMenu_IdleEventFunc(void)
+int UI_IdleFunc(void)
 {
 	if(!has_init)
 		return 0;
@@ -109,7 +113,7 @@ int GameMenu_IdleEventFunc(void)
 	return 1;
 }
 
-void GameMenu_InitFunc(void)
+void UI_InitFunc(void)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glShadeModel(GL_SMOOTH);
@@ -149,11 +153,13 @@ void GameMenu_InitFunc(void)
 	lb.fnt = &fnt;
 	has_init = 1;
 	menu_level = 0;
-	GameMenu_MakeListViewData();
-	GameMenu_InitListView();
+	UI_MakeListViewData();
+	UI_InitListView();
+
+	UI_RestoreFunc();
 }
 
-void GameMenu_DrawFunc(void)
+void UI_DrawFunc(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if(!has_init)
@@ -189,15 +195,15 @@ void GameMenu_DrawFunc(void)
 	}
 }
 
-void GameMenu_ReshapeFunc(int w, int h)
+void UI_ReshapeFunc(int w, int h)
 {
 	glViewport (0, 0, (GLsizei)w, (GLsizei)h);
 	if(!has_init)
 		return;
-	GameMenu_SetPageSize(w, h);
+	UI_SetPageSize(w, h);
 }
 
-void GameMenu_FreeFunc(void)
+void UI_FreeFunc(void)
 {
 	if(!has_init)
 		return;
@@ -222,18 +228,20 @@ void GameMenu_FreeFunc(void)
 	delete_scene_2d(&bg);
 	delete_scene_2d(&fg);
 	menu_level = 0;
-	GameMenu_ResetGameMenu();
+	UI_ResetGameMenu();
 	has_init = 0;
+
+	NL_PAGE_DESTROY_DEBUG(PAGE_NAME)
 }
 
-void GameMenu_ResetGameMenu(void)
+void UI_ResetGameMenu(void)
 {
 	page_width = width;
 	page_height = height;
 }
 
 // for all X event pointer coord y, Using left-down as ori, like OpenGL, and not left-top of X11. so the y coord need to convert by screen height - y, and delta_y is invert.
-int GameMenu_KeyEventFunc(int key, int act, int pressed, int x, int y)
+int UI_KeyFunc(int key, int act, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -243,7 +251,7 @@ int GameMenu_KeyEventFunc(int key, int act, int pressed, int x, int y)
 		case Harmattan_K_KP_Enter:
 			if(pressed)
 			{
-				GameMenu_EnterAction(NULL);
+				UI_EnterAction(NULL);
 				return 1;
 			}
 			break;
@@ -251,7 +259,7 @@ int GameMenu_KeyEventFunc(int key, int act, int pressed, int x, int y)
 		case Harmattan_K_Escape:
 			if(pressed)
 			{
-				GameMenu_BackAction(NULL);
+				UI_BackAction(NULL);
 				return 1;
 			}
 			break;
@@ -279,11 +287,16 @@ int GameMenu_KeyEventFunc(int key, int act, int pressed, int x, int y)
 	return 0;
 }
 
-int GameMenu_MouseEventFunc(int button, int pressed, int x, int gl_y)
+int UI_MouseFunc(int button, int pressed, int x, int y)
 {
+	int gl_y;
+	int i;
+
 	if(!has_init)
 		return 0;
-	int i;
+
+	gl_y = height - y;
+
 	for(i = 0; i < total_action_type; i++)
 	{
 		if(UI_PointInWidget(&btns[i].base, x, gl_y))
@@ -295,20 +308,31 @@ int GameMenu_MouseEventFunc(int button, int pressed, int x, int gl_y)
 	return 0;
 }
 
-int GameMenu_MouseMotionEventFunc(int button, int pressed, int x, int gl_y, int dx, int dy)
+int UI_MotionFunc(int button, int pressed, int x, int y, int dx, int dy)
 {
+	int gl_y;
+	int gl_dy;
+	int res;
+	int i;
+	int last_x;
+	int last_gl_y;
+
 	if(!has_init)
 		return 0;
-	int res = 0;
+
+	res = 0;
+	gl_y = height - y;
+	gl_dy = -dy;
+
 	if(pressed)
 	{
-		int last_x = x - dx;
-		int last_gl_y = gl_y - dy;
+		last_x = x - dx;
+		last_gl_y = gl_y - gl_dy;
+
 		if(UI_PointInWidget(&lst.base, x, gl_y))
 		{
-			res = UI_SlideListView(&lst, dy);
+			res = UI_SlideListView(&lst, gl_dy);
 		}
-		int i;
 		for(i = 0; i < total_action_type; i++)
 		{
 			if(UI_PointInWidget(&btns[i].base, x, gl_y) && !UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
@@ -327,7 +351,7 @@ int GameMenu_MouseMotionEventFunc(int button, int pressed, int x, int gl_y, int 
 	return res;
 }
 
-void GameMenu_MakeListViewData(void)
+void UI_MakeListViewData(void)
 {
 	if(!has_init)
 		return;
@@ -349,13 +373,13 @@ void GameMenu_MakeListViewData(void)
 		for(i = 0; i < data_count; i++)
 		{
 			data[i].text = strdup(Game_Menu_Action[i].text);
-			data[i].func = GameMenu_EnterAction;
+			data[i].func = UI_EnterAction;
 			data[i].args = NULL;
 		}
 	}
 }
 
-void GameMenu_InitListView(void)
+void UI_InitListView(void)
 {
 	if(!has_init)
 		return;
@@ -365,7 +389,7 @@ void GameMenu_InitListView(void)
 	lst.progress = 0.0;
 }
 
-void GameMenu_EnterAction(void *args)
+void UI_EnterAction(void *args)
 {
 	if(!has_init)
 		return;
@@ -377,24 +401,33 @@ void GameMenu_EnterAction(void *args)
 	}
 }
 
-void GameMenu_BackAction(void *data)
+void UI_BackAction(void *data)
 {
 	if(!has_init)
 		return;
 	if(menu_level == 0)
-		GameMenu_CloseGameMenu();
+	{
+		const void *slot = SignalSlot_GetAction(CLOSE_GAME_MENU);
+		if(slot)
+			((void__func__void)slot)();
+	}
 }
 
-int GameMenu_MouseClickEventFunc(int button, int x, int gl_y)
+int UI_ClickFunc(int button, int x, int y)
 {
+	int gl_y;
+	int i;
+
 	if(!has_init)
 		return 0;
+
+	gl_y = height - y;
+
 	if(UI_PointInWidget(&lst.base, x, gl_y))
 	{
 		UI_ClickListView(&lst, x - lst.base.x, gl_y - lst.base.y);
 		return 1;
 	}
-	int i;
 	for(i = 0; i < total_action_type; i++)
 	{
 		if(UI_PointInWidget(&btns[i].base, x, gl_y))
@@ -409,13 +442,19 @@ int GameMenu_MouseClickEventFunc(int button, int x, int gl_y)
 	return 0;
 }
 
-void GameMenu_CloseGameMenu(void)
+void UI_GameMenuRegisterFunction(void)
+{
+	glk_function func;
+
+	func = REGISTER_RENDER_FUNCTION(UI);
+	Main3D_SetCurRenderPage(PAGE_NAME, &func);
+}
+
+void UI_StoreFunc(void)
 {
 	if(!has_init)
 		return;
-	const void *slot = SignalSlot_GetAction(CONTINUE_GAME);
-	if(slot)
-		((void__func__void)slot)();
+
 	if(bg.tex)
 	{
 		if(glIsTexture(bg.tex->texid))
@@ -425,7 +464,7 @@ void GameMenu_CloseGameMenu(void)
 	}
 }
 
-void GameMenu_OpenGameMenu(void)
+void UI_RestoreFunc(void)
 {
 	if(!has_init)
 		return;
@@ -439,17 +478,3 @@ void GameMenu_OpenGameMenu(void)
 	bg.tex = new_OpenGL_texture_2d_from_buffer_with_glReadPixels(0, 0, width, height, GL_RGBA);
 }
 
-glk_function * new_game_menu(glk_function *men)
-{
-	RETURN_PTR(m, men, glk_function)
-		m->init_func = GameMenu_InitFunc;
-	m->draw_func = GameMenu_DrawFunc;
-	m->free_func = GameMenu_FreeFunc;
-	m->idle_func = GameMenu_IdleEventFunc;
-	m->key_func = GameMenu_KeyEventFunc;
-	m->motion_func = GameMenu_MouseMotionEventFunc;
-	m->reshape_func = GameMenu_ReshapeFunc;
-	m->mouse_func = GameMenu_MouseEventFunc;
-	m->click_func = GameMenu_MouseClickEventFunc;
-	return m;
-}

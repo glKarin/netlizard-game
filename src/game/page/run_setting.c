@@ -11,6 +11,8 @@
 #include "action_signal_slot.h"
 #include "setting_component.h"
 
+#define PAGE_NAME "RunSetting"
+
 #define SETTING_ITEM_W 360
 #define SETTING_ITEM_H 45
 #define FLICK_X 150
@@ -30,15 +32,17 @@ typedef enum _menu_action
 	total_action_type
 } menu_action;
 
-static int Menu_RunSettingIdleEventFunc(void);
-static int Menu_RunSettingKeyEventFunc(int k, int a, int p, int x, int y);
-static int Menu_RunSettingMouseEventFunc(int b, int p, int x, int y);
-static int Menu_RunSettingMouseClickEventFunc(int b, int x, int y);
-static int Menu_RunSettingMouseMotionEventFunc(int b, int p, int x, int y, int dx, int dy);
-static void Menu_RunSettingDrawFunc(void);
-static void Menu_RunSettingReshapeFunc(int w, int h);
-static void Menu_RunSettingInitFunc(void);
-static void Menu_RunSettingFreeFunc(void);
+static int UI_IdleFunc(void);
+static int UI_KeyFunc(int k, int a, int p, int x, int y);
+static int UI_MouseFunc(int b, int p, int x, int y);
+static int UI_ClickFunc(int b, int x, int y);
+static int UI_MotionFunc(int b, int p, int x, int y, int dx, int dy);
+static void UI_DrawFunc(void);
+static void UI_ReshapeFunc(int w, int h);
+static void UI_InitFunc(void);
+static void UI_FreeFunc(void);
+static Main3DStoreFunction_f UI_StoreFunc = NULL;
+static Main3DRestoreFunction_f UI_RestoreFunc = NULL;
 
 static void Menu_ResetRunSetting(void);
 static void Menu_SureAction(void *data);
@@ -77,7 +81,7 @@ void Menu_SetRunSettingPageSize(GLsizei w, GLsizei h)
 	}
 }
 
-int Menu_RunSettingIdleEventFunc(void)
+int UI_IdleFunc(void)
 {
 	if(!has_init)
 		return 0;
@@ -88,7 +92,7 @@ int Menu_RunSettingIdleEventFunc(void)
 	return 1;
 }
 
-void Menu_RunSettingInitFunc(void)
+void UI_InitFunc(void)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glShadeModel(GL_SMOOTH);
@@ -106,7 +110,7 @@ void Menu_RunSettingInitFunc(void)
 	oglDisable(GL_FOG);
 }
 
-void Menu_RunSettingDrawFunc(void)
+void UI_DrawFunc(void)
 {
 	if(!has_init)
 		return;
@@ -140,7 +144,7 @@ void Menu_RunSettingDrawFunc(void)
 	}
 }
 
-void Menu_RunSettingReshapeFunc(int w, int h)
+void UI_ReshapeFunc(int w, int h)
 {
 	glViewport (0, 0, (GLsizei)w, (GLsizei)h);
 	if(!has_init)
@@ -148,7 +152,7 @@ void Menu_RunSettingReshapeFunc(int w, int h)
 	Menu_SetRunSettingPageSize(w, h);
 }
 
-void Menu_RunSettingFreeFunc(void)
+void UI_FreeFunc(void)
 {
 	if(!has_init)
 		return;
@@ -166,10 +170,12 @@ void Menu_RunSettingFreeFunc(void)
 	}
 	Menu_ResetRunSetting();
 	has_init = 0;
+
+	NL_PAGE_DESTROY_DEBUG(PAGE_NAME)
 }
 
 // for all X event pointer coord y, Using left-down as ori, like OpenGL, and not left-top of X11. so the y coord need to convert by screen height - y, and delta_y is invert.
-int Menu_RunSettingKeyEventFunc(int key, int act, int pressed, int x, int y)
+int UI_KeyFunc(int key, int act, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -215,7 +221,7 @@ int Menu_RunSettingKeyEventFunc(int key, int act, int pressed, int x, int y)
 	return 0;
 }
 
-int Menu_RunSettingMouseEventFunc(int button, int pressed, int x, int y)
+int UI_MouseFunc(int button, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -232,7 +238,7 @@ int Menu_RunSettingMouseEventFunc(int button, int pressed, int x, int y)
 	return 0;
 }
 
-int Menu_RunSettingMouseMotionEventFunc(int button, int pressed, int x, int y, int dx, int dy)
+int UI_MotionFunc(int button, int pressed, int x, int y, int dx, int dy)
 {
 	if(!has_init)
 		return 0;
@@ -264,17 +270,12 @@ int Menu_RunSettingMouseMotionEventFunc(int button, int pressed, int x, int y, i
 	return res;
 }
 
-void Menu_RunSettingRegisterFunction(void)
+void UI_RunSettingRegisterFunction(void)
 {
-	Main3D_SetInitFunction(Menu_RunSettingInitFunc);
-	Main3D_SetDrawFunction(Menu_RunSettingDrawFunc);
-	Main3D_SetFreeFunction(Menu_RunSettingFreeFunc);
-	Main3D_SetKeyEventFunction(Menu_RunSettingKeyEventFunc);
-	Main3D_SetIdleEventFunction(Menu_RunSettingIdleEventFunc);
-	Main3D_SetReshapeFunction(Menu_RunSettingReshapeFunc);
-	Main3D_SetMouseEventFunction(Menu_RunSettingMouseEventFunc);
-	Main3D_SetMouseMotionEventFunction(Menu_RunSettingMouseMotionEventFunc);
-	Main3D_SetMouseClickEventFunction(Menu_RunSettingMouseClickEventFunc);
+	glk_function func;
+
+	func = REGISTER_RENDER_FUNCTION(UI);
+	Main3D_PushRenderPage(PAGE_NAME, &func);
 }
 
 void Menu_BackAction(void *data)
@@ -295,7 +296,7 @@ void Menu_SureAction(void *data)
 	}
 }
 
-int Menu_RunSettingMouseClickEventFunc(int button, int x, int y)
+int UI_ClickFunc(int button, int x, int y)
 {
 	if(!has_init)
 		return 0;

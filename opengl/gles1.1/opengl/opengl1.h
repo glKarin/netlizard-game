@@ -8,6 +8,9 @@
 
 	#define OPENGLES2OPENGL_PORT
 
+	#define GL_INCR_WRAP GL_INCR_WRAP_OES
+	#define GL_DECR_WRAP GL_DECR_WRAP_OES
+
 // for texture
 	#ifndef GL_CLAMP
 		#define GL_CLAMP GL_CLAMP_TO_EDGE

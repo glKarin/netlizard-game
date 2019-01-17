@@ -6,6 +6,8 @@
 #include "action_signal_slot.h"
 #include "game_std.h"
 
+#define PAGE_NAME "About"
+
 #define TEXT_BROWSER_X 150
 #define TEXT_BROWSER_Y 80
 #define TEXT_BROWSER_W 554
@@ -18,15 +20,17 @@
 
 #define TEXT_MOVE_UNIT 10
 
-static int Menu_AboutIdleEventFunc(void);
-static int Menu_AboutKeyEventFunc(int k, int a, int p, int x, int y);
-static int Menu_AboutMouseEventFunc(int b, int p, int x, int y);
-static int Menu_AboutMouseClickEventFunc(int b, int x, int y);
-static int Menu_AboutMouseMotionEventFunc(int b, int p, int x, int y, int dx, int dy);
-static void Menu_AboutDrawFunc(void);
-static void Menu_AboutReshapeFunc(int w, int h);
-static void Menu_AboutInitFunc(void);
-static void Menu_AboutFreeFunc(void);
+static int UI_IdleFunc(void);
+static int UI_KeyFunc(int k, int a, int p, int x, int y);
+static int UI_MouseFunc(int b, int p, int x, int y);
+static int UI_ClickFunc(int b, int x, int y);
+static int UI_MotionFunc(int b, int p, int x, int y, int dx, int dy);
+static void UI_DrawFunc(void);
+static void UI_ReshapeFunc(int w, int h);
+static void UI_InitFunc(void);
+static void UI_FreeFunc(void);
+static Main3DStoreFunction_f UI_StoreFunc = NULL;
+static Main3DRestoreFunction_f UI_RestoreFunc = NULL;
 
 static void Menu_ResetAbout(void);
 static void Menu_BackAction(void);
@@ -53,7 +57,7 @@ void Menu_SetAboutPageSize(GLsizei w, GLsizei h)
 	}
 }
 
-int Menu_AboutIdleEventFunc(void)
+int UI_IdleFunc(void)
 {
 	if(!has_init)
 		return 0;
@@ -64,7 +68,7 @@ int Menu_AboutIdleEventFunc(void)
 	return 1;
 }
 
-void Menu_AboutInitFunc(void)
+void UI_InitFunc(void)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glShadeModel(GL_SMOOTH);
@@ -82,7 +86,7 @@ void Menu_AboutInitFunc(void)
 	oglDisable(GL_FOG);
 }
 
-void Menu_AboutDrawFunc(void)
+void UI_DrawFunc(void)
 {
 	if(!has_init)
 		return;
@@ -112,7 +116,7 @@ void Menu_AboutDrawFunc(void)
 	}
 }
 
-void Menu_AboutReshapeFunc(int w, int h)
+void UI_ReshapeFunc(int w, int h)
 {
 	glViewport (0, 0, (GLsizei)w, (GLsizei)h);
 	if(!has_init)
@@ -120,7 +124,7 @@ void Menu_AboutReshapeFunc(int w, int h)
 	Menu_SetAboutPageSize(w, h);
 }
 
-void Menu_AboutFreeFunc(void)
+void UI_FreeFunc(void)
 {
 	if(!has_init)
 		return;
@@ -129,10 +133,12 @@ void Menu_AboutFreeFunc(void)
 	delete_text_browser(&tb);
 	Menu_ResetAbout();
 	has_init = 0;
+
+	NL_PAGE_DESTROY_DEBUG(PAGE_NAME)
 }
 
 // for all X event pointer coord y, Using left-down as ori, like OpenGL, and not left-top of X11. so the y coord need to convert by screen height - y, and delta_y is invert.
-int Menu_AboutKeyEventFunc(int key, int act, int pressed, int x, int y)
+int UI_KeyFunc(int key, int act, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -170,7 +176,7 @@ int Menu_AboutKeyEventFunc(int key, int act, int pressed, int x, int y)
 	return 0;
 }
 
-int Menu_AboutMouseEventFunc(int button, int pressed, int x, int y)
+int UI_MouseFunc(int button, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -183,7 +189,7 @@ int Menu_AboutMouseEventFunc(int button, int pressed, int x, int y)
 	return 0;
 }
 
-int Menu_AboutMouseMotionEventFunc(int button, int pressed, int x, int y, int dx, int dy)
+int UI_MotionFunc(int button, int pressed, int x, int y, int dx, int dy)
 {
 	if(!has_init)
 		return 0;
@@ -211,17 +217,12 @@ int Menu_AboutMouseMotionEventFunc(int button, int pressed, int x, int y, int dx
 	return res;
 }
 
-void Menu_AboutRegisterFunction(void)
+void UI_AboutRegisterFunction(void)
 {
-	Main3D_SetInitFunction(Menu_AboutInitFunc);
-	Main3D_SetDrawFunction(Menu_AboutDrawFunc);
-	Main3D_SetFreeFunction(Menu_AboutFreeFunc);
-	Main3D_SetKeyEventFunction(Menu_AboutKeyEventFunc);
-	Main3D_SetIdleEventFunction(Menu_AboutIdleEventFunc);
-	Main3D_SetReshapeFunction(Menu_AboutReshapeFunc);
-	Main3D_SetMouseEventFunction(Menu_AboutMouseEventFunc);
-	Main3D_SetMouseMotionEventFunction(Menu_AboutMouseMotionEventFunc);
-	Main3D_SetMouseClickEventFunction(Menu_AboutMouseClickEventFunc);
+	glk_function func;
+
+	func = REGISTER_RENDER_FUNCTION(UI);
+	Main3D_PushRenderPage(PAGE_NAME, &func);
 }
 
 void Menu_BackAction(void)
@@ -233,7 +234,7 @@ void Menu_BackAction(void)
 	}
 }
 
-int Menu_AboutMouseClickEventFunc(int button, int x, int y)
+int UI_ClickFunc(int button, int x, int y)
 {
 	if(!has_init)
 		return 0;

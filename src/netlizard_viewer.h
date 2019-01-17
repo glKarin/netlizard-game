@@ -15,8 +15,8 @@ int Viewer_NETLizard3DItemInitMain(const char *game, const char *dir, const char
 void Viewer_RE3DRegisterFunction(void);
 int Viewer_RE3DInitMain(const char *game, const char *m, const char *dir, const char *src, unsigned int lvl);
 
-void Viewer_ImageRegisterFunction(void);
-int Viewer_ImageInitMain(const char *game, const char *src);
+void Viewer_NETLizardImageRegisterFunction(void);
+int Viewer_NETLizardImageInitMain(const char *game, const char *src);
 
 void Viewer_Init3DFunc(void);
 

@@ -10,6 +10,8 @@
 #include "netlizard/nl_util.h"
 #include "netlizard/png_reader.h"
 
+#define PAGE_NAME "NETLizard3DREMapViewer"
+
 #define COLLISION_WIDTH 60
 #define COLLISION_HEIGHT 150
 
@@ -28,15 +30,21 @@ static bool_t test = 0;
 static GL_RE3D_Model *model = NULL;
 static unsigned int level;
 
-static void Viewer_RE3DInitFunc(void);
-static void Viewer_RE3DDrawFunc(void);
-static void Viewer_RE3DFreeFunc(void);
-static int Viewer_RE3DIdleEventFunc(void);
-static int Viewer_RE3DKeyEventFunc(int key, int act, int pressed, int x, int y);
-static void Viewer_RE3DReshapeFunc(int w, int h);
-static void Viewer_RE3DInitSimpleLight(void);
+static void Viewer_InitFunc(void);
+static void Viewer_DrawFunc(void);
+static void Viewer_FreeFunc(void);
+static int Viewer_IdleFunc(void);
+static int Viewer_KeyFunc(int key, int act, int pressed, int x, int y);
+static void Viewer_ReshapeFunc(int w, int h);
+static Main3DStoreFunction_f Viewer_StoreFunc = NULL;
+static Main3DRestoreFunction_f Viewer_RestoreFunc = NULL;
+static Main3DMouseMotionFunction Viewer_MotionFunc = NULL;
+static Main3DMouseFunction Viewer_MouseFunc = NULL;
+static Main3DMouseClickFunction Viewer_ClickFunc = NULL;
 
-void Viewer_RE3DInitSimpleLight(void)
+static void Viewer_InitSimpleLight(void);
+
+void Viewer_InitSimpleLight(void)
 {
 #ifndef _HARMATTAN_OPENGLES2
 	GLfloat ambient_light[] = {
@@ -93,15 +101,10 @@ void Viewer_RE3DInitSimpleLight(void)
 
 void Viewer_RE3DRegisterFunction(void)
 {
-	Main3D_SetInitFunction(Viewer_RE3DInitFunc);
-	Main3D_SetDrawFunction(Viewer_RE3DDrawFunc);
-	Main3D_SetFreeFunction(Viewer_RE3DFreeFunc);
-	Main3D_SetKeyEventFunction(Viewer_RE3DKeyEventFunc);
-	Main3D_SetIdleEventFunction(Viewer_RE3DIdleEventFunc);
-	Main3D_SetReshapeFunction(Viewer_RE3DReshapeFunc);
-	Main3D_SetMouseEventFunction(NULL);
-	Main3D_SetMouseMotionEventFunction(NULL);
-	Main3D_SetMouseClickEventFunction(NULL);
+	glk_function func;
+
+	func = REGISTER_RENDER_FUNCTION(Viewer);
+	Main3D_InitRenderPage(PAGE_NAME, &func);
 }
 
 int Viewer_RE3DInitMain(const char *g, const char *m, const char *d, const char *src, unsigned int lvl)
@@ -165,7 +168,7 @@ int Viewer_RE3DInitMain(const char *g, const char *m, const char *d, const char 
 	else
 	{
 		free(dir);
-		Viewer_RE3DFreeFunc();
+		Viewer_FreeFunc();
 		return 0;
 	}
 
@@ -174,7 +177,7 @@ int Viewer_RE3DInitMain(const char *g, const char *m, const char *d, const char 
 	return 1;
 }
 
-void Viewer_RE3DInitFunc()
+void Viewer_InitFunc()
 {
 	Viewer_Init3DFunc();
 	is_cross = GL_TRUE;
@@ -182,7 +185,7 @@ void Viewer_RE3DInitFunc()
 	OpenGL_InitFog(GL_EXP2, 50.0f, 100.0f, 0.01f, color);
 	oglEnable(GL_FOG);
 #ifndef _HARMATTAN_OPENGLES2
-	Viewer_RE3DInitSimpleLight();
+	Viewer_InitSimpleLight();
 #endif
 	viewport_width = 400;
 	viewport_height = 240;
@@ -208,7 +211,7 @@ void Viewer_RE3DInitFunc()
 	printfs(car_tex_file);
 }
 
-void Viewer_RE3DDrawFunc(void)
+void Viewer_DrawFunc(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	int *scenes = NULL;
@@ -339,7 +342,7 @@ void Viewer_RE3DDrawFunc(void)
 		free(scenes);
 }
 
-void Viewer_RE3DFreeFunc(void)
+void Viewer_FreeFunc(void)
 {
 	if(map_file)
 		free(map_file);
@@ -353,16 +356,17 @@ void Viewer_RE3DFreeFunc(void)
 	{
 		delete_GL_RE3D_Model(model);
 		free(model);
+		model = NULL;
 	}
 	nlSetResourcePath(game, NULL);
 }
 
-int Viewer_RE3DIdleEventFunc(void)
+int Viewer_IdleFunc(void)
 {
 	return Main3D_BaseTransform();
 }
 
-int Viewer_RE3DKeyEventFunc(int key, int a, int pressed, int x, int y)
+int Viewer_KeyFunc(int key, int a, int pressed, int x, int y)
 {
 	int res = 0;
 	switch(a)
@@ -423,7 +427,7 @@ int Viewer_RE3DKeyEventFunc(int key, int a, int pressed, int x, int y)
 	return res;
 }
 
-GLvoid Viewer_RE3DReshapeFunc(int w, int h)
+GLvoid Viewer_ReshapeFunc(int w, int h)
 {
 #ifdef _HARMATTAN_OPENGLES
 	glViewport(0, 0, w, h);

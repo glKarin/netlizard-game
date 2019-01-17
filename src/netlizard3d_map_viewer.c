@@ -11,6 +11,9 @@
 #include "nl_game.h"
 #include "cross_hair.h"
 #include "physics/gravity.h"
+#include "gl/nl_shadow.h"
+
+#define PAGE_NAME "NETLizard3DAnimationMap"
 
 // lvl
 
@@ -33,9 +36,10 @@
 #define FP_FILE _KARIN_RESOURCE_DIR"resource/c%d.png"
 #define EVENT_FILE _KARIN_RESOURCE_DIR"resource/lvl.event"
 
+static vector3_t lightpos = VECTOR3(1000, 2000, 6000);
 static person_mode p_mode = third_person_mode;
 static game_character player;
-static long long time = 0;
+static unsigned long long time = 0;
 static GLfloat frustum[6][4];
 static game_name game;
 static char *map_file = NULL;
@@ -59,13 +63,19 @@ static GLdouble frustum_far = FRUSTUM_FAR;
 static GLuint frustum_width = FRUSTUM_WIDTH;
 static GLuint frustum_height = FRUSTUM_HEIGHT;
 
-static void Viewer_NETLizard3DMapInitFunc(void);
-static void Viewer_NETLizard3DMapDrawFunc(void);
-static void Viewer_NETLizard3DMapFreeFunc(void);
-static int Viewer_NETLizard3DMapIdleEventFunc(void);
-static void Viewer_NETLizard3DMapReshapeFunc(int w, int h);
-static int Viewer_NETLizard3DMapKeyFunc(int key, int a, int pressed, int x, int y);
-static void Viewer_NETLizard3DMapInitSimpleLight(void);
+static void Viewer_InitFunc(void);
+static void Viewer_DrawFunc(void);
+static void Viewer_FreeFunc(void);
+static int Viewer_IdleFunc(void);
+static void Viewer_ReshapeFunc(int w, int h);
+static int Viewer_KeyFunc(int key, int a, int pressed, int x, int y);
+static Main3DStoreFunction_f Viewer_StoreFunc = NULL;
+static Main3DRestoreFunction_f Viewer_RestoreFunc = NULL;
+static Main3DMouseMotionFunction Viewer_MotionFunc = NULL;
+static Main3DMouseFunction Viewer_MouseFunc = NULL;
+static Main3DMouseClickFunction Viewer_ClickFunc = NULL;
+
+static void Viewer_InitSimpleLight(void);
 static void Viewer_HandleNETLizard3DMapEvent(float delta);
 static void Viewer_LoadNETLizard3DMapEvent(void);
 
@@ -73,7 +83,7 @@ static void Viewer_UpdateGLTransform(game_character *gamer);
 static void Viewer_UpdatePlayerPosition(void);
 static int Viewer_UpdatePlayerAI(Game_Action a, int p);
 
-void Viewer_NETLizard3DMapInitSimpleLight(void)
+void Viewer_InitSimpleLight(void)
 {
 #ifndef _HARMATTAN_OPENGLES2
 	GLfloat ambient_light[] = {
@@ -169,25 +179,20 @@ int Viewer_NETLizard3DMapInitMain(const char *g, const char *d, const char *src,
 
 void Viewer_NETLizard3DMapRegisterFunction(void)
 {
-	Main3D_SetInitFunction(Viewer_NETLizard3DMapInitFunc);
-	Main3D_SetDrawFunction(Viewer_NETLizard3DMapDrawFunc);
-	Main3D_SetIdleEventFunction(Viewer_NETLizard3DMapIdleEventFunc);
-	Main3D_SetFreeFunction(Viewer_NETLizard3DMapFreeFunc);
-	Main3D_SetKeyEventFunction(Viewer_NETLizard3DMapKeyFunc);
-	Main3D_SetReshapeFunction(Viewer_NETLizard3DMapReshapeFunc);
-	Main3D_SetMouseEventFunction(NULL);
-	Main3D_SetMouseMotionEventFunction(NULL);
-	Main3D_SetMouseClickEventFunction(NULL);
+	glk_function func;
+
+	func = REGISTER_RENDER_FUNCTION(Viewer);
+	Main3D_InitRenderPage(PAGE_NAME, &func);
 }
 
-void Viewer_NETLizard3DMapInitFunc(void)
+void Viewer_InitFunc(void)
 {
 	Viewer_Init3DFunc();
 	GLfloat bg_color[] = {1.0, 1.0, 1.0, 1.0};
 	OpenGL_InitFog(GL_EXP2, FOG_NEAR, FOG_FAR, 0.1f, bg_color);
 	oglDisable(GL_FOG);
 #ifndef _HARMATTAN_OPENGLES2
-	Viewer_NETLizard3DMapInitSimpleLight();
+	Viewer_InitSimpleLight();
 #endif
 
 	glClearColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
@@ -251,21 +256,25 @@ void Viewer_NETLizard3DMapInitFunc(void)
 	nl_vector3_t p = {map_model->start_pos[0], map_model->start_pos[1], map_model->start_pos[2]};
 	int scene = Algo_GetPointInAABBInNETLizard3DMap(&p, map_model);
 
-	new_game_character(&player, choijiyoon, map_model->start_pos[0], map_model->start_pos[1], map_model->start_pos[2] - (2293760 >> 16), 0.0, map_model->start_angle[1], 0, "karin", scene, NULL, 0);
+	new_game_character(&player, natasha, map_model->start_pos[0], map_model->start_pos[1], map_model->start_pos[2] - (2293760 >> 16), 0.0, map_model->start_angle[1], 0, "karin", scene, NULL, 0);
 	player.ai.type = ai_player_type;
 	player.ai.time = time;
 
 	frustum_far = FRUSTUM_FAR;
-#ifndef _HARMATTAN_OPENGL
 	nl_vector3_t min = {0.0, 0.0, 0.0};
 	nl_vector3_t max = {0.0, 0.0, 0.0};
 	Algo_GetNETLizard3DMapRange(map_model, NULL, 0, &min, &max);
+#ifndef _HARMATTAN_OPENGL
 	frustum_far = KARIN_MAX(max.y - min.y, (KARIN_MAX(max.x - min.x, max.z - min.z)));
-	printff(frustum_far);
 #endif
+	printff(frustum_far);
+	VECTOR_X(lightpos) = (max.x + min.x) / 2;
+	VECTOR_Y(lightpos) = (max.y + min.y) / 2;
+	VECTOR_Z(lightpos) = (max.z + min.z) + 1235;
+	printfv3(lightpos);
 }
 
-void Viewer_NETLizard3DMapDrawFunc(void)
+void Viewer_DrawFunc(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	int *scenes = NULL;
@@ -339,19 +348,24 @@ void Viewer_NETLizard3DMapDrawFunc(void)
 				OpenGL_ExtractFrustum(frustum);
 				scenes = Algo_GetNETLizard3DMapRenderScenes(map_model, &count, frustum);
 			}
-			if(scenes)
-			{
-				NETLizard_RenderGL3DMapModelScene(map_model, scenes, count);
-			}
-			else
-			{
-				NETLizard_RenderGL3DModel(map_model);
-			}
-
+			//
 			// 渲染角色第三人称视角
 			if(p_mode == third_person_mode)
 			{
 				Game_RenderGameCharacter(&player);
+			}
+
+			if(scenes)
+			{
+				NETLizard_RenderGL3DMapModelScene(map_model, scenes, count);
+				Shadow_RenderNETLizardModelScene(map_model, scenes, count, &lightpos);
+				Shadow_RenderMask();
+			}
+			else
+			{
+				NETLizard_RenderGL3DModel(map_model);
+				Shadow_RenderNETLizardModel(map_model, &lightpos);
+				Shadow_RenderMask();
 			}
 
 			// 渲染圆点瞄准器
@@ -435,7 +449,7 @@ void Viewer_NETLizard3DMapDrawFunc(void)
 		free(scenes);
 }
 
-void Viewer_NETLizard3DMapFreeFunc(void)
+void Viewer_FreeFunc(void)
 {
 	if(map_file)
 		free(map_file);
@@ -777,7 +791,7 @@ int Viewer_UpdatePlayerAI(Game_Action a, int p)
 	return r;
 }
 
-int Viewer_NETLizard3DMapIdleEventFunc(void)
+int Viewer_IdleFunc(void)
 {
 	time = Game_GetGameTime();
 	Viewer_UpdatePlayerPosition();
@@ -792,7 +806,7 @@ int Viewer_NETLizard3DMapIdleEventFunc(void)
 	return 1;
 }
 
-int Viewer_NETLizard3DMapKeyFunc(int key, int a, int pressed, int x, int y)
+int Viewer_KeyFunc(int key, int a, int pressed, int x, int y)
 {
 	int res = 0;
 	switch(key)
@@ -905,7 +919,7 @@ int Viewer_NETLizard3DMapKeyFunc(int key, int a, int pressed, int x, int y)
 	return res;
 }
 
-void Viewer_NETLizard3DMapReshapeFunc(int w, int h)
+void Viewer_ReshapeFunc(int w, int h)
 {
 #ifdef _HARMATTAN_OPENGL
 	glViewport( (w - viewport_width) / 2, (h - viewport_height) / 2, viewport_width, viewport_height);
@@ -927,7 +941,7 @@ void Viewer_Init3DFunc(void)
 #else
 	oglEnable(GL_ALPHA_TEST);
 #endif
-	glAlphaFunc(GL_GREATER, 0.1);
+	glAlphaFunc(GL_GREATER, 0.01);
 
 	glCullFace(GL_BACK);
 	oglEnable(GL_CULL_FACE);

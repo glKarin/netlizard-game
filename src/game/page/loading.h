@@ -3,8 +3,8 @@
 
 #include "opengl.h"
 
-void Menu_LoadingUpdateProgressFunc(int has_err, int progress, const char *info);
-void Menu_RegisterLoadingFunction(void);
+void UI_LoadingUpdateProgressFunc(int has_err, int progress, const char *info);
+void UI_LoadingRegisterFunction(void);
 void Menu_SetLoadingFinishedAction(const char *signal);
 void Menu_SetLoadingFailAction(const char *signal);
 void Menu_SetLoadingTitle(const char *str);

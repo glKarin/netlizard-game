@@ -1,19 +1,37 @@
 #ifndef KARIN_NL_STD_H
 #define KARIN_NL_STD_H
 
+#include <stdint.h>
+
+#include "nl_dbg.h"
 #include "math3d/vector.h"
 
-typedef unsigned char bool_t; // GLboolean
+#define NL_MASK(x) (1 << (x))
+#define NL_MASK_ALL (~0U)
+
 typedef unsigned long mask_t; // GLbitfield
 typedef unsigned int enum_t; // GLenum
 typedef signed char byte_t; // GLbyte
 //typedef wchar_t uchar_t;
 
+#if 1
 #define _true 1
 #define _false 0
+typedef unsigned char bool_t; // GLboolean
+#else
+typedef enum _bool_e
+{
+	_false = 0,
+	_true
+} bool_e;
+typedef enum _bool_e bool_t; // GLboolean
+#endif
+
 #define countof(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 #define DEBUG_STRING_MAX_LENGTH 1024
+
+#define NL_UNUSED(x) ((void)(x))
 
 #define CHARCE(x) (rand() % (x) == 0)
 
@@ -77,5 +95,6 @@ char * ftostr(float f);
 float rand_f(float min, float max, unsigned int per);
 double Math_Round(double n);
 char * lltotime_second(long long time);
+char * itobin(unsigned i);
 
 #endif

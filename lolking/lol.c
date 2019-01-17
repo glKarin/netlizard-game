@@ -99,7 +99,7 @@ LOL_Model * new_LOL_Model(const char *meshf, const char *animf, const char *texf
 	LOL_Mesh *mesh = new_LOL_Mesh(meshf);
 	if(!mesh)
 		return NULL;
-	LOL_MakeGL2Mesh(mesh);
+	//k LOL_MakeGL2Mesh(mesh);
 	LOL_Anim *anim = new_LOL_Anim(animf);
 	GLuint *t = NULL;
 	if(texf && texc)

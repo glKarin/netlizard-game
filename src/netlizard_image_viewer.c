@@ -8,6 +8,8 @@
 #include "netlizard/texture_reader.h"
 #include "netlizard/png_reader.h"
 
+#define PAGE_NAME "NETLizardImageViewer"
+
 #define MOVE_UNIT 0.05
 #define MOUSE_MOVE_UNIT 0.001
 #define SCALE_UNIT 0.1
@@ -15,17 +17,21 @@
 #define MAX_SCALE_LIMIT 2.0
 #define MIN_SCALE_LIMIT 0.1
 
-static int Viewer_ImageIdleEventFunc(void);
-static int Viewer_ImageKeyEventFunc(int k, int a, int p, int x, int y);
-static int Viewer_ImageMouseEventFunc(int b, int p, int x, int y);
-static int Viewer_ImageMouseMotionEventFunc(int b, int p, int x, int y, int dx, int dy);
-static void Viewer_ImageDrawFunc(void);
-static void Viewer_ImageReshapeFunc(int w, int h);
-static void Viewer_ImageInitFunc(void);
-static void Viewer_ImageFreeFunc(void);
+static int Viewer_IdleFunc(void);
+static int Viewer_KeyFunc(int k, int a, int p, int x, int y);
+static int Viewer_MouseFunc(int b, int p, int x, int y);
+static int Viewer_MotionFunc(int b, int p, int x, int y, int dx, int dy);
+static void Viewer_DrawFunc(void);
+static void Viewer_ReshapeFunc(int w, int h);
+static void Viewer_InitFunc(void);
+static void Viewer_FreeFunc(void);
+static Main3DStoreFunction_f Viewer_StoreFunc = NULL;
+static Main3DRestoreFunction_f Viewer_RestoreFunc = NULL;
+static Main3DMouseClickFunction Viewer_ClickFunc = NULL;
 
-static void Viewer_ImageInitBufferObject(void);
-static void Viewer_ImageInitTexture(void);
+
+static void Viewer_InitBufferObject(void);
+static void Viewer_InitTexture(void);
 
 #define KARIN_CASEANDEQUAL(value, index) \
 	case value:\
@@ -45,7 +51,7 @@ static GLuint bufferIDs[total_buffer_type];
 
 static int game;
 
-int Viewer_ImageIdleEventFunc(void)
+int Viewer_IdleFunc(void)
 {
 	if(action_state[MoveUp_Action] || action_state[TurnUp_Action])
 		instY += MOVE_UNIT;
@@ -65,7 +71,7 @@ int Viewer_ImageIdleEventFunc(void)
 }
 
 //OpenGL Init
-void Viewer_ImageInitBufferObject(void)
+void Viewer_InitBufferObject(void)
 {
 	GLfloat per = (GLfloat)image_texture->width / (GLfloat)image_texture->height;
 	GLdouble ortho_per = (GLdouble)height / (GLdouble)width;
@@ -91,7 +97,7 @@ void Viewer_ImageInitBufferObject(void)
 	bufferIDs[texcoord_buffer_type] = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, sizeof(GLfloat) * 8, texcoord, GL_STATIC_DRAW);
 }
 
-void Viewer_ImageInitTexture(void)
+void Viewer_InitTexture(void)
 {
 	if(!image_file)
 		return;
@@ -144,7 +150,7 @@ void Viewer_ImageInitTexture(void)
 }
 
 //OpenGL
-void Viewer_ImageInitFunc(void)
+void Viewer_InitFunc(void)
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	oglDisable(GL_DEPTH_TEST);
@@ -156,11 +162,11 @@ void Viewer_ImageInitFunc(void)
 	oglEnable(GL_TEXTURE_2D);
 	oglEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	Viewer_ImageInitTexture();
-	Viewer_ImageInitBufferObject();
+	Viewer_InitTexture();
+	Viewer_InitBufferObject();
 }
 
-void Viewer_ImageDrawFunc(void)
+void Viewer_DrawFunc(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -190,7 +196,7 @@ void Viewer_ImageDrawFunc(void)
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
-void Viewer_ImageReshapeFunc(int w, int h)
+void Viewer_ReshapeFunc(int w, int h)
 {
 	glViewport (0, 0, (GLsizei)w, (GLsizei)h);
 	glMatrixMode(GL_PROJECTION);
@@ -202,7 +208,7 @@ void Viewer_ImageReshapeFunc(int w, int h)
 }
 
 //Event Callback
-void Viewer_ImageFreeFunc(void)
+void Viewer_FreeFunc(void)
 {
 	int i;
 	for(i = 0; i < total_buffer_type; i++)
@@ -219,7 +225,7 @@ void Viewer_ImageFreeFunc(void)
 		free(image_file);
 }
 
-int Viewer_ImageKeyEventFunc(int key, int a, int pressed, int x, int y)
+int Viewer_KeyFunc(int key, int a, int pressed, int x, int y)
 {
 	int res = 0;
 	switch(a)
@@ -237,13 +243,13 @@ int Viewer_ImageKeyEventFunc(int key, int a, int pressed, int x, int y)
 	return res;
 }
 
-int Viewer_ImageMouseEventFunc(int button, int pressed, int x, int y)
+int Viewer_MouseFunc(int button, int pressed, int x, int y)
 {
 	mouseFirstMove = GL_TRUE;
 	return 0;
 }
 
-int Viewer_ImageMouseMotionEventFunc(int button, int pressed, int x, int y, int dx, int dy)
+int Viewer_MotionFunc(int button, int pressed, int x, int y, int dx, int dy)
 {
 	if(mouseFirstMove)
 	{
@@ -258,7 +264,7 @@ int Viewer_ImageMouseMotionEventFunc(int button, int pressed, int x, int y, int 
 	return 1;
 }
 
-int Viewer_ImageInitMain(const char *g, const char *src)
+int Viewer_NETLizardImageInitMain(const char *g, const char *src)
 {
 	if(!src)
 		return 0;
@@ -295,16 +301,11 @@ int Viewer_ImageInitMain(const char *g, const char *src)
 	return 1;
 }
 
-void Viewer_ImageRegisterFunction(void)
+void Viewer_NETLizardImageRegisterFunction(void)
 {
-	Main3D_SetInitFunction(Viewer_ImageInitFunc);
-	Main3D_SetDrawFunction(Viewer_ImageDrawFunc);
-	Main3D_SetFreeFunction(Viewer_ImageFreeFunc);
-	Main3D_SetIdleEventFunction(Viewer_ImageIdleEventFunc);
-	Main3D_SetReshapeFunction(Viewer_ImageReshapeFunc);
-	Main3D_SetMouseEventFunction(Viewer_ImageMouseEventFunc);
-	Main3D_SetMouseMotionEventFunction(Viewer_ImageMouseMotionEventFunc);
-	Main3D_SetKeyEventFunction(Viewer_ImageKeyEventFunc);
-	Main3D_SetMouseClickEventFunction(NULL);
+	glk_function func;
+
+	func = REGISTER_RENDER_FUNCTION(Viewer);
+	Main3D_InitRenderPage(PAGE_NAME, &func);
 }
 

@@ -8,8 +8,7 @@ DEPENDPATH += . ../opengl
 INCLUDEPATH += . ../opengl
 
 #QMAKE_CXXFLAGS += -std=c++0x
-LIBS += -L../librelease.so -lopengl
-PRE_TARGETDEPS += ../librelease.so/libopengl.so 
+LIBS += -lopengl
 
 include(../netlizard-game.pri)
 harmattan_opengl {
@@ -23,11 +22,15 @@ QT -= core gui
 CONFIG -= qt
 CONFIG += debug_and_release x11 shared 
 CONFIG(debug, debug|release) {
-OBJECTS_DIR = ../.debug_obj/glk
-DESTDIR = ../libdebug.so
+LIBS += -L../.debug
+PRE_TARGETDEPS += ../.debug/libopengl.so 
+OBJECTS_DIR = ../.debug/.obj/glk
+DESTDIR = ../.debug
 } else {
-OBJECTS_DIR = ../.release_obj/glk
-DESTDIR = ../librelease.so
+LIBS += -L../.release
+PRE_TARGETDEPS += ../.release/libopengl.so 
+OBJECTS_DIR = ../.release/.obj/glk
+DESTDIR = ../.release
 }
 
 # Input
@@ -38,7 +41,7 @@ private_glk_xi2.h
 
 SOURCES += glk.c
 
-libglk.files = ../librelease.so/libglk*
-libglk.path = /usr/lib #/caitlyn
+libglk.files = ../.release/libglk*
+libglk.path = /usr/lib
 
 INSTALLS += libglk

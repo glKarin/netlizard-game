@@ -18,7 +18,7 @@ void delete_LOL_Mesh(LOL_Mesh *mesh)
 	for(i = 0; i < mesh->bone_data.bone_count; i++)
 		free(mesh->bone_data.bone[i].name);
 	free(mesh->bone_data.bone);
-	if(mesh->vertex_array.gl == 2)
+	if(mesh->vertex_array.gl & LOLKING_OPENGL_RENDER_VERTEX_BUFFER)
 		glDeleteBuffers(LOL_Total_Buffer, mesh->vertex_array.vertex_buffer.buffers);
 }
 
@@ -89,9 +89,9 @@ LOL_Mesh * new_LOL_Mesh(const char *file)
 		}
 
 		bone->base_matrix = bone->orig_matrix;
-		bone->base_matrix = Matrix44_TransposeOpenGLMatrix(&bone->base_matrix);
-		bone->base_matrix = Matrix44_GjInverseNotSingular(&bone->base_matrix);
-		bone->orig_matrix = Matrix44_TransposeOpenGLMatrix(&bone->orig_matrix);
+		Matrix44_TransposeSelf(&bone->base_matrix);
+		Matrix44_GjInverseNotSingularSelf(&bone->base_matrix);
+		Matrix44_TransposeSelf(&bone->orig_matrix);
 		Matrix44_Identity(&bone->incr_matrix);
 		if(mesh->version >= 2)
 		{
@@ -101,7 +101,7 @@ LOL_Mesh * new_LOL_Mesh(const char *file)
 				fread(&f, 4, 1, in);
 					((NLfloat *)(bone->incr_matrix.x))[j] = f; // TEST
 			}
-			bone->incr_matrix = Matrix44_TransposeOpenGLMatrix(&bone->incr_matrix);
+			Matrix44_TransposeSelf(&bone->incr_matrix);
 		}
 	}
 
@@ -130,7 +130,7 @@ void LOL_MakeGL2Mesh(LOL_Mesh *mesh)
 {
 	if(!mesh)
 		return;
-	if(mesh->vertex_array.gl == 2)
+	if((mesh->vertex_array.gl & LOLKING_OPENGL_RENDER_VERTEX_DATA) == 0 || (mesh->vertex_array.gl & LOLKING_OPENGL_RENDER_VERTEX_BUFFER))
 		return;
 	if(!mesh->vertex || !mesh->index)
 		return;
@@ -168,6 +168,6 @@ void LOL_MakeGL2Mesh(LOL_Mesh *mesh)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	free(index);
 
-	mesh->vertex_array.vertex_buffer.gl = 2;
+	mesh->vertex_array.vertex_buffer.gl |= LOLKING_OPENGL_RENDER_VERTEX_BUFFER;
 	memcpy(mesh->vertex_array.vertex_buffer.buffers, buffers, sizeof(GLuint) * LOL_Total_Buffer);
 }

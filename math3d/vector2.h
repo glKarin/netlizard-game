@@ -9,6 +9,7 @@ typedef struct _vector2_t
 {
 	NLfloat x;
 	NLfloat y;
+	// NLfloat v[2];
 } vector2_t;
 
 typedef struct _vector2_t point2_t;

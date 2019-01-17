@@ -36,9 +36,9 @@ int Math3D_LineToPlaneIntersect(const line_t *line, const plane_t *plane, vector
     NLfloat t = - (Vector3_DotVector3(&(plane->normal), &(line->position)) - distance) / d;
 		if(point)
 		{
-			point->x = line->position.x + line->direction.x * t;
-			point->y = line->position.y + line->direction.y * t;
-			point->z = line->position.z + line->direction.z * t;
+			VECTORV_X(point) = VECTOR_X(line->position) + VECTOR_X(line->direction) * t;
+			VECTORV_Y(point) = VECTOR_Y(line->position) + VECTOR_Y(line->direction) * t;
+			VECTORV_Z(point) = VECTOR_Z(line->position) + VECTOR_Z(line->direction) * t;
 		}
 		return 1;
 }
@@ -75,9 +75,9 @@ int Math3D_PointInAABB(const vector3_t *a, const aabb_t *aabb)
 	const vector3_t *v1 = &(aabb->min_position);
 	const vector3_t *v2 = &(aabb->max_position);
 	return(
-			(a->x >= v1->x && a->x <= v2->x)
-			&& (a->y >= v1->y && a->y <= v2->y)
-			&& (a->z >= v1->z && a->z <= v2->z)
+			(VECTORV_X(a) >= VECTORV_X(v1) && VECTORV_X(a) <= VECTORV_X(v2))
+			&& (VECTORV_Y(a) >= VECTORV_Y(v1) && VECTORV_Y(a) <= VECTORV_Y(v2))
+			&& (VECTORV_Z(a) >= VECTORV_Z(v1) && VECTORV_Z(a) <= VECTORV_Z(v2))
 			? 1 : 0);
 }
 
@@ -88,8 +88,8 @@ int Math3D_PointInAABB2D(const vector3_t *a, const aabb_t *aabb)
 	const vector3_t *v1 = &(aabb->min_position);
 	const vector3_t *v2 = &(aabb->max_position);
 	return(
-			(a->x >= v1->x && a->x <= v2->x)
-			&& (a->y >= v1->y && a->y <= v2->y)
+			(VECTORV_X(a) >= VECTORV_X(v1) && VECTORV_X(a) <= VECTORV_X(v2))
+			&& (VECTORV_Y(a) >= VECTORV_Y(v1) && VECTORV_Y(a) <= VECTORV_Y(v2))
 			? 1 : 0);
 }
 
@@ -99,16 +99,16 @@ int Math3D_LineToCylinderCollision(const line_t *line, const cylinder_t *cylinde
 		return 0;
 
 	NLfloat lamda = 0.0;
-	vector3_t new_pos = {0.0, 0.0, 0.0};
-	vector3_t normal = {0.0, 0.0, 0.0};
+	vector3_t new_pos = VECTOR3(0.0, 0.0, 0.0);
+	vector3_t normal = VECTOR3(0.0, 0.0, 0.0);
 
-	vector3_t RC = {0.0, 0.0, 0.0};
+	vector3_t RC = VECTOR3(0.0, 0.0, 0.0);
 	NLfloat d = 0.0;
 	NLfloat t = 0.0;
 	NLfloat s = 0.0;
-	vector3_t n = {0.0, 0.0, 0.0};
-	//vector3_t D = {0.0, 0.0, 0.0};
-	vector3_t O = {0.0, 0.0, 0.0};
+	vector3_t n = VECTOR3(0.0, 0.0, 0.0);
+	//vector3_t D = VECTOR3(0.0, 0.0, 0.0);
+	vector3_t O = VECTOR3(0.0, 0.0, 0.0);
 	NLfloat ln = 0.0;
 	NLfloat in = 0.0;
 	NLfloat out = 0.0;
@@ -272,7 +272,7 @@ int Math3D_PointinTriangleBySameSide(const vector3_t *p, const vector3_t *a, con
 
 vector3_t Math3D_LineReflection(const vector3_t *v, const vector3_t *n)
 {
-	vector3_t r = {0.0, 0.0, 0.0};
+	vector3_t r = VECTOR3(0.0, 0.0, 0.0);
 	if(!v || !n)
 		return r;
 	NLfloat dot = Vector3_DotVector3(v, n);
@@ -288,7 +288,7 @@ vector3_t Math3D_LineReflection(const vector3_t *v, const vector3_t *n)
 
 vector3_t Math3D_ComputeTwoPointNormal(const vector3_t *p1, const vector3_t *p2)
 {
-	vector3_t l = {0.0, 0.0, 0.0};
+	vector3_t l = VECTOR3(0.0, 0.0, 0.0);
 	if(!p1 || !p2)
 		return l;
 	vector3_t dir = Vector3_SubtractVector3(p2, p1);

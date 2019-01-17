@@ -12,6 +12,8 @@
 #include "netlizard/nl_util.h"
 #include "netlizard/texture_v2_reader.h"
 
+#define PAGE_NAME "NETLizard3DItemViewer"
+
 // o/o obj/obj
 
 #define COLLISION_WIDTH 60
@@ -24,9 +26,9 @@
 ADA_GL_Model ada;
 ADA_pmd pmd;
 
-#include "./csol/hlsdk.h"
+#include "csol/studio_game.h"
 
-static StudioModel mdl;
+static GameStudioModel mdl;
 //static float frustum[6][4];
 
 static game_name game;
@@ -39,12 +41,17 @@ static cross_hair fps_cross_hair;
 static GL_NETLizard_3D_Model *item_model = NULL;
 static unsigned int level;
 
-static void Viewer_NETLizard3DItemInitFunc(void);
-static void Viewer_NETLizard3DItemDrawFunc(void);
-static void Viewer_NETLizard3DItemFreeFunc(void);
-static int Viewer_NETLizard3DItemIdleEventFunc(void);
-static void Viewer_NETLizard3DItemReshapeFunc(int w, int h);
-static int Viewer_NETLizard3DItemKeyEventFunc(int key, int a, int pressed, int x, int y);
+static void Viewer_InitFunc(void);
+static void Viewer_DrawFunc(void);
+static void Viewer_FreeFunc(void);
+static int Viewer_IdleFunc(void);
+static void Viewer_ReshapeFunc(int w, int h);
+static int Viewer_KeyFunc(int key, int a, int pressed, int x, int y);
+static Main3DStoreFunction_f Viewer_StoreFunc = NULL;
+static Main3DRestoreFunction_f Viewer_RestoreFunc = NULL;
+static Main3DMouseMotionFunction Viewer_MotionFunc = NULL;
+static Main3DMouseFunction Viewer_MouseFunc = NULL;
+static Main3DMouseClickFunction Viewer_ClickFunc = NULL;
 
 int Viewer_NETLizard3DItemInitMain(const char *g, const char *d, const char *src, unsigned int lvl)
 {
@@ -108,24 +115,19 @@ int Viewer_NETLizard3DItemInitMain(const char *g, const char *d, const char *src
 
 void Viewer_NETLizard3DItemRegisterFunction(void)
 {
-	Main3D_SetInitFunction(Viewer_NETLizard3DItemInitFunc);
-	Main3D_SetDrawFunction(Viewer_NETLizard3DItemDrawFunc);
-	Main3D_SetIdleEventFunction(Viewer_NETLizard3DItemIdleEventFunc);
-	Main3D_SetFreeFunction(Viewer_NETLizard3DItemFreeFunc);
-	Main3D_SetReshapeFunction(Viewer_NETLizard3DItemReshapeFunc);
-	Main3D_SetKeyEventFunction(Viewer_NETLizard3DItemKeyEventFunc);
-	Main3D_SetMouseEventFunction(NULL);
-	Main3D_SetMouseMotionEventFunction(NULL);
-	Main3D_SetMouseClickEventFunction(NULL);
+	glk_function func;
+
+	func = REGISTER_RENDER_FUNCTION(Viewer);
+	Main3D_InitRenderPage(PAGE_NAME, &func);
 }
 
-void Viewer_NETLizard3DItemInitFunc(void)
+void Viewer_InitFunc(void)
 {
 	Viewer_Init3DFunc();
 	is_cross = GL_TRUE;
 	//glClearColor(0.0, 0.0, 0.0 ,1.0);
 	oglDisable(GL_CULL_FACE);
-	move_unit_3d = 1;
+	move_unit_3d = 10;
 	turn_unit_3d = 10;
 	x_a_3d = -90;
 	z_t_3d = -400;
@@ -194,16 +196,20 @@ void Viewer_NETLizard3DItemInitFunc(void)
 	printfi(Ada_LoadPmdModel(&ada, pmds, 1, "xfile/pl0b"));
 	Ada_ReadPmdFile(&pmd, "xfile/pl0b/pl0b0a.pmd");
 
-	memset(&mdl, 0, sizeof(StudioModel));
+	memset(&mdl, 0, sizeof(GameStudioModel));
 	//bool b = Init(&mdl, "natasha2.mdl");
-	bool b = Init(&mdl, "natasha2.mdl");
+	bool b = CSOL_LoadMDL(&mdl, "resource/model/Girl/natasha2.mdl");
 	printf("%d\n", b);
 	if(!b)
 		exit(EXIT_FAILURE);
-	SetSequence(&mdl, 4);
+	int anim;
+	CSOL_GetSequence(&mdl, "walk", &anim);
+	CSOL_SetSequence(&mdl, LEG_PART, anim);
+	CSOL_GetSequence(&mdl, "ref_reload_rifle", &anim);
+	CSOL_SetSequence(&mdl, BODY_PART, anim);
 }
 
-void Viewer_NETLizard3DItemDrawFunc(void)
+void Viewer_DrawFunc(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if(!item_model)
@@ -228,12 +234,9 @@ void Viewer_NETLizard3DItemDrawFunc(void)
 				//glScalef(10, 10, 10);
 				//Ada_RenderStaticModel(&ada);
 				//arb(&pmd);
-				glPushAttrib(GL_CURRENT_BIT);
-				{
-					AdvanceFrame(&mdl, delta_time);
-					DrawModel(&mdl);
-				}
-				glPopAttrib();
+				CSOL_SetFrame(&mdl, BODY_PART, CSOL_AdvanceFrame(&mdl, BODY_PART, delta_time));
+				CSOL_SetFrame(&mdl, LEG_PART, CSOL_AdvanceFrame(&mdl, LEG_PART, delta_time));
+				CSOL_DrawModel(&mdl);
 				/*
 				SetUpBones(&mdl);
 				DrawBones(&mdl);
@@ -270,7 +273,7 @@ void Viewer_NETLizard3DItemDrawFunc(void)
 	}
 }
 
-void Viewer_NETLizard3DItemFreeFunc(void)
+void Viewer_FreeFunc(void)
 {
 	if(item_file)
 		free(item_file);
@@ -283,7 +286,7 @@ void Viewer_NETLizard3DItemFreeFunc(void)
 	delete_scene_2d(&bg);
 }
 
-int Viewer_NETLizard3DItemIdleEventFunc(void)
+int Viewer_IdleFunc(void)
 {
 	/*
 		 int i;
@@ -300,7 +303,7 @@ int Viewer_NETLizard3DItemIdleEventFunc(void)
 	return Main3D_BaseTransform();
 }
 
-int Viewer_NETLizard3DItemKeyEventFunc(int key, int a, int pressed, int x, int y)
+int Viewer_KeyFunc(int key, int a, int pressed, int x, int y)
 {
 	int res = 0;
 	switch(a)
@@ -318,7 +321,7 @@ int Viewer_NETLizard3DItemKeyEventFunc(int key, int a, int pressed, int x, int y
 	return res;
 }
 
-void Viewer_NETLizard3DItemReshapeFunc(int w, int h)
+void Viewer_ReshapeFunc(int w, int h)
 {
 #ifndef _HARMATTAN_OPENGL
 	glViewport(0, 0, w, h);

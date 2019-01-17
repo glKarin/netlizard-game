@@ -7,8 +7,7 @@ TARGET = csol
 DEPENDPATH += . ../opengl
 INCLUDEPATH += . ../opengl
 
-LIBS += -L../librelease.so -lSOIL -lglk -lmath3d -lopengl
-PRE_TARGETDEPS += ../librelease.so/libSOIL.so ../librelease.so/libmath3d.so ../librelease.so/libglk.so ../librelease.so/libopengl.so
+LIBS += -lSOIL -lglk -lmath3d -lopengl
 
 include(../netlizard-game.pri)
 
@@ -18,13 +17,15 @@ QT -= core gui
 CONFIG -= qt
 CONFIG += debug_and_release x11 shared 
 CONFIG(debug, debug|release) {
-OBJECTS_DIR = ../.debug_obj/lolking
-DESTDIR = ../libdebug.so
+OBJECTS_DIR = ../.debug/.obj/lolking
+DESTDIR = ../.debug
 LIBS += -L. -L.. -L../libdebug.so
+PRE_TARGETDEPS += ../.debug/libSOIL.so ../.debug/libmath3d.so ../.debug/libglk.so ../.debug/libopengl.so
 } else {
-OBJECTS_DIR = ../.release_obj/lolking
-DESTDIR = ../librelease.so
-LIBS += -L. -L.. -L../librelease.so
+OBJECTS_DIR = ../.release/.obj/lolking
+DESTDIR = ../.release
+LIBS += -L. -L.. -L../.release
+PRE_TARGETDEPS += ../.release/libSOIL.so ../.release/libmath3d.so ../.release/libglk.so ../.release/libopengl.so
 }
 
 # Input
@@ -47,7 +48,7 @@ SOURCES += hlsdk_std.c \
 #           studio_render.c \
            studio_render2.c
 
-csol.files = ../librelease.so/libcsol*
-csol.path = /usr/lib #/lol
+csol.files = ../.release/libcsol*
+csol.path = /usr/lib
 
 INSTALLS += csol

@@ -10,6 +10,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define PAGE_NAME "Splash"
+
 #define LABEL_SHOW_INTERVAL 0.4
 #define	FADE_OUT_UNIT 0.4
 #define	FADE_IN_UNIT 0.8
@@ -24,15 +26,20 @@ typedef enum _show_splash_state_type
 	finish_show_splash_type
 } show_splash_state_type;
 
-static void Splash_ResetSplash(void);
-static int Splash_IdleEventFunc(void);
-static void Splash_DrawFunc(void);
-static void Splash_ReshapeFunc(int w, int h);
-static void Splash_InitFunc(void);
-static void Splash_FreeFunc(void);
-static int Splash_KeyEventFunc(int key, int act, int pressed, int x, int y);
-static int Splash_MouseClickEventFunc(int button, int x, int y);
+static void UI_ResetSplash(void);
+static int UI_IdleFunc(void);
+static void UI_DrawFunc(void);
+static void UI_ReshapeFunc(int w, int h);
+static void UI_InitFunc(void);
+static void UI_FreeFunc(void);
+static int UI_KeyFunc(int key, int act, int pressed, int x, int y);
+static int UI_ClickFunc(int button, int x, int y);
 static void Splash_SetPageSize(GLsizei w, GLsizei h);
+
+static Main3DStoreFunction_f UI_StoreFunc = NULL;
+static Main3DRestoreFunction_f UI_RestoreFunc = NULL;
+static Main3DMouseMotionFunction UI_MotionFunc = NULL;
+static Main3DMouseFunction UI_MouseFunc = NULL;
 
 static float show_splash_fade_out_unit = FADE_OUT_UNIT;
 static float show_splash_fade_in_unit = FADE_IN_UNIT;
@@ -95,7 +102,7 @@ void Splash_SetSplashShowTimeInterval(float t1, float t2)
 		show_splash_fade_in_unit = t2;
 }
 
-int Splash_IdleEventFunc(void)
+int UI_IdleFunc(void)
 {
 	if(!has_init)
 		return 0;
@@ -149,7 +156,7 @@ int Splash_IdleEventFunc(void)
 	return 1;
 }
 
-void Splash_InitFunc(void)
+void UI_InitFunc(void)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glShadeModel(GL_SMOOTH);
@@ -178,7 +185,7 @@ void Splash_InitFunc(void)
 	has_init = 1;
 }
 
-void Splash_DrawFunc(void)
+void UI_DrawFunc(void)
 {
 	if(!has_init)
 		return;
@@ -205,7 +212,7 @@ void Splash_DrawFunc(void)
 	}
 }
 
-void Splash_ReshapeFunc(int w, int h)
+void UI_ReshapeFunc(int w, int h)
 {
 	glViewport (0, 0, (GLsizei)w, (GLsizei)h);
 	if(!has_init)
@@ -213,7 +220,7 @@ void Splash_ReshapeFunc(int w, int h)
 	Splash_SetPageSize(w, h);
 }
 
-void Splash_FreeFunc(void)
+void UI_FreeFunc(void)
 {
 	if(!has_init)
 		return;
@@ -222,25 +229,22 @@ void Splash_FreeFunc(void)
 	delete_scene_2d(&bg);
 	delete_label(&content);
 	FREE_PTR(show_finished_action)
-		Splash_ResetSplash();
+		UI_ResetSplash();
 	has_init = 0;
+
+	NL_PAGE_DESTROY_DEBUG(PAGE_NAME)
 }
 
-void Splash_RegisterFunction(void)
+void UI_SplashRegisterFunction(void)
 {
-	Main3D_SetInitFunction(Splash_InitFunc);
-	Main3D_SetDrawFunction(Splash_DrawFunc);
-	Main3D_SetFreeFunction(Splash_FreeFunc);
-	Main3D_SetKeyEventFunction(Splash_KeyEventFunc);
-	Main3D_SetIdleEventFunction(Splash_IdleEventFunc);
-	Main3D_SetReshapeFunction(Splash_ReshapeFunc);
-	Main3D_SetMouseEventFunction(NULL);
-	Main3D_SetMouseMotionEventFunction(NULL);
-	Main3D_SetMouseClickEventFunction(Splash_MouseClickEventFunc);
+	glk_function func;
+
+	func = REGISTER_RENDER_FUNCTION(UI);
+	Main3D_InitRenderPage(PAGE_NAME, &func);
 	show_splash_started = 1;
 }
 
-int Splash_KeyEventFunc(int key, int act, int pressed, int x, int y)
+int UI_KeyFunc(int key, int act, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -261,7 +265,7 @@ int Splash_KeyEventFunc(int key, int act, int pressed, int x, int y)
 	return 0;
 }
 
-int Splash_MouseClickEventFunc(int button, int x, int y)
+int UI_ClickFunc(int button, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -273,7 +277,7 @@ int Splash_MouseClickEventFunc(int button, int x, int y)
 	return 0;
 }
 
-void Splash_ResetSplash(void)
+void UI_ResetSplash(void)
 {
 	show_splash_fade_out_unit = FADE_OUT_UNIT;
 	show_splash_fade_in_unit = FADE_IN_UNIT;
@@ -285,3 +289,4 @@ void Splash_ResetSplash(void)
 	idle_time = 0.0f;
 	per = 1.0f;
 }
+

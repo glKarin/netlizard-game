@@ -142,7 +142,8 @@ typedef struct _weapon
 	float firing_progress; // 射击持续进度
 	float x_angle; // x轴角度
 	float y_angle; // y轴角度
-	float position[3]; // 位置
+	float render_position[3]; // 渲染位置
+	float position[3]; // 子弹发射位置
 	float speed; // 子弹速度
 	float boom_range; // 子弹爆炸范围
 	float boom_damage_attenuation; // 子弹爆炸范围伤害衰减
@@ -167,5 +168,6 @@ weapon_model_type Game_RandKnifeWeapon(void);
 weapon_model_type Game_RandPistolWeapon(void);
 weapon_model_type Game_RandGrenadeWeapon(void);
 int Game_Rand4WeaponTypes(weapon_model_type wps[], unsigned int max, unsigned mask);
+int Game_GetWeaponPosition(weapon_model_type type);
 
 #endif

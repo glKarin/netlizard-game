@@ -711,6 +711,11 @@ void DrawModel(StudioModel *mdl)
 
 	//glHint (GL_LINE_SMOOTH_HINT, GL_NICEST );
 
+	/*
+	SetBlending(mdl, 0, 0.0);
+	SetBlending(mdl, 1, 0.0);
+	*/
+
 	SetUpBones (mdl);
 
 	SetupLighting(mdl);
@@ -1319,5 +1324,268 @@ float SetFrame( StudioModel *mdl, float frame)
 			mdl->m_frame = frame;
 	}
 	return mdl->m_frame;
+}
+
+void DrawModelcv(StudioModel *mdl, const char *name)
+{
+	if(!mdl || !name)
+		return;
+	mstudiobone_t		*pbone;
+	pbone	= (mstudiobone_t *)((Byte *)mdl->m_pstudiohdr + mdl->m_pstudiohdr->boneindex);
+	int i;
+	for(i = 0; i < mdl->m_pstudiohdr->numbones; i++)
+	{
+		//printf("%d %s\n", i, pbone[i].name);
+		if(strcasecmp(name, pbone[i].name) == 0)
+		{
+			DrawModeli(mdl, i);
+			return;
+		}
+	}
+}
+
+void DrawModeli(StudioModel *mdl, unsigned int index)
+{
+	if(!mdl)
+		return;
+
+	int i;
+
+	mdl->g_smodels_total++; // render data cache cookie
+	mdl->m_polycount = 0;
+
+	mdl->g_pxformverts = &mdl->g_xformverts[0];
+	mdl->g_pvlightvalues = &mdl->g_lightvalues[0];
+
+	if (mdl->m_pstudiohdr->numbodyparts == 0)
+		return;
+
+	glPushMatrix ();
+
+	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+	//glHint (GL_LINE_SMOOTH_HINT, GL_NICEST );
+
+	SetUpBones (mdl);
+
+	SetupLighting(mdl);
+
+	for (i=0 ; i < mdl->m_pstudiohdr->numbodyparts ; i++) 
+	{
+		SetupModel( mdl, i );
+		DrawPointsi(mdl, index);
+	}
+	glPopMatrix();
+}
+
+void DrawPointsi (StudioModel *mdl, unsigned int index)
+{
+	if(!mdl)
+		return;
+
+	int					i, j;
+	mstudiomesh_t		*pmesh;
+	Byte				*pvertbone;
+	Byte				*pnormbone;
+	vec3_t				*pstudioverts;
+	vec3_t				*pstudionorms;
+	mstudiotexture_t	*ptexture;
+	float 				*av;
+	float				*lv;
+	float				lv_tmp;
+	float				fAlpha;
+	short				*pskinref;
+	float *vs;
+	float *ts;
+	float *cs;
+	int vertex_count;
+	unsigned primitive_type;
+
+#define _COPY_VERTEX3(v, i, x, y, z) \
+	(v)[(i) * 3] = (x); \
+	(v)[(i) * 3 + 1] = (y); \
+	(v)[(i) * 3 + 2] = (z);
+
+#define _COPY_TEXCOORD2(v, i, s, t) \
+(v)[(i) * 2] = (s); \
+(v)[(i) * 2 + 1] = (t);
+
+#define _COPY_COLOR4(v, i, r, g, b, a) \
+(v)[(i) * 4] = (r); \
+(v)[(i) * 4 + 1] = (g); \
+(v)[(i) * 4 + 2] = (b); \
+(v)[(i) * 4 + 3] = (a);
+
+	pvertbone = ((Byte *)mdl->m_pstudiohdr + mdl->m_pmodel->vertinfoindex);
+	pnormbone = ((Byte *)mdl->m_pstudiohdr + mdl->m_pmodel->norminfoindex);
+	ptexture = (mstudiotexture_t *)((Byte *)mdl->m_ptexturehdr + mdl->m_ptexturehdr->textureindex);
+
+	pmesh = (mstudiomesh_t *)((Byte *)mdl->m_pstudiohdr + mdl->m_pmodel->meshindex);
+
+	pstudioverts = (vec3_t *)((Byte *)mdl->m_pstudiohdr + mdl->m_pmodel->vertindex);
+	pstudionorms = (vec3_t *)((Byte *)mdl->m_pstudiohdr + mdl->m_pmodel->normindex);
+
+	pskinref = (short *)((Byte *)mdl->m_ptexturehdr + mdl->m_ptexturehdr->skinindex);
+	if (mdl->m_skinnum != 0 && mdl->m_skinnum < mdl->m_ptexturehdr->numskinfamilies)
+		pskinref += (mdl->m_skinnum * mdl->m_ptexturehdr->numskinref);
+
+	for (i = 0; i < mdl->m_pmodel->numverts; i++)
+	{
+		VectorTransform (pstudioverts[i], mdl->g_bonetransform[pvertbone[i]], mdl->g_pxformverts[i]);
+	}
+
+//
+// clip and draw all triangles
+//
+
+	lv = (float *)mdl->g_pvlightvalues;
+	for (j = 0; j < mdl->m_pmodel->nummesh; j++) 
+	{
+		int flags;
+		flags = ptexture[pskinref[pmesh[j].skinref]].flags;
+		for (i = 0; i < pmesh[j].numnorms; i++, lv += 3, pstudionorms++, pnormbone++)
+		{
+			Lighting (mdl, &lv_tmp, *pnormbone, flags, (float *)pstudionorms);
+
+			// FIX: move this check out of the inner loop
+			if (flags & STUDIO_NF_CHROME)
+				Chrome( mdl, mdl->g_chrome[(float (*)[3])lv - mdl->g_pvlightvalues], *pnormbone, (float *)pstudionorms );
+
+			lv[0] = lv_tmp * g_lightcolor[0];
+			lv[1] = lv_tmp * g_lightcolor[1];
+			lv[2] = lv_tmp * g_lightcolor[2];
+		}
+	}
+
+	glCullFace(GL_FRONT);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+
+	for (j = 0; j < mdl->m_pmodel->nummesh; j++) 
+	{
+		float s, t;
+		short		*ptricmds;
+
+		pmesh = (mstudiomesh_t *)((Byte *)mdl->m_pstudiohdr + mdl->m_pmodel->meshindex) + j;
+		ptricmds = (short *)((Byte *)mdl->m_pstudiohdr + pmesh->triindex);
+
+		mdl->m_polycount += pmesh->numtris;
+
+		s = 1.0/(float)ptexture[pskinref[pmesh->skinref]].width;
+		t = 1.0/(float)ptexture[pskinref[pmesh->skinref]].height;
+
+		oglBindTexture( GL_TEXTURE_2D, ptexture[pskinref[pmesh->skinref]].index );
+
+		fAlpha = 1.0f;
+		glBlendFunc(GL_ONE,GL_ONE);
+		glDisable(GL_BLEND);
+		glAlphaFunc(GL_GREATER,0.5f);
+		oglDisable(GL_ALPHA_TEST);
+
+		if ( ptexture[pskinref[pmesh->skinref]].flags & STUDIO_NF_ADDITIVE )
+		{
+			fAlpha =  0.1f;
+			glEnable(GL_BLEND);
+		}
+		if ( ptexture[pskinref[pmesh->skinref]].flags & STUDIO_NF_TRANSPARANT )
+			oglEnable(GL_ALPHA_TEST);
+
+		if (ptexture[pskinref[pmesh->skinref]].flags & STUDIO_NF_CHROME)
+		{
+			while (i = *(ptricmds++))
+			{
+				if (i < 0)
+				{
+					//glBegin( GL_TRIANGLE_FAN );
+					primitive_type = GL_TRIANGLE_FAN;
+					i = -i;
+				}
+				else
+				{
+					//glBegin( GL_TRIANGLE_STRIP );
+					primitive_type = GL_TRIANGLE_STRIP;
+				}
+
+				vs = calloc(i * 3, sizeof(float));
+				ts = calloc(i * 2, sizeof(float));
+				cs = calloc(i * 4, sizeof(float));
+				vertex_count = 0;
+
+				for( ; i > 0; i--, ptricmds += 4)
+				{
+					// FIX: put these in as integer coords, not floats
+					_COPY_TEXCOORD2(ts, vertex_count, mdl->g_chrome[ptricmds[1]][0]*s, mdl->g_chrome[ptricmds[1]][1]*t);
+					
+					lv = mdl->g_pvlightvalues[ptricmds[1]];
+					_COPY_COLOR4( cs, vertex_count, lv[0], lv[1], lv[2], fAlpha );
+					if(pvertbone[ptricmds[0]] != index)
+					{
+						cs[vertex_count * 4 + 3] = 0.0;
+					}
+					
+					av = mdl->g_pxformverts[ptricmds[0]];
+					_COPY_VERTEX3(vs, vertex_count, av[0], av[1], av[2]);
+
+					vertex_count++;
+				}
+				karinDrawArrays(primitive_type, vertex_count, vs, 3, ts, 2, NULL, 3, cs, 4);
+				free(vs);
+				free(ts);
+				free(cs);
+			}	
+		} 
+		else 
+		{		
+			while (i = *(ptricmds++))
+			{
+				if (i < 0)
+				{
+					//glBegin( GL_TRIANGLE_FAN );
+					primitive_type = GL_TRIANGLE_FAN;
+					i = -i;
+				}
+				else
+				{
+					//glBegin( GL_TRIANGLE_STRIP );
+					primitive_type = GL_TRIANGLE_STRIP;
+				}
+
+				vs = calloc(i * 3, sizeof(float));
+				ts = calloc(i * 2, sizeof(float));
+				cs = calloc(i * 4, sizeof(float));
+				vertex_count = 0;
+
+				for( ; i > 0; i--, ptricmds += 4)
+				{
+					// FIX: put these in as integer coords, not floats
+					_COPY_TEXCOORD2(ts, vertex_count, ptricmds[2]*s, ptricmds[3]*t);
+					
+					lv = mdl->g_pvlightvalues[ptricmds[1]];
+					_COPY_COLOR4(cs, vertex_count, lv[0], lv[1], lv[2], fAlpha );
+					if(pvertbone[ptricmds[0]] != index)
+					{
+						cs[vertex_count * 4 + 3] = 0.0;
+					}
+
+					av = mdl->g_pxformverts[ptricmds[0]];
+					_COPY_VERTEX3(vs, vertex_count, av[0], av[1], av[2]);
+					vertex_count++;
+				}
+				karinDrawArrays(primitive_type, vertex_count, vs, 3, ts, 2, NULL, 3, cs, 4);
+				free(vs);
+				free(ts);
+				free(cs);
+			}	
+		}
+	}
+
+	// karin
+	glCullFace(GL_BACK);
+	glEnable(GL_BLEND);
+	glDepthFunc(GL_LESS);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+#undef _COPY_VERTEX3
+#undef _COPY_TEXCOORD2
+#undef _COPY_COLOR4
 }
 

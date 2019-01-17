@@ -66,12 +66,15 @@ static int mouse_click_x = 0;
 static int mouse_click_y = 0;
 static char *keymap_file = NULL;
 
+static const glk_function *glk_page = NULL;
+
 static void Main3D_LoadKeyActionMapFromDefault(void);
 static void Main3D_LoadKeyActionMapFromFile(const char *file);
 static Harmattan_Key Main3D_ConvertXKey(KeySym key);
 static void Main3D_MakeKeyMapFile(const char *file);
 static void Main3D_PrintKeyMap(void);
 
+#if 0
 static Main3DInitFunction InitNETLizard3D = NULL;
 static Main3DDrawFunction DrawNETLizard3D = NULL;
 static Main3DFreeFunction FreeNETLizard3D = NULL;
@@ -81,6 +84,7 @@ static Main3DMouseMotionFunction MotionNETLizard3D = NULL;
 static Main3DReshapeFunction ReshapeNETLizard3D = NULL;
 static Main3DMouseFunction MouseNETLizard3D = NULL;
 static Main3DMouseClickFunction MouseClickNETLizard3D = NULL;
+#endif
 
 static void Main3D_DrawGLFunc();
 static void Main3D_InitGLFunc();
@@ -91,6 +95,7 @@ static unsigned Main3D_MouseEventFunc(int button, unsigned pressed, int x, int y
 static unsigned Main3D_MouseClickEventFunc(int button, int x, int y);
 static unsigned Main3D_MouseMotionEventFunc(int button, unsigned pressed, int x, int y, int dx, int dy);
 static unsigned Main3D_IdleEventFunc(void);
+static void Main3D_FreeAllPage(const char *name, const glk_function *func);
 
 void Main3D_MainLoop(void)
 {
@@ -98,6 +103,7 @@ void Main3D_MainLoop(void)
 		return;
 	if(karinIsRunning())
 		karinPostExit();
+
 	Main3D_RegisterGLKFunction();
 
 	karinMainLoop();
@@ -139,6 +145,8 @@ void Main3D_InitGLK(int x, int y, int w, int h, const char *title, int f, int fs
 	}
 	if(init_glk && !karinIsRunning())
 	{
+		Main3D_InitPageStack();
+
 		karinSetSingle(1);
 		if(f > 0)
 			karinSetMaxFPS(f);
@@ -165,30 +173,33 @@ void Main3D_InitGLFunc(void)
 {
 	new_netlizard_font(&fnt, NETLIZARD_FONT_MAP_FILE, NETLIZARD_FONT_TEX_FILE);
 	//new_x_font(&fnt, "fixed", 1, '~');
-
-	if(InitNETLizard3D)
-		InitNETLizard3D();
+	
+	if(glk_page && glk_page->init_func)
+	{
+		glk_page->init_func();
+	}
 }
 
 void Main3D_DrawGLFunc(void)
 {
-	if(DrawNETLizard3D)
+	if(glk_page && glk_page->draw_func)
 	{
-		DrawNETLizard3D();
+		glk_page->draw_func();
 		glFlush();
 	}
 }
 
 void Main3D_ReshapeGLFunc(int w, int h)
 {
-	if(ReshapeNETLizard3D)
-		ReshapeNETLizard3D(w, h);
+	if(glk_page && glk_page->reshape_func)
+	{
+		glk_page->reshape_func(w, h);
+	}
 }
 
 void Main3D_FreeGLFunc(void)
 {
-	if(FreeNETLizard3D)
-		FreeNETLizard3D();
+	Main3D_FreePageStack();
 	delete_font(&fnt);
 	FREE_PTR(keymap_file)
 }
@@ -228,8 +239,8 @@ unsigned Main3D_KeyEventFunc(int key, unsigned pressed, int x, int y)
 				}
 				break;
 #endif
-	if(KeyNETLizard3D)
-		res = KeyNETLizard3D(k, a, pressed, x, y);
+	if(glk_page && glk_page->key_func)
+		res = glk_page->key_func(k, a, pressed, x, y);
 
 	return res;
 }
@@ -263,8 +274,8 @@ unsigned Main3D_MouseEventFunc(int button, unsigned pressed, int x, int y)
 		delta_y_3d = 0;
 	}
 
-	if(MouseNETLizard3D)
-		res = MouseNETLizard3D(button, pressed, x, y);
+	if(glk_page && glk_page->mouse_func)
+		res = glk_page->mouse_func(button, pressed, x, y);
 	return res;
 }
 
@@ -277,16 +288,18 @@ unsigned Main3D_MouseMotionEventFunc(int button, unsigned pressed, int x, int y,
 		delta_y_3d = dy;
 		res = 1;
 	}
-	if(MotionNETLizard3D)
-		res |= MotionNETLizard3D(button, pressed, x, y, dx, dy);
+	if(glk_page && glk_page->motion_func)
+		res |= glk_page->motion_func(button, pressed, x, y, dx, dy);
 	return res;
 }
 
 unsigned Main3D_IdleEventFunc(void)
 {
-	int res = 0;
-	if(IdleNETLizard3D)
-		res = IdleNETLizard3D();
+	int res;
+	
+	res = 0;
+	if(glk_page && glk_page->idle_func)
+		res = glk_page->idle_func();
 	return res;
 }
 
@@ -330,6 +343,7 @@ void Main3D_ModelViewTransform(person_mode mode, GLfloat tps_y_angle/*left is le
 	glRotatef(x_a_3d, 1.0, 0.0, 0.0);
 }
 
+#if 0
 void Main3D_SetInitFunction(Main3DInitFunction f)
 {
 	InitNETLizard3D = f;
@@ -382,6 +396,7 @@ void Main3D_SetMouseClickEventFunction(Main3DMouseClickFunction f)
 {
 	MouseClickNETLizard3D = f;
 }
+#endif
 
 void Main3D_Reset(void)
 {
@@ -407,6 +422,7 @@ void Main3D_Reset(void)
 	is_cross = GL_FALSE;
 	is_rotate = GL_FALSE;
 
+#if 0
 	Main3D_SetDrawFunction(NULL);
 	Main3D_SetInitFunction(NULL);
 	Main3D_SetFreeFunction(NULL);
@@ -416,6 +432,9 @@ void Main3D_Reset(void)
 	Main3D_SetReshapeFunction(NULL);
 	Main3D_SetMouseEventFunction(NULL);
 	Main3D_SetMouseClickEventFunction(NULL);
+#else
+	Main3D_FreePageStack();
+#endif
 }
 
 Harmattan_Key Main3D_ConvertXKey(KeySym k)
@@ -838,9 +857,9 @@ Game_Action Main3D_GetActionOfKey(Harmattan_Key key)
 unsigned Main3D_MouseClickEventFunc(int button, int x, int y)
 {
 	int res = 0;
-	if(MouseClickNETLizard3D)
+	if(glk_page && glk_page->click_func)
 	{
-		res = MouseClickNETLizard3D(button, x, y);
+		res = glk_page->click_func(button, x, y);
 	}
 	return res;
 }
@@ -996,6 +1015,7 @@ void Main3D_SsveKeyMap(const char *file)
 void Main3D_PrintKeyMap(void)
 {
 	printf(Console_PrintLine("KEY MAP", '*'));
+	printf("\n");
 	int i;
 	for(i = Forward_Action; i < Total_Action; i++)
 	{
@@ -1018,6 +1038,7 @@ void Main3D_PrintKeyMap(void)
 		printf("\n");
 	}
 	printf(Console_PrintLine(NULL, '*'));
+	printf("\n");
 }
 
 void Main3D_ResetKeyAndActionState(void)
@@ -1030,4 +1051,158 @@ void Main3D_ResetKeyAndActionState(void)
 	}
 	for(i = Forward_Action; i < Total_Action; i++)
 		action_state[i] = 0;
+}
+
+void Main3D_PushRenderPage(const char *name, const glk_function *func)
+{
+	if(!name || !func)
+		return;
+
+	if(glk_page)
+	{
+		if(glk_page->store_func)
+			glk_page->store_func();
+	}
+	glk_page = NULL;
+
+	if(Main3D_PushPage(name, func))
+	{
+		glk_page = Main3D_GetTopFunction(NULL);
+		if(glk_page)
+		{
+			if(karinIsRunning() && glk_page->init_func)
+				glk_page->init_func();
+
+			NL_PAGE_VISIBLE_DEBUG(name, "init_func", "push")
+		}
+	}
+}
+
+void Main3D_InitRenderPage(const char *name, const glk_function *func)
+{
+	if(!name || !func)
+		return;
+
+	Main3D_ForeachPage(Main3D_FreeAllPage);
+	if(Main3D_SetPage(name, func))
+	{
+		glk_page = Main3D_GetTopFunction(NULL);
+		if(glk_page)
+		{
+			if(karinIsRunning() && glk_page->init_func)
+				glk_page->init_func();
+
+			NL_PAGE_VISIBLE_DEBUG(name, "init_func", "init")
+		}
+	}
+}
+
+void Main3D_PopRenderPage(void)
+{
+	char *name;
+
+	if(glk_page)
+	{
+		if(glk_page->free_func)
+			glk_page->free_func();
+	}
+	glk_page = NULL;
+
+	if(Main3D_PopPage())
+	{
+		glk_page = Main3D_GetTopFunction(&name);
+		if(glk_page)
+		{
+			if(glk_page->restore_func)
+				glk_page->restore_func();
+
+			NL_PAGE_VISIBLE_DEBUG(name, "restore_func", "pop")
+		}
+	}
+}
+
+void Main3D_FreeAllPage(const char *name, const glk_function *func)
+{
+	NL_UNUSED(name);
+
+	if(!func)
+		return;
+
+	if(func->free_func)
+		func->free_func();
+}
+
+void Main3D_FreePageStack(void)
+{
+	Main3D_ForeachPage(Main3D_FreeAllPage);
+	glk_page = NULL;
+	Main3D_ClearPageStack();
+}
+
+void Main3D_SetExistsRenderPage(const char *name)
+{
+	const glk_function *func;
+
+	if(!name)
+		return;
+	if(glk_page)
+	{
+		if(glk_page->store_func)
+			glk_page->store_func();
+	}
+	glk_page = NULL;
+
+	func = Main3D_GetFunction(name);
+	if(func)
+	{
+		glk_page = func;
+		if(glk_page)
+		{
+			if(glk_page->restore_func)
+				glk_page->restore_func();
+
+			NL_PAGE_VISIBLE_DEBUG(name, "restore_func", "set")
+		}
+	}
+}
+
+void Main3D_SetCurRenderPage(const char *name, const glk_function *func)
+{
+	const glk_function *f;
+
+	if(!name)
+		return;
+	if(glk_page)
+	{
+		if(glk_page->store_func)
+			glk_page->store_func();
+	}
+	glk_page = NULL;
+
+	f = Main3D_GetFunction(name);
+	if(f)
+	{
+		glk_page = f;
+		if(glk_page)
+		{
+			if(glk_page->restore_func)
+				glk_page->restore_func();
+
+			NL_PAGE_VISIBLE_DEBUG(name, "restore_func", "set")
+		}
+	}
+	else
+	{
+		if(Main3D_PushPage(name, func))
+		{
+			glk_page = Main3D_GetTopFunction(NULL);
+			if(glk_page)
+			{
+				if(karinIsRunning() && glk_page->init_func)
+					glk_page->init_func();
+
+				NL_PAGE_VISIBLE_DEBUG(name, "init_func", "set")
+			}
+		}
+	}
 }

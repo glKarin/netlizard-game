@@ -10,6 +10,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define PAGE_NAME "Loading"
+
 #define LABEL_SHOW_INTERVAL 0.4
 
 #define LABEL_H 40
@@ -25,13 +27,18 @@ static const char *Content_Text[] = {
 	"Press Return or click anywhere to return"
 };
 
-static int Menu_LoadingIdleEventFunc(void);
-static void Menu_LoadingDrawFunc(void);
-static void Menu_LoadingReshapeFunc(int w, int h);
-static void Menu_LoadingInitFunc(void);
-static void Menu_LoadingFreeFunc(void);
-static int Menu_LoadingKeyEventFunc(int key, int act, int pressed, int x, int y);
-static int Menu_LoadingMouseClickEventFunc(int button, int x, int y);
+static int UI_IdleFunc(void);
+static void UI_DrawFunc(void);
+static void UI_ReshapeFunc(int w, int h);
+static void UI_InitFunc(void);
+static void UI_FreeFunc(void);
+static int UI_KeyFunc(int key, int act, int pressed, int x, int y);
+static int UI_ClickFunc(int button, int x, int y);
+static Main3DStoreFunction_f UI_StoreFunc = NULL;
+static Main3DRestoreFunction_f UI_RestoreFunc = NULL;
+static Main3DMouseMotionFunction UI_MotionFunc = NULL;
+static Main3DMouseFunction UI_MouseFunc = NULL;
+
 static void Menu_ResetLoading(void);
 static void Menu_SetLoadingPageSize(GLsizei w, GLsizei h);
 
@@ -74,7 +81,7 @@ void Menu_SetLoadingFailAction(const char *signal)
 	SET_TEXT(loading_fail_action, signal)
 }
 
-void Menu_LoadingUpdateProgressFunc(int has_err, int p, const char *info)
+void UI_LoadingUpdateProgressFunc(int has_err, int p, const char *info)
 {
 	if(!has_init)
 		return;
@@ -121,7 +128,7 @@ void Menu_LoadingUpdateProgressFunc(int has_err, int p, const char *info)
 		karinPostDrawGL();
 }
 
-int Menu_LoadingIdleEventFunc(void)
+int UI_IdleFunc(void)
 {
 	if(!has_init)
 		return 0;
@@ -138,7 +145,7 @@ int Menu_LoadingIdleEventFunc(void)
 	return 0;
 }
 
-void Menu_LoadingInitFunc(void)
+void UI_InitFunc(void)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glShadeModel(GL_SMOOTH);
@@ -168,7 +175,7 @@ void Menu_LoadingInitFunc(void)
 	has_init = 1;
 }
 
-void Menu_LoadingDrawFunc(void)
+void UI_DrawFunc(void)
 {
 	if(!has_init)
 		return;
@@ -207,14 +214,14 @@ void Menu_LoadingDrawFunc(void)
 	}
 }
 
-void Menu_LoadingReshapeFunc(int w, int h)
+void UI_ReshapeFunc(int w, int h)
 {
 	glViewport (0, 0, (GLsizei)w, (GLsizei)h);
 	if(!has_init)
 		return;
 }
 
-void Menu_LoadingFreeFunc(void)
+void UI_FreeFunc(void)
 {
 	if(!has_init)
 		return;
@@ -226,22 +233,19 @@ void Menu_LoadingFreeFunc(void)
 		FREE_PTR(loading_fail_action)
 	Menu_ResetLoading();
 	has_init = 0;
+
+	NL_PAGE_DESTROY_DEBUG(PAGE_NAME)
 }
 
-void Menu_RegisterLoadingFunction(void)
+void UI_LoadingRegisterFunction(void)
 {
-	Main3D_SetInitFunction(Menu_LoadingInitFunc);
-	Main3D_SetDrawFunction(Menu_LoadingDrawFunc);
-	Main3D_SetFreeFunction(Menu_LoadingFreeFunc);
-	Main3D_SetKeyEventFunction(Menu_LoadingKeyEventFunc);
-	Main3D_SetIdleEventFunction(Menu_LoadingIdleEventFunc);
-	Main3D_SetReshapeFunction(Menu_LoadingReshapeFunc);
-	Main3D_SetMouseEventFunction(NULL);
-	Main3D_SetMouseMotionEventFunction(NULL);
-	Main3D_SetMouseClickEventFunction(Menu_LoadingMouseClickEventFunc);
+	glk_function func;
+
+	func = REGISTER_RENDER_FUNCTION(UI);
+	Main3D_PushRenderPage(PAGE_NAME, &func);
 }
 
-int Menu_LoadingKeyEventFunc(int key, int act, int pressed, int x, int y)
+int UI_KeyFunc(int key, int act, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -279,7 +283,7 @@ int Menu_LoadingKeyEventFunc(int key, int act, int pressed, int x, int y)
 	return 0;
 }
 
-int Menu_LoadingMouseClickEventFunc(int button, int x, int y)
+int UI_ClickFunc(int button, int x, int y)
 {
 	if(!has_init)
 		return 0;

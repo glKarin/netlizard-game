@@ -3,14 +3,13 @@
 ######################################################################
 
 TEMPLATE = app
-DEPENDPATH += . .. ../glk ../SOIL ../netlizard ../math3d ../bio ../lolking game game/component template sound local physics game/page ../opengl ../csol
+DEPENDPATH += . .. ../glk ../SOIL ../netlizard ../math3d ../bio ../lolking game game/component template sound local physics game/page ../opengl ../csol csol gl
 
-INCLUDEPATH += . .. ../SOIL ../glk ../netlizard ../math3d ../bio ../lolking game game/component template sound local physics game/page ../opengl ../csol
+INCLUDEPATH += . .. ../SOIL ../glk ../netlizard ../math3d ../bio ../lolking game game/component template sound local physics game/page ../opengl ../csol csol gl
 
 include(../netlizard-game.pri)
 
-LIBS += -L../librelease.so -lnetlizard -lSOIL -lglk -llolking -lmath3d -lbio -lopengl -lcsol
-PRE_TARGETDEPS += ../librelease.so/libnetlizard.so ../librelease.so/libSOIL.so ../librelease.so/liblolking.so ../librelease.so/libmath3d.so ../librelease.so/libglk.so ../librelease.so/libbio.so ../librelease.so/libopengl.so ../librelease.so/libcsol.so
+LIBS += -lnetlizard -lSOIL -lglk -llolking -lmath3d -lbio -lopengl -lcsol
 LIBS += -lSDL -lSDL_mixer
 
 #QMAKE_CXXFLAGS += -std=c++0x
@@ -19,12 +18,14 @@ QT -= core gui
 CONFIG -= qt
 CONFIG += debug_and_release x11
 CONFIG(debug, debug|release) {
-OBJECTS_DIR = ../.debug_obj/src
-LIBS += -L. -L.. -L../libdebug.so
+OBJECTS_DIR = ../.debug/.obj/src
+LIBS += -L../.debug
+PRE_TARGETDEPS += ../.debug/libnetlizard.so ../.debug/libSOIL.so ../.debug/liblolking.so ../.debug/libmath3d.so ../.debug/libglk.so ../.debug/libbio.so ../.debug/libopengl.so ../.debug/libcsol.so
 TARGET = netlizard-game.debug
 } else {
-OBJECTS_DIR = ../.release_obj/src
-LIBS += -L. -L.. -L../librelease.so
+OBJECTS_DIR = ../.release/.obj/src
+LIBS += -L../.release
+PRE_TARGETDEPS += ../.release/libnetlizard.so ../.release/libSOIL.so ../.release/liblolking.so ../.release/libmath3d.so ../.release/libglk.so ../.release/libbio.so ../.release/libopengl.so ../.release/libcsol.so
 TARGET = netlizard-game
 }
 DESTDIR = ..
@@ -34,13 +35,21 @@ HEADERS += netlizard3d_viewer.h \
            netlizard_converter.h \
 					 gl_3d_main.h \
 					 gl_util.h \
+					 gl_object.h \
 					 nl_event.h \
 					 nl_algo.h \
 					 nl_struct_info.h \
 					 nl_gl.h \
 					 game_util.h \
 					 font.h \
+					 page_stack.h \
 					 nl_std.h \
+					 nl_dbg.h \
+					 gl/mesh.h \
+					 gl/camera.h \
+					 gl/shadow.h \
+					 gl/nl_shadow.h \
+					 csol/studio_game.h \
 					 game/game_event.h \
 					 game/game_setting.h \
 					 game/score_table.h \
@@ -58,6 +67,7 @@ HEADERS += netlizard3d_viewer.h \
 					 game/action_signal_slot.h \
 					 game/game_main.h \
 					 game/game_viewer.h \
+					 game/racing_game_viewer.h \
 					 game/weapon.h \
 					 game/bullet.h \
 					 game/cross_hair.h \
@@ -96,6 +106,7 @@ HEADERS += netlizard3d_viewer.h \
 
 SOURCES += ../main.c \
            gl_util.c \
+					 gl_object.c \
            re3d_viewer.c \
            netlizard3d_map_viewer.c \
            netlizard3d_item_viewer.c \
@@ -118,6 +129,12 @@ SOURCES += ../main.c \
 					 game_util.c \
 					 nl_std.c \
 					 font.c \
+					 page_stack.c \
+					 gl/mesh.c \
+					 gl/camera.c \
+					 gl/shadow.c \
+					 gl/nl_shadow.c \
+					 csol/studio_game.c \
 					 game/game_event.c \
 					 game/nl_game.c \
 					 game/character.c \
@@ -127,6 +144,7 @@ SOURCES += ../main.c \
 					 game/game_mode.c \
 					 game/game_main.c \
 					 game/game_viewer.c \
+					 game/racing_game_viewer.c \
 					 game/action_signal_slot.c \
 					 game/bullet.c \
 					 game/first_person.c \

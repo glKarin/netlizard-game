@@ -1,7 +1,7 @@
 #ifndef KARIN_MATH3D_ALGO_H
 #define KARIN_MATH3D_ALGO_H
 
-#include "vector3.h"
+#include "vector.h"
 #include "graph.h"
 
 // 计算三角形法线

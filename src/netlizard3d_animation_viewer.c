@@ -11,6 +11,8 @@
 #include "netlizard/nl_util.h"
 #include "netlizard/texture_v2_reader.h"
 
+#define PAGE_NAME "NETLizard3DAnimationViewer"
+
 // un
 
 #define COLLISION_WIDTH 0
@@ -32,12 +34,17 @@ static cross_hair fps_cross_hair;
 static GL_NETLizard_3D_Animation_Model *role_model = NULL;
 static unsigned int level;
 
-static void Viewer_NETLizard3DAnimationInitFunc(void);
-static void Viewer_NETLizard3DAnimationDrawFunc(void);
-static void Viewer_NETLizard3DAnimationFreeFunc(void);
-static int Viewer_NETLizard3DAnimationIdleEventFunc(void);
-static int Viewer_NETLizard3DAnimationKeyEventFunc(int key, int act, int pressed, int x, int y);
-static void Viewer_NETLizard3DAnimationReshapeFunc(int w, int h);
+static void Viewer_InitFunc(void);
+static void Viewer_DrawFunc(void);
+static void Viewer_FreeFunc(void);
+static int Viewer_IdleFunc(void);
+static int Viewer_KeyFunc(int key, int act, int pressed, int x, int y);
+static void Viewer_ReshapeFunc(int w, int h);
+static Main3DStoreFunction_f Viewer_StoreFunc = NULL;
+static Main3DRestoreFunction_f Viewer_RestoreFunc = NULL;
+static Main3DMouseMotionFunction Viewer_MotionFunc = NULL;
+static Main3DMouseFunction Viewer_MouseFunc = NULL;
+static Main3DMouseClickFunction Viewer_ClickFunc = NULL;
 
 int Viewer_NETLizard3DAnimationInitMain(const char *g, const char *d, const char *src, unsigned int lvl, int a)
 {
@@ -77,18 +84,13 @@ int Viewer_NETLizard3DAnimationInitMain(const char *g, const char *d, const char
 
 void Viewer_NETLizard3DAnimationRegisterFunction(void)
 {
-	Main3D_SetInitFunction(Viewer_NETLizard3DAnimationInitFunc);
-	Main3D_SetDrawFunction(Viewer_NETLizard3DAnimationDrawFunc);
-	Main3D_SetReshapeFunction(Viewer_NETLizard3DAnimationReshapeFunc);
-	Main3D_SetIdleEventFunction(Viewer_NETLizard3DAnimationIdleEventFunc);
-	Main3D_SetFreeFunction(Viewer_NETLizard3DAnimationFreeFunc);
-	Main3D_SetKeyEventFunction(Viewer_NETLizard3DAnimationKeyEventFunc);
-	Main3D_SetMouseEventFunction(NULL);
-	Main3D_SetMouseMotionEventFunction(NULL);
-	Main3D_SetMouseClickEventFunction(NULL);
+	glk_function func;
+
+	func = REGISTER_RENDER_FUNCTION(Viewer);
+	Main3D_InitRenderPage(PAGE_NAME, &func);
 }
 
-void Viewer_NETLizard3DAnimationInitFunc(void)
+void Viewer_InitFunc(void)
 {
 	Viewer_Init3DFunc();
 	is_cross = GL_TRUE;
@@ -130,7 +132,7 @@ void Viewer_NETLizard3DAnimationInitFunc(void)
 		return;
 }
 
-void Viewer_NETLizard3DAnimationDrawFunc(void)
+void Viewer_DrawFunc(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if(1)
@@ -188,7 +190,7 @@ void Viewer_NETLizard3DAnimationDrawFunc(void)
 	}
 }
 
-void Viewer_NETLizard3DAnimationFreeFunc(void)
+void Viewer_FreeFunc(void)
 {
 	if(un_file)
 		free(un_file);
@@ -201,7 +203,7 @@ void Viewer_NETLizard3DAnimationFreeFunc(void)
 	delete_scene_2d(&bg);
 }
 
-void Viewer_NETLizard3DAnimationReshapeFunc(int w, int h)
+void Viewer_ReshapeFunc(int w, int h)
 {
 #ifdef _HARMATTAN_OPENGLES
 	glViewport(0, 0, w, h);
@@ -213,13 +215,13 @@ void Viewer_NETLizard3DAnimationReshapeFunc(int w, int h)
 	UI_ResizeScene2D(&bg, w, h);
 }
 
-int Viewer_NETLizard3DAnimationIdleEventFunc(void)
+int Viewer_IdleFunc(void)
 {
 	Main3D_BaseTransform();
 	return 1;
 }
 
-int Viewer_NETLizard3DAnimationKeyEventFunc(int key, int a, int pressed, int x, int y)
+int Viewer_KeyFunc(int key, int a, int pressed, int x, int y)
 {
 	int res = 0;
 	switch(key)

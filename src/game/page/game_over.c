@@ -8,6 +8,8 @@
 #include "component/text_browser.h"
 #include "component/comp_util.h"
 
+#define PAGE_NAME GAME_OVER_PAGE_NAME
+
 #define BTN_W 120
 #define BTN_H 60
 #define TABLE_X 0
@@ -27,22 +29,25 @@ typedef enum _menu_action
 	total_action_type
 } menu_action;
 
-static int GameMenu_GameOverIdleEventFunc(void);
-static int GameMenu_GameOverKeyEventFunc(int k, int a, int p, int x, int y);
-static int GameMenu_GameOverMouseEventFunc(int b, int p, int x, int y);
-static int GameMenu_GameOverMouseClickEventFunc(int b, int x, int y);
-static int GameMenu_GameOverMouseMotionEventFunc(int b, int p, int x, int y, int dx, int dy);
-static void GameMenu_GameOverDrawFunc(void);
-static void GameMenu_GameOverReshapeFunc(int w, int h);
-static void GameMenu_GameOverInitFunc(void);
-static void GameMenu_GameOverFreeFunc(void);
-static void GameMenu_GameOverEnterAction(void *func);
+static int UI_IdleFunc(void);
+static int UI_KeyFunc(int k, int a, int p, int x, int y);
+static int UI_MouseFunc(int b, int p, int x, int y);
+static int UI_ClickFunc(int b, int x, int y);
+static int UI_MotionFunc(int b, int p, int x, int y, int dx, int dy);
+static void UI_DrawFunc(void);
+static void UI_ReshapeFunc(int w, int h);
+static void UI_InitFunc(void);
+static void UI_FreeFunc(void);
+static Main3DStoreFunction_f UI_StoreFunc = NULL;
+static Main3DRestoreFunction_f UI_RestoreFunc = NULL;
+
+static void UI_EnterAction(void *func);
 static void GameMenu_SetGameOverPageSize(GLsizei w, GLsizei h);
 static void GameMenu_ResetGameOver(void);
 
 static const button_initilizer Btn_Infos[] = {
-	{700, 100, BTN_W, BTN_H, "Replay", GameMenu_GameOverEnterAction, REPLAY_GAME},
-	{700, 0, BTN_W, BTN_H, "Back", GameMenu_GameOverEnterAction, OPEN_MAIN_MENU},
+	{700, 100, BTN_W, BTN_H, "Replay", UI_EnterAction, REPLAY_GAME},
+	{700, 0, BTN_W, BTN_H, "Back", UI_EnterAction, INIT_MAIN_MENU},
 };
 
 static button btns[total_action_type];
@@ -75,14 +80,14 @@ void GameMenu_SetGameOverPageSize(GLsizei w, GLsizei h)
 	}
 }
 
-int GameMenu_GameOverIdleEventFunc(void)
+int UI_IdleFunc(void)
 {
 	if(!has_init)
 		return 0;
 	return 1;
 }
 
-void GameMenu_GameOverInitFunc(void)
+void UI_InitFunc(void)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glShadeModel(GL_SMOOTH);
@@ -120,7 +125,7 @@ void GameMenu_GameOverInitFunc(void)
 	has_init = 1;
 }
 
-void GameMenu_GameOverDrawFunc(void)
+void UI_DrawFunc(void)
 {
 	if(!has_init)
 		return;
@@ -162,7 +167,7 @@ void GameMenu_GameOverDrawFunc(void)
 	}
 }
 
-void GameMenu_GameOverReshapeFunc(int w, int h)
+void UI_ReshapeFunc(int w, int h)
 {
 	glViewport (0, 0, (GLsizei)w, (GLsizei)h);
 	if(!has_init)
@@ -170,7 +175,7 @@ void GameMenu_GameOverReshapeFunc(int w, int h)
 	GameMenu_SetGameOverPageSize(w, h);
 }
 
-void GameMenu_GameOverFreeFunc(void)
+void UI_FreeFunc(void)
 {
 	if(!has_init)
 		return;
@@ -192,6 +197,8 @@ void GameMenu_GameOverFreeFunc(void)
 	game_mode = NULL;
 	GameMenu_ResetGameOver();
 	has_init = 0;
+
+	NL_PAGE_DESTROY_DEBUG(PAGE_NAME)
 }
 
 void GameMenu_ResetGameOver(void)
@@ -201,7 +208,7 @@ void GameMenu_ResetGameOver(void)
 }
 
 // for all X event pointer coord y, Using left-down as ori, like OpenGL, and not left-top of X11. so the y coord need to convert by screen height - y, and delta_y is invert.
-int GameMenu_GameOverKeyEventFunc(int key, int act, int pressed, int x, int y)
+int UI_KeyFunc(int key, int act, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -211,7 +218,7 @@ int GameMenu_GameOverKeyEventFunc(int key, int act, int pressed, int x, int y)
 		case Harmattan_K_KP_Enter:
 			if(pressed)
 			{
-				GameMenu_GameOverEnterAction(REPLAY_GAME);
+				UI_EnterAction(REPLAY_GAME);
 				return 1;
 			}
 			break;
@@ -219,7 +226,7 @@ int GameMenu_GameOverKeyEventFunc(int key, int act, int pressed, int x, int y)
 		case Harmattan_K_Escape:
 			if(pressed)
 			{
-				GameMenu_GameOverEnterAction(OPEN_MAIN_MENU);
+				UI_EnterAction(OPEN_MAIN_MENU);
 				return 1;
 			}
 			break;
@@ -229,11 +236,16 @@ int GameMenu_GameOverKeyEventFunc(int key, int act, int pressed, int x, int y)
 	return 0;
 }
 
-int GameMenu_GameOverMouseEventFunc(int button, int pressed, int x, int gl_y)
+int UI_MouseFunc(int button, int pressed, int x, int y)
 {
+	int gl_y;
+	int i;
+
 	if(!has_init)
 		return 0;
-	int i;
+
+	gl_y = height - y;
+
 	for(i = 0; i < total_action_type; i++)
 	{
 		if(UI_PointInWidget(&btns[i].base, x, gl_y))
@@ -245,16 +257,26 @@ int GameMenu_GameOverMouseEventFunc(int button, int pressed, int x, int gl_y)
 	return 0;
 }
 
-int GameMenu_GameOverMouseMotionEventFunc(int button, int pressed, int x, int gl_y, int dx, int dy)
+int UI_MotionFunc(int button, int pressed, int x, int y, int dx, int dy)
 {
+	int gl_y;
+	int gl_dy;
+	int res;
+	int i;
+	int last_x;
+	int last_gl_y;
+
 	if(!has_init)
 		return 0;
-	int res = 0;
+
+	res = 0;
+	gl_y = height - y;
+	gl_dy = -dy;
+
 	if(pressed)
 	{
-		int last_x = x - dx;
-		int last_gl_y = gl_y - dy;
-		int i;
+		last_x = x - dx;
+		last_gl_y = gl_y - gl_dy;
 		for(i = 0; i < total_action_type; i++)
 		{
 			if(UI_PointInWidget(&btns[i].base, x, gl_y) && !UI_PointInWidget(&btns[i].base, last_x, last_gl_y))
@@ -273,7 +295,7 @@ int GameMenu_GameOverMouseMotionEventFunc(int button, int pressed, int x, int gl
 	return res;
 }
 
-void GameMenu_GameOverEnterAction(void *data)
+void UI_EnterAction(void *data)
 {
 	if(!data)
 		return;
@@ -283,11 +305,16 @@ void GameMenu_GameOverEnterAction(void *data)
 		((void__func__void)slot)();
 }
 
-int GameMenu_GameOverMouseClickEventFunc(int button, int x, int gl_y)
+int UI_ClickFunc(int button, int x, int y)
 {
+	int gl_y;
+	int i;
+
 	if(!has_init)
 		return 0;
-	int i;
+
+	gl_y = height - y;
+
 	for(i = 0; i < total_action_type; i++)
 	{
 		if(UI_PointInWidget(&btns[i].base, x, gl_y))
@@ -302,7 +329,7 @@ int GameMenu_GameOverMouseClickEventFunc(int button, int x, int gl_y)
 	return 0;
 }
 
-void GameMenu_OpenGameOver(death_game_mode *m)
+void UI_OpenGameOver(death_game_mode *m)
 {
 	if(!has_init)
 		return;
@@ -431,18 +458,10 @@ void GameMenu_OpenGameOver(death_game_mode *m)
 	}
 }
 
-glk_function * new_game_over(glk_function *men)
+void UI_GameOverRegisterFunction(void)
 {
-	RETURN_PTR(m, men, glk_function)
-		m->init_func = GameMenu_GameOverInitFunc;
-	m->draw_func = GameMenu_GameOverDrawFunc;
-	m->free_func = GameMenu_GameOverFreeFunc;
-	m->idle_func = GameMenu_GameOverIdleEventFunc;
-	m->key_func = GameMenu_GameOverKeyEventFunc;
-	m->motion_func = GameMenu_GameOverMouseMotionEventFunc;
-	m->reshape_func = GameMenu_GameOverReshapeFunc;
-	m->mouse_func = GameMenu_GameOverMouseEventFunc;
-	m->click_func = GameMenu_GameOverMouseClickEventFunc;
-	return m;
-}
+	glk_function func;
 
+	func = REGISTER_RENDER_FUNCTION(UI);
+	Main3D_SetCurRenderPage(PAGE_NAME, &func);
+}

@@ -7,6 +7,7 @@
 #include "splash.h"
 #include "loading.h"
 #include "game_viewer.h"
+#include "racing_game_viewer.h"
 #include "about.h"
 #include "game_menu.h"
 #include "action_signal_slot.h"
@@ -44,6 +45,7 @@ game_state MainGame_GetGameState(void);
 static void MainGame_SetGameState(game_state s);
 static void MainGame_WriteSetting(void);
 static void MainGame_SaveKeyMap(void);
+static void MainGame_OpenMainMenu(void);
 
 void MainGame_Run(void)
 {
@@ -77,19 +79,21 @@ void MainGame_Run(void)
 	SignalSlot_AddAction(QUIT, MainGame_Quit);
 	SignalSlot_AddAction(BACK_MAIN_MENU, MainGame_BackToMainMenu);
 	SignalSlot_AddAction(START_GAME, Game_ViewerRegisterFunction);
-	SignalSlot_AddAction(LOADING_PROGRESS_CALLBACK, Menu_LoadingUpdateProgressFunc);
-	SignalSlot_AddAction(CLOSE_GAME_MENU, GameMenu_CloseGameMenu);
-	SignalSlot_AddAction(OPEN_GAME_MENU, GameMenu_OpenGameMenu);
+	SignalSlot_AddAction(START_RACING_GAME, Game_RacingViewerRegisterFunction);
+	SignalSlot_AddAction(LOADING_PROGRESS_CALLBACK, UI_LoadingUpdateProgressFunc);
+	SignalSlot_AddAction(CLOSE_GAME_MENU, Game_CloseGameMenu);
+	SignalSlot_AddAction(OPEN_GAME_MENU, Game_PauseGameAndOpenMenu);
 	SignalSlot_AddAction(CONTINUE_GAME, Game_AfterGameMenuClosing);
 	SignalSlot_AddAction(PLAY_MENU_MUSIC, MainGame_PlayMenuMusic);
 	SignalSlot_AddAction(PLAY_LEVEL_MUSIC, MainGame_PlayLevelMusic);
 	SignalSlot_AddAction(GET_GAME_STATE, MainGame_GetGameState);
 	SignalSlot_AddAction(SET_GAME_STATE, MainGame_SetGameState);
 	SignalSlot_AddAction(REPLAY_GAME, Game_ReplayGame);
+	SignalSlot_AddAction(INIT_MAIN_MENU, MainGame_OpenMainMenu);
 
 	Splash_SetSplashImageFile(_SPLASH_FILE);
-	Splash_SetSplashShowFinishedAction(OPEN_MAIN_MENU);
-	Splash_RegisterFunction();
+	Splash_SetSplashShowFinishedAction(INIT_MAIN_MENU);
+	UI_SplashRegisterFunction();
 	MainGame_SetGameState(game_in_splash_state);
 
 	Setting_ReadSetting(NULL);
@@ -152,7 +156,7 @@ void MainGame_RunGameLevel(int game, int level)
 	char *str = NEW_II(char, strlen(Game_Names[game]) + 3 + 2 + 1 + 1 + strlen(Game_Level_Name[game][level]) + 1);
 	sprintf(str, "%s - %d. %s", Game_Names[game], lv, Game_Level_Name[game][level]);
 	Menu_SetMenuSaveState(menu_init_state);
-	Menu_RegisterLoadingFunction();
+	UI_LoadingRegisterFunction();
 	MainGame_SetGameState(game_in_loading_state);
 	Menu_SetLoadingTitle(str);
 	Menu_SetLoadingAuto(GL_FALSE);
@@ -170,7 +174,7 @@ void MainGame_RunGameLevel(int game, int level)
 
 void MainGame_GoToMainMenu(void)
 {
-	Menu_RegisterLoadingFunction();
+	UI_LoadingRegisterFunction();
 	Menu_SetLoadingTitle("NETLizard 3D Game");
 	Menu_SetLoadingAuto(GL_TRUE);
 	Menu_SetLoadingFinishedAction(BACK_MAIN_MENU);
@@ -217,21 +221,13 @@ void MainGame_OpenAbout(void)
 	Menu_SetMenuSaveState(menu_last_state);
 	Menu_InitAbout();
 	Menu_SetAboutTitleAndContent(title, content);
-	Menu_AboutRegisterFunction();
+	UI_AboutRegisterFunction();
 	MainGame_SetGameState(game_in_about_state);
 }
 
 void MainGame_Quit(void)
 {
-	Main3D_SetInitFunction(NULL);
-	Main3D_SetDrawFunction(NULL);
-	Main3D_SetFreeFunction(NULL);
-	Main3D_SetKeyEventFunction(NULL);
-	Main3D_SetIdleEventFunction(NULL);
-	Main3D_SetReshapeFunction(NULL);
-	Main3D_SetMouseEventFunction(NULL);
-	Main3D_SetMouseMotionEventFunction(NULL);
-	Main3D_SetMouseClickEventFunction(NULL);
+	Main3D_FreePageStack();
 	MainGame_SetGameState(game_in_exiting_state);
 	SignalSlot_ClearAction();
 	SDLK_Exit();
@@ -275,7 +271,7 @@ void MainGame_OpenHelp(void)
 	Menu_SetMenuSaveState(menu_last_state);
 	Menu_InitAbout();
 	Menu_SetAboutTitleAndContent(title, content);
-	Menu_AboutRegisterFunction();
+	UI_AboutRegisterFunction();
 	MainGame_SetGameState(game_in_help_state);
 }
 
@@ -303,7 +299,7 @@ void MainGame_OpenSetting(void)
 {
 	Menu_SetMenuSaveState(menu_last_state);
 	Menu_InitSetting();
-	Menu_SettingRegisterFunction();
+	UI_SettingRegisterFunction();
 	MainGame_SetGameState(game_in_setting_state);
 }
 
@@ -320,14 +316,33 @@ void MainGame_SetGameState(game_state s)
 void MainGame_OpenRunSetting(int game, int level)
 {
 	if(game == nl_racing_evolution_3d)
+	{
+		int lv = level + 1;
+		char *str = NEW_II(char, strlen(Game_Names[game]) + 3 + 2 + 1 + 1 + strlen(Game_Level_Name[game][level]) + 1);
+		sprintf(str, "%s - %d. %s", Game_Names[game], lv, Game_Level_Name[game][level]);
+		Menu_SetMenuSaveState(menu_init_state);
+		UI_LoadingRegisterFunction();
+		MainGame_SetGameState(game_in_loading_state);
+		Menu_SetLoadingTitle(str);
+		Menu_SetLoadingAuto(GL_FALSE);
+		Menu_SetLoadingFinishedAction(START_RACING_GAME);
+		Menu_SetLoadingFailAction(BACK_MAIN_MENU);
+		printf("Run Game: %s\n", str);
+		free(str);
+		const char g[] = "re3d";
+		if(Game_RacingViewerInitMain(g, g, NULL, lv))
+		{
+		}
+
 		return;
+	}
 	/*
 	if(game == nl_contr_terrorism_3d_episode_3 && (level == 13 - 1 || level == 15 - 1))
 		return;
 		*/
 	Menu_SetMenuSaveState(menu_last_state);
 	Menu_InitRunSetting(game, level);
-	Menu_RunSettingRegisterFunction();
+	UI_RunSettingRegisterFunction();
 	MainGame_SetGameState(game_in_prepare_game_state);
 }
 
@@ -339,8 +354,7 @@ void MainGame_WriteSetting(void)
 
 void MainGame_BackToMainMenu(void)
 {
-	Menu_InitMenu();
-	Menu_RegisterFunction();
+	Main3D_PopRenderPage();
 }
 
 void MainGame_SaveKeyMap(void)
@@ -353,28 +367,34 @@ void MainGame_OpenKeyMapSetting(void)
 {
 	//Menu_SetMenuSaveState(menu_last_state);
 	Menu_InitKeyMapSetting();
-	Menu_KeyMapSettingRegisterFunction();
+	UI_KeyMapSettingRegisterFunction();
 	MainGame_SetGameState(game_in_setting_state);
 }
 
 void MainGame_OpenWeaponChooser(void)
 {
 	Menu_InitWeaponChooser();
-	Menu_WeaponChooserRegisterFunction();
+	UI_WeaponChooserRegisterFunction();
 	MainGame_SetGameState(game_in_setting_state);
 }
 
 void MainGame_OpenCharacterModelChooser(void)
 {
 	Menu_InitCharacterModelChooser();
-	Menu_CharacterModelChooserRegisterFunction();
+	UI_CharacterChooserRegisterFunction();
 	MainGame_SetGameState(game_in_setting_state);
 }
 
 void MainGame_OpenMDLViewer(void)
 {
 	Menu_InitMDLViewer();
-	Menu_MDLViewerRegisterFunction();
+	UI_MDLViewerRegisterFunction();
 	MainGame_SetGameState(game_in_setting_state);
+}
+
+void MainGame_OpenMainMenu(void)
+{
+	Menu_InitMenu();
+	UI_MainMenuRegisterFunction();
 }
 

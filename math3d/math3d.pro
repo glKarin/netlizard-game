@@ -16,17 +16,18 @@ QT -= core gui
 CONFIG -= qt
 CONFIG += debug_and_release shared 
 CONFIG(debug, debug|release) {
-OBJECTS_DIR = ../.debug_obj/math3d
-DESTDIR = ../libdebug.so
+OBJECTS_DIR = ../.debug/.obj/math3d
+DESTDIR = ../.debug
 } else {
-OBJECTS_DIR = ../.release_obj/math3d
-DESTDIR = ../librelease.so
+OBJECTS_DIR = ../.release/.obj/math3d
+DESTDIR = ../.release
 }
 
 # Input
 HEADERS += graph.h \
 					 algo.h \
 					 matrix44.h \
+					 glmatrix44.h \
 					 matrix.h \
 					 matrix33.h \
 					 math3d_std.h \
@@ -39,14 +40,15 @@ HEADERS += graph.h \
 SOURCES += graph.c \
 					 algo.c \
 					 matrix44.c \
+					 glmatrix44.c \
 					 matrix33.c \
 					 quat.c \
 					 base_algo.c \
 					 vector2.c \
 					 vector3.c
 
-libmath3d.files = ../librelease.so/libmath3d*
-libmath3d.path = /usr/lib #/caitlyn
+libmath3d.files = ../.release/libmath3d*
+libmath3d.path = /usr/lib
 
 INSTALLS += libmath3d
 

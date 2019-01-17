@@ -56,6 +56,7 @@ game_character * Game_InitCharacter(float x, float y, float z, float xr, float y
 			{
 				int wpi = clone3d_M16;
 				Setting_GetSettingInteger(USE_WEAPON_SETTING, &wpi);
+				types[Game_GetWeaponPosition(wpi)] = wpi;
 				int cmi = natasha2;
 				Setting_GetSettingInteger(USE_CHARACTER_MODEL_SETTING, &cmi);
 				new_game_character(characters + index, cmi, x, y, z, xr, yr, index, "karin", scene, types, countof(types));
@@ -64,7 +65,7 @@ game_character * Game_InitCharacter(float x, float y, float z, float xr, float y
 			}
 			else
 			{
-				unsigned int ct = TR1_terror + i;
+				unsigned int ct = clone3d_human_cloning + i;
 				char name[21];
 				memset(name, '\0', sizeof(char) * 21);
 				sprintf(name, "%d-%d", i, j);
@@ -483,7 +484,7 @@ int Algo_ComputeCharacterPositionInNETLizard3DMap(const GL_NETLizard_3D_Model *m
 
 int Algo_ComputeThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, const game_character *gamer, float yr, float xr, float tps_factory, int cross, int free_view, float free_yr, float free_xr, gl_vector3_t *v, float *ryr, float *rxr)
 {
-	if(!map_model || !gamer || !v)
+	if(!gamer || !v)
 		return 0;
 	float yr_tmp; // left-right view
 	float xr_tmp; // up-down view
@@ -518,6 +519,9 @@ int Algo_ComputeThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, cons
 		v->z = new_position.y;
 		return 1;
 	}
+	if(!map_model)
+		return 0;
+
 	int scene = -1;
 	map_collision_testing_result_type res = Algo_NETLizard3DMapCollisionTesting(map_model, &new_position, 0.0, 0.0, &scene);
 	if(res == map_only_in_aabb_type)

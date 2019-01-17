@@ -11,6 +11,8 @@
 #include "game_setting.h"
 #include "template/list_template.h"
 
+#define PAGE_NAME "WeaponChooser"
+
 #define TYPE_LIST_VIEW_X 0
 #define TYPE_LIST_VIEW_Y 0
 #define TYPE_LIST_VIEW_W 220
@@ -62,15 +64,17 @@ static const weapon_attack_type Weapon_Type_List[WEAPON_TYPE_COUNT] = {
 };
 static weapon *weapon_list = NULL;
 
-static int Menu_WeaponChooserIdleEventFunc(void);
-static int Menu_WeaponChooserKeyEventFunc(int k, int a, int p, int x, int y);
-static int Menu_WeaponChooserMouseEventFunc(int b, int p, int x, int y);
-static int Menu_WeaponChooserMouseClickEventFunc(int b, int x, int y);
-static int Menu_WeaponChooserMouseMotionEventFunc(int b, int p, int x, int y, int dx, int dy);
-static void Menu_WeaponChooserDrawFunc(void);
-static void Menu_WeaponChooserReshapeFunc(int w, int h);
-static void Menu_WeaponChooserInitFunc(void);
-static void Menu_WeaponChooserFreeFunc(void);
+static int UI_IdleFunc(void);
+static int UI_KeyFunc(int k, int a, int p, int x, int y);
+static int UI_MouseFunc(int b, int p, int x, int y);
+static int UI_ClickFunc(int b, int x, int y);
+static int UI_MotionFunc(int b, int p, int x, int y, int dx, int dy);
+static void UI_DrawFunc(void);
+static void UI_ReshapeFunc(int w, int h);
+static void UI_InitFunc(void);
+static void UI_FreeFunc(void);
+static Main3DStoreFunction_f UI_StoreFunc = NULL;
+static Main3DRestoreFunction_f UI_RestoreFunc = NULL;
 
 static void Menu_ResetWeaponChooser(void);
 static void Menu_MakeWeaponListViewData(void *type);
@@ -129,7 +133,7 @@ void Menu_SetWeaponChooserPageSize(GLsizei w, GLsizei h)
 	}
 }
 
-int Menu_WeaponChooserIdleEventFunc(void)
+int UI_IdleFunc(void)
 {
 	if(!has_init)
 		return 0;
@@ -160,7 +164,7 @@ int Menu_WeaponChooserIdleEventFunc(void)
 	return 1;
 }
 
-void Menu_WeaponChooserInitFunc(void)
+void UI_InitFunc(void)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glShadeModel(GL_SMOOTH);
@@ -178,7 +182,7 @@ void Menu_WeaponChooserInitFunc(void)
 	oglDisable(GL_FOG);
 }
 
-void Menu_WeaponChooserDrawFunc(void)
+void UI_DrawFunc(void)
 {
 	if(!has_init)
 		return;
@@ -228,7 +232,7 @@ void Menu_WeaponChooserDrawFunc(void)
 	UI_RenderScene3D(&weapon_view);
 }
 
-void Menu_WeaponChooserReshapeFunc(int w, int h)
+void UI_ReshapeFunc(int w, int h)
 {
 	glViewport (0, 0, (GLsizei)w, (GLsizei)h);
 	if(!has_init)
@@ -236,7 +240,7 @@ void Menu_WeaponChooserReshapeFunc(int w, int h)
 	Menu_SetWeaponChooserPageSize(w, h);
 }
 
-void Menu_WeaponChooserFreeFunc(void)
+void UI_FreeFunc(void)
 {
 	if(!has_init)
 		return;
@@ -286,10 +290,12 @@ void Menu_WeaponChooserFreeFunc(void)
 	Game_FreeWeaponModel();
 	Menu_ResetWeaponChooser();
 	has_init = 0;
+
+	NL_PAGE_DESTROY_DEBUG(PAGE_NAME)
 }
 
 // for all X event pointer coord y, Using left-down as ori, like OpenGL, and not left-top of X11. so the y coord need to convert by screen height - y, and delta_y is invert.
-int Menu_WeaponChooserKeyEventFunc(int key, int act, int pressed, int x, int y)
+int UI_KeyFunc(int key, int act, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -337,7 +343,7 @@ int Menu_WeaponChooserKeyEventFunc(int key, int act, int pressed, int x, int y)
 	return 0;
 }
 
-int Menu_WeaponChooserMouseEventFunc(int button, int pressed, int x, int y)
+int UI_MouseFunc(int button, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -364,7 +370,7 @@ int Menu_WeaponChooserMouseEventFunc(int button, int pressed, int x, int y)
 	return 0;
 }
 
-int Menu_WeaponChooserMouseMotionEventFunc(int button, int pressed, int x, int y, int dx, int dy)
+int UI_MotionFunc(int button, int pressed, int x, int y, int dx, int dy)
 {
 	if(!has_init)
 		return 0;
@@ -407,19 +413,14 @@ int Menu_WeaponChooserMouseMotionEventFunc(int button, int pressed, int x, int y
 	return res;
 }
 
-void Menu_WeaponChooserRegisterFunction(void)
+void UI_WeaponChooserRegisterFunction(void)
 {
+	glk_function func;
 	if(!has_init)
 		return;
-	Main3D_SetInitFunction(Menu_WeaponChooserInitFunc);
-	Main3D_SetDrawFunction(Menu_WeaponChooserDrawFunc);
-	Main3D_SetFreeFunction(Menu_WeaponChooserFreeFunc);
-	Main3D_SetKeyEventFunction(Menu_WeaponChooserKeyEventFunc);
-	Main3D_SetIdleEventFunction(Menu_WeaponChooserIdleEventFunc);
-	Main3D_SetReshapeFunction(Menu_WeaponChooserReshapeFunc);
-	Main3D_SetMouseEventFunction(Menu_WeaponChooserMouseEventFunc);
-	Main3D_SetMouseMotionEventFunction(Menu_WeaponChooserMouseMotionEventFunc);
-	Main3D_SetMouseClickEventFunction(Menu_WeaponChooserMouseClickEventFunc);
+
+	func = REGISTER_RENDER_FUNCTION(UI);
+	Main3D_PushRenderPage(PAGE_NAME, &func);
 }
 
 void Menu_MakeWeaponListViewData(void *args)
@@ -561,7 +562,7 @@ void Menu_BackAction(void *data)
 	}
 }
 
-int Menu_WeaponChooserMouseClickEventFunc(int button, int x, int y)
+int UI_ClickFunc(int button, int x, int y)
 {
 	if(!has_init)
 		return 0;

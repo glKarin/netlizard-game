@@ -2,7 +2,7 @@
 #define KARIN_QUAT_H
 
 #include "math3d_std.h"
-#include "vector3.h"
+#include "vector.h"
 #include "matrix44.h"
 
 #define printfqt(x) printf(#x"->"); Quat_Print(&(x));

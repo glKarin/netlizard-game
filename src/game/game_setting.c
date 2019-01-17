@@ -34,6 +34,7 @@ const setting_item Setting_Items[total_setting] = {
 	{zoom_auto_setting, boolean_value_type, ZOOM_AUTO_SETTING, "Auto zoom", "false", NULL, NULL},
 	{open_vkb_setting, boolean_value_type, OPEN_VKB_SETTING, "Open virtual keyboard", "true", NULL, NULL},
 	{show_fps_setting, boolean_value_type, SHOW_FPS_SETTING, "Show FPS", "true", NULL, NULL},
+	{third_person_view_crosshair_setting, boolean_value_type, THIRD_PERSON_VIEW_CROSSHAIR_SETTING, "Third person ray crosshair", "false",  NULL, NULL},
 	{third_person_view_x_offset_setting, integer_value_type, THIRD_PERSON_VIEW_X_OFFSET_SETTING, "Third person view x offset", "10", "-40", "40"},
 	{third_person_view_y_offset_setting, integer_value_type, THIRD_PERSON_VIEW_Y_OFFSET_SETTING, "Third person view y offset", "25", "-50", "50"},
 	{third_person_view_distance_setting, integer_value_type, THIRD_PERSON_VIEW_DISTANCE_SETTING, "Third person view distance", "300", "0", "600"},
@@ -383,8 +384,10 @@ void Setting_PrintSetting(void)
 		fprintf(stderr, "Setting is not load.\n");
 	}
 	printf(Console_PrintLine("SETTING PROPERTY", '*'));
+	printf("\n");
 	List_ForEachConst(&settings, Setting_Print);
 	printf(Console_PrintLine(NULL, '*'));
+	printf("\n");
 }
 
 void Setting_Print(unsigned int index, const void *data)

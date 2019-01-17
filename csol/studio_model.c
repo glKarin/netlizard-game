@@ -46,7 +46,7 @@ void FreeModel (StudioModel *mdl)
 
 	g_texnum = 0;
 
-	printf("[StudioModel]: Free\n");
+	//printf("[StudioModel]: Free\n");
 }
 
 bool LoadModel( StudioModel *mdl, const char *modelname )
@@ -104,7 +104,7 @@ bool LoadModel( StudioModel *mdl, const char *modelname )
 
 	fclose( fp );
 
-	printf("[StudioModel]: Load\n");
+	//printf("[StudioModel]: Load\n");
 	return true;
 }
 
@@ -302,7 +302,7 @@ bool Init( StudioModel *mdl, const char *modelname )
 			}
 		}
 	}
-	printf("[StudioModel]: Init\n");
+	//printf("[StudioModel]: Init\n");
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////

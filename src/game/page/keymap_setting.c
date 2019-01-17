@@ -8,6 +8,8 @@
 #include "game_std.h"
 #include "game_util.h"
 
+#define PAGE_NAME "KeyMapSetting"
+
 #define LIST_VIEW_X 0
 #define LIST_VIEW_Y 100
 #define LIST_VIEW_W 554
@@ -39,15 +41,17 @@ typedef enum _menu_action
 
 static const char Scan_Label[] = "Press a key: \n";
 
-static int Menu_KeyMapSettingIdleEventFunc(void);
-static int Menu_KeyMapSettingKeyEventFunc(int k, int a, int p, int x, int y);
-static int Menu_KeyMapSettingMouseEventFunc(int b, int p, int x, int y);
-static int Menu_KeyMapSettingMouseClickEventFunc(int b, int x, int y);
-static int Menu_KeyMapSettingMouseMotionEventFunc(int b, int p, int x, int y, int dx, int dy);
-static void Menu_KeyMapSettingDrawFunc(void);
-static void Menu_KeyMapSettingReshapeFunc(int w, int h);
-static void Menu_KeyMapSettingInitFunc(void);
-static void Menu_KeyMapSettingFreeFunc(void);
+static int UI_IdleFunc(void);
+static int UI_KeyFunc(int k, int a, int p, int x, int y);
+static int UI_MouseFunc(int b, int p, int x, int y);
+static int UI_ClickFunc(int b, int x, int y);
+static int UI_MotionFunc(int b, int p, int x, int y, int dx, int dy);
+static void UI_DrawFunc(void);
+static void UI_ReshapeFunc(int w, int h);
+static void UI_InitFunc(void);
+static void UI_FreeFunc(void);
+static Main3DStoreFunction_f UI_StoreFunc = NULL;
+static Main3DRestoreFunction_f UI_RestoreFunc = NULL;
 
 static void Menu_ResetKeyMapSetting(void);
 static void Menu_MakeKeyMapListViewData(int update);
@@ -102,7 +106,7 @@ void Menu_SetKeyMapSettingPageSize(GLsizei w, GLsizei h)
 	}
 }
 
-int Menu_KeyMapSettingIdleEventFunc(void)
+int UI_IdleFunc(void)
 {
 	if(!has_init)
 		return 0;
@@ -125,7 +129,7 @@ int Menu_KeyMapSettingIdleEventFunc(void)
 	return 1;
 }
 
-void Menu_KeyMapSettingInitFunc(void)
+void UI_InitFunc(void)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glShadeModel(GL_SMOOTH);
@@ -143,7 +147,7 @@ void Menu_KeyMapSettingInitFunc(void)
 	oglDisable(GL_FOG);
 }
 
-void Menu_KeyMapSettingDrawFunc(void)
+void UI_DrawFunc(void)
 {
 	if(!has_init)
 		return;
@@ -213,7 +217,7 @@ void Menu_KeyMapSettingDrawFunc(void)
 	}
 }
 
-void Menu_KeyMapSettingReshapeFunc(int w, int h)
+void UI_ReshapeFunc(int w, int h)
 {
 	glViewport (0, 0, (GLsizei)w, (GLsizei)h);
 	if(!has_init)
@@ -221,7 +225,7 @@ void Menu_KeyMapSettingReshapeFunc(int w, int h)
 	Menu_SetKeyMapSettingPageSize(w, h);
 }
 
-void Menu_KeyMapSettingFreeFunc(void)
+void UI_FreeFunc(void)
 {
 	if(!has_init)
 		return;
@@ -250,10 +254,12 @@ void Menu_KeyMapSettingFreeFunc(void)
 	page_width = width;
 	page_height = height;
 	has_init = 0;
+
+	NL_PAGE_DESTROY_DEBUG(PAGE_NAME)
 }
 
 // for all X event pointer coord y, Using left-down as ori, like OpenGL, and not left-top of X11. so the y coord need to convert by screen height - y, and delta_y is invert.
-int Menu_KeyMapSettingKeyEventFunc(int key, int act, int pressed, int x, int y)
+int UI_KeyFunc(int key, int act, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -318,7 +324,7 @@ int Menu_KeyMapSettingKeyEventFunc(int key, int act, int pressed, int x, int y)
 	return 0;
 }
 
-int Menu_KeyMapSettingMouseEventFunc(int button, int pressed, int x, int y)
+int UI_MouseFunc(int button, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -335,7 +341,7 @@ int Menu_KeyMapSettingMouseEventFunc(int button, int pressed, int x, int y)
 	return 0;
 }
 
-int Menu_KeyMapSettingMouseMotionEventFunc(int button, int pressed, int x, int y, int dx, int dy)
+int UI_MotionFunc(int button, int pressed, int x, int y, int dx, int dy)
 {
 	if(!has_init)
 		return 0;
@@ -402,17 +408,12 @@ int Menu_KeyMapSettingMouseMotionEventFunc(int button, int pressed, int x, int y
 	return res;
 }
 
-void Menu_KeyMapSettingRegisterFunction(void)
+void UI_KeyMapSettingRegisterFunction(void)
 {
-	Main3D_SetInitFunction(Menu_KeyMapSettingInitFunc);
-	Main3D_SetDrawFunction(Menu_KeyMapSettingDrawFunc);
-	Main3D_SetFreeFunction(Menu_KeyMapSettingFreeFunc);
-	Main3D_SetKeyEventFunction(Menu_KeyMapSettingKeyEventFunc);
-	Main3D_SetIdleEventFunction(Menu_KeyMapSettingIdleEventFunc);
-	Main3D_SetReshapeFunction(Menu_KeyMapSettingReshapeFunc);
-	Main3D_SetMouseEventFunction(Menu_KeyMapSettingMouseEventFunc);
-	Main3D_SetMouseMotionEventFunction(Menu_KeyMapSettingMouseMotionEventFunc);
-	Main3D_SetMouseClickEventFunction(Menu_KeyMapSettingMouseClickEventFunc);
+	glk_function func;
+
+	func = REGISTER_RENDER_FUNCTION(UI);
+	Main3D_PushRenderPage(PAGE_NAME, &func);
 }
 
 void Menu_MakeKeyMapListViewData(int update)
@@ -550,7 +551,7 @@ void Menu_BackAction(void *data)
 	}
 }
 
-int Menu_KeyMapSettingMouseClickEventFunc(int button, int x, int y)
+int UI_ClickFunc(int button, int x, int y)
 {
 	if(!has_init)
 		return 0;

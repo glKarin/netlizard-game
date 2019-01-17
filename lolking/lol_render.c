@@ -67,7 +67,7 @@ void LOL_RenderStaticModel(const LOL_Mesh *mesh, const GLuint *tex, int count)
 
 	GLushort *index_ptr = NULL;
 
-	if(mesh->vertex_array.gl == 2)
+	if(mesh->vertex_array.gl & LOLKING_OPENGL_RENDER_VERTEX_BUFFER)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, mesh->vertex_array.vertex_buffer.buffers[LOL_Vertex_Buffer_Type]);
 		glTexCoordPointer(2, GL_FLOAT, sizeof(GLfloat) * 8, (GLubyte *)NULL + (sizeof(GLfloat) * 6));
@@ -101,7 +101,7 @@ void LOL_RenderStaticModel(const LOL_Mesh *mesh, const GLuint *tex, int count)
 		}
 	}
 
-	if(mesh->vertex_array.gl == 2)
+	if(mesh->vertex_array.gl & LOLKING_OPENGL_RENDER_VERTEX_BUFFER)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -134,15 +134,15 @@ void LOL_UpdateBone(LOL_Mesh_Bone *skl, const LOL_Animation *anm, int frame)
 		const LOL_Frame *a = anm->animation_bone[j].frame + frame;
 		if(bone->parent == -1)
 		{
-			bone->incr_matrix = Math3D_MakeQuatAndToMatrix44(a->rot, a->pos, a->scale);
+			Math3D_MakeQuatAndToMatrix44(&bone->incr_matrix, a->rot, a->pos, a->scale);
 			bone->orig_matrix = bone->incr_matrix;
 		}
 		else
 		{
 			const LOL_Bone *pBone = skl->bone + bone->parent;
-			bone->incr_matrix = Math3D_MakeQuatAndToMatrix44(a->rot, a->pos, a->scale);
+			Math3D_MakeQuatAndToMatrix44(&bone->incr_matrix, a->rot, a->pos, a->scale);
 			//bone->orig_matrix =  bone->incr_matrix * pBone->orig_matrix;
-			bone->orig_matrix =  Matrix44_MultiplyMatrix44(&bone->incr_matrix, &pBone->orig_matrix);
+			Matrix44_MultiplyMatrix44v(&bone->orig_matrix, &bone->incr_matrix, &pBone->orig_matrix);
 		}
 	}
 }
@@ -154,7 +154,7 @@ void LOL_RenderAnimationModel(const LOL_Mesh *mesh, const GLuint *tex, int count
 
 	GLfloat *vertex = NULL;
 
-	if(mesh->vertex_array.gl == 2)
+	if(mesh->vertex_array.gl & LOLKING_OPENGL_RENDER_VERTEX_BUFFER)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, mesh->vertex_array.vertex_buffer.buffers[LOL_Vertex_Buffer_Type]);
 		vertex = calloc(8 * mesh->vertex_count, sizeof(GLfloat));
@@ -179,7 +179,7 @@ void LOL_RenderAnimationModel(const LOL_Mesh *mesh, const GLuint *tex, int count
 
 	GLushort *index_ptr = NULL;
 
-	if(mesh->vertex_array.gl == 2)
+	if(mesh->vertex_array.gl & LOLKING_OPENGL_RENDER_VERTEX_BUFFER)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, mesh->vertex_array.vertex_buffer.buffers[LOL_Vertex_Buffer_Type]);
 		glTexCoordPointer(2, GL_FLOAT, sizeof(GLfloat) * 8, (GLubyte *)NULL + (sizeof(GLfloat) * 6));
@@ -213,7 +213,7 @@ void LOL_RenderAnimationModel(const LOL_Mesh *mesh, const GLuint *tex, int count
 		}
 	}
 
-	if(mesh->vertex_array.gl == 2)
+	if(mesh->vertex_array.gl & LOLKING_OPENGL_RENDER_VERTEX_BUFFER)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -222,7 +222,7 @@ void LOL_RenderAnimationModel(const LOL_Mesh *mesh, const GLuint *tex, int count
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	if(mesh->vertex_array.gl != 2)
+	if((mesh->vertex_array.gl & LOLKING_OPENGL_RENDER_VERTEX_BUFFER) == 0)
 		free(vertex);
 }
 
@@ -253,7 +253,8 @@ void LOL_UpdateVertex(const LOL_Mesh *mesh, GLfloat *verteces)
 				 continue;
 				 */
 
-			matrix44_t mat = Matrix44_MultiplyMatrix44(&skl->bone[idx].base_matrix, &skl->bone[idx].orig_matrix);
+			matrix44_t mat;
+			Matrix44_MultiplyMatrix44v(&mat, &skl->bone[idx].base_matrix, &skl->bone[idx].orig_matrix);
 			vector3_t vv = Math3D_Vector3MultiplyMatrix44(&v, &mat);
 			vector3_t vn = Math3D_Vector3MultiplyMatrix44(&n, &mat);
 			vv = Vector3_Scale(&vv, vertex->bone_weight[j]);

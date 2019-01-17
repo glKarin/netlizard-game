@@ -16,11 +16,11 @@ QT -= core gui
 CONFIG -= qt
 CONFIG += debug_and_release x11 shared 
 CONFIG(debug, debug|release) {
-OBJECTS_DIR = ../.debug_obj/opengl
-DESTDIR = ../libdebug.so
+OBJECTS_DIR = ../.debug/.obj/opengl
+DESTDIR = ../.debug
 } else {
-OBJECTS_DIR = ../.release_obj/opengl
-DESTDIR = ../librelease.so
+OBJECTS_DIR = ../.release/.obj/opengl
+DESTDIR = ../.release
 }
 
 # Input
@@ -56,7 +56,7 @@ gles2.0/openglu/glu_error.c \
 gles2.0/openglu/glu_mipmap.c
 }
 
-libopengl.files = ../librelease.so/libopengl*
+libopengl.files = ../.release/libopengl*
 libopengl.path = /usr/lib
 
 INSTALLS += libopengl

@@ -6,6 +6,9 @@
 
 #include <stdio.h>
 
+#define LOLKING_OPENGL_RENDER_VERTEX_DATA 1
+#define LOLKING_OPENGL_RENDER_VERTEX_BUFFER (1 << 1)
+
 // mesh
 
 typedef struct _LOL_Vertex

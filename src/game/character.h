@@ -6,7 +6,7 @@
 #include "game_algo.h"
 #include "game_ai.h"
 #include "weapon.h"
-#include "hlsdk.h"
+#include "studio_game.h"
 
 #define CHARACTER_VIEW_FOV 120.0
 
@@ -37,6 +37,9 @@
 #define JESSICA_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/jennifer.mdl"
 #define JESSICA2_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/jennifer2.mdl"
 #define LUCIA_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/marinegirl.mdl"
+#define NATASHA_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/natasha.mdl"
+#define CHOIJIYOON2_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/choijiyoon2.mdl"
+#define YURI2_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/yuri2.mdl"
 
 #define TR1_TERROR_MDL _KARIN_RESOURCE_DIR"resource/model/TR/terror.mdl"
 #define TR2_LEET_MDL _KARIN_RESOURCE_DIR"resource/model/TR/leet.mdl"
@@ -83,6 +86,9 @@ typedef enum _csol_role_model_type
 	jessica,
 	jessica2,
 	lucia,
+	natasha,
+	choijiyoon2,
+	yuri2,
 
 	TR1_terror,
 	TR2_leet,
@@ -124,13 +130,19 @@ typedef enum _model_source_type
 
 typedef	struct _character_animation_data
 {
-	int anim;
-	int frame;
-	int frame_count;
-	animation_loop_type anim_loop;
-	animation_orientation_type anim_orient;
-	int fps;
+	struct character_animation_internal_data {
+		int anim;
+		int frame;
+		int frame_count;
+		animation_loop_type anim_loop;
+		animation_orientation_type anim_orient;
+		int fps;
+		float comp;
+		int play;
+		unsigned status;
+	} idata[character_all_part_type];
 	float last_play_time;
+	unsigned int num;
 } character_animation_data;
 
 typedef struct _csol_game_character
@@ -140,7 +152,7 @@ typedef struct _csol_game_character
 	float x_offset;
 	float y_offset;
 	float z_offset;
-	StudioModel *model;
+	GameStudioModel *model;
 } csol_game_character;
 
 typedef struct _lol_game_character
@@ -198,7 +210,7 @@ typedef struct _game_character
 	int health; // 生命值
 	int health_full; // 生命值
 	character_animation_data animation; // 动画数据
-	character_status_type status; // 当前状态
+	unsigned current_status; // 当前状态
 	game_ai ai; // 简单AI数据，自动计算和人工指挥
 	int group; // 所属阵营
 	int index;
@@ -215,6 +227,7 @@ typedef struct _game_character
 		unsigned int wp_count;
 		unsigned mask;
 		int current_weapon;
+		float wpon_z_fixed;
 	} weapons; // 当前武器
 	//weapon *weapons; // 所有武器
 	//int weapon_count; // 武器数量
@@ -243,13 +256,14 @@ game_character * new_game_character(game_character *c, int type, float x, float 
 int Game_MakeGameCharacterModel(game_character_model *game_model, unsigned int type);
 void Game_FreeCharacterModel(game_character_model *game_model);
 int Game_GetNETLizardAnimationIndex(GL_NETLizard_3D_Animation_Model *model, NETLizard_3D_Animation_Type type);
-int Game_GetAnimationNextFrame(const character_animation_data *data, int f);
-float Game_ComputeAnimationPlayFrameCount(model_source_type type, character_animation_data *animation, int fps, float delta);
+void Game_GetAnimationNextFrame(character_animation_data *data);
+void Game_ComputeAnimationPlayFrameCount(model_source_type source, character_animation_data *animation, int fps, float delta);
 int Game_GetWeapon(game_character *gamer, const weapon_model_type types[], unsigned int count);
 void Game_FreeCharacterWeapons(game_character *gamer);
 weapon * Game_CharacterCurrentWeapon(game_character *gamer);
 int Game_PrevWeapon(game_character *gamer, unsigned skip);
 int Game_NextWeapon(game_character *gamer, unsigned skip);
 int Game_PreferWeapon(game_character *gamer);
+int Game_UpdateCharacterStatus(game_character *gamer, unsigned status, animation_orientation_type o);
 
 #endif

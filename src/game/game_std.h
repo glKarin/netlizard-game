@@ -12,6 +12,7 @@
 #define QUIT "quit"
 #define LOAD_GAME "load_game"
 #define START_GAME "start_game"
+#define START_RACING_GAME "start_racing_game"
 #define BACK_MAIN_MENU "back_menu"
 #define LOADING_PROGRESS_CALLBACK "loading_progress_callback"
 #define CLOSE_GAME_MENU "close_game_menu"
@@ -23,6 +24,8 @@
 #define SET_GAME_STATE "set_game_state"
 #define OPEN_RUN_SETTING "open_game_setting"
 #define REPLAY_GAME "replay_game"
+#define OPEN_MAP_VIEWER "open_map_viewer"
+#define INIT_MAIN_MENU "init_main_menu"
 
 #ifndef _SPLASH_FILE
 #define _SPLASH_FILE _KARIN_RESOURCE_DIR"resource/lz.png"

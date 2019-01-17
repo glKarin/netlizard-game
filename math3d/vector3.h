@@ -5,8 +5,15 @@
 
 #define printfv3(x) printf(#x"->"); Vector3_Print(&(x));
 
+#define Vector3_AddVector3 Vector3_PlusVector3
+#define Vector3_AddVector3v Vector3_PlusVector3v
+#define Vector3_Invert Vector3_Inverse
+#define Vector3_InvertSelf Vector3_Inverse
+#define Vector3_NormalizeSelf Vector3_Normalize
+
 typedef struct _vector3_t
 {
+	//NLfloat v[3];
 	NLfloat x;
 	NLfloat y;
 	NLfloat z;
@@ -33,5 +40,18 @@ int Vector3_EqualsVector3(const vector3_t *v1, const vector3_t *v2);
 int Vector3_EqualsUnitVector3(const vector3_t *v1, const vector3_t *v2);
 
 void Vector3_Print(const vector3_t *v);
+
+vector3_t Vector3_MultiplyVector3(const vector3_t *a, const vector3_t *b);
+vector3_t Vector3_DivideVector3(const vector3_t *a, const vector3_t *b);
+void Vector3_PlusVector3v(vector3_t *r, const vector3_t *a, const vector3_t *b);
+void Vector3_SubtractVector3v(vector3_t *r, const vector3_t *a, const vector3_t *b);
+void Vector3_MultiplyVector3v(vector3_t *r, const vector3_t *a, const vector3_t *b);
+void Vector3_DivideVector3v(vector3_t *r, const vector3_t *a, const vector3_t *b);
+void Vector3_CrossVector3v(vector3_t *r, const vector3_t *a, const vector3_t *b);
+void Vector3_ScaleSelf(vector3_t *a, NLfloat n);
+vector3_t Vector3_Invertr(const vector3_t *a);
+vector3_t Vector3_Normalizer(const vector3_t *a);
+vector3_t Vector3_Direction(const vector3_t *a, const vector3_t *b);
+void Vector3_Directionv(vector3_t *r, const vector3_t *a, const vector3_t *b);
 
 #endif

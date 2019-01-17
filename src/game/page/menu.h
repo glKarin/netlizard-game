@@ -3,7 +3,7 @@
 
 #include "game_std.h"
 
-void Menu_RegisterFunction(void);
+void UI_MainMenuRegisterFunction(void);
 void Menu_InitMenu(void);
 void Menu_SetMenuSaveState(menu_save_state s);
 

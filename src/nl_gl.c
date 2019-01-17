@@ -171,14 +171,14 @@ void delete_GL_NETLizard_3D_Mesh(GL_NETLizard_3D_Mesh *mesh)
 {
 	if(!mesh)
 		return;
-	if(mesh->vertex_array.gl == 1)
+	if(mesh->vertex_array.gl & OPENGL_RENDER_VERTEX_DATA)
 	{
 		if(mesh->vertex_array.vertex_data.vertex)
 			free(mesh->vertex_array.vertex_data.vertex);
 		if(mesh->vertex_array.vertex_data.index)
 			free(mesh->vertex_array.vertex_data.index);
 	}
-	else if(mesh->vertex_array.gl == 2)
+	else if(mesh->vertex_array.gl & OPENGL_RENDER_VERTEX_BUFFER)
 	{
 		if(glIsBuffer(mesh->vertex_array.vertex_buffer.vertex_buffer))
 			glDeleteBuffers(1, &(mesh->vertex_array.vertex_buffer.vertex_buffer));
@@ -376,7 +376,7 @@ GL_NETLizard_3D_Model * NETLizard_MakeGL3DModel(const NETLizard_3D_Model *model)
 			m->tex_index = NULL;
 			m->plane_count = 0;
 			m->plane = NULL;
-			m->vertex_array.vertex_data.gl = 1;
+			m->vertex_array.gl = OPENGL_RENDER_VERTEX_DATA;
 			m->vertex_array.vertex_data.vertex = NULL;
 			m->vertex_array.vertex_data.vertex_count = 0;
 			m->vertex_array.vertex_data.index = NULL;
@@ -471,21 +471,9 @@ GL_NETLizard_3D_Model * NETLizard_MakeGL3DModel(const NETLizard_3D_Model *model)
 							vertex[a + 2].position[0] = (GLfloat)mesh_vertex[i2 * 3];
 							vertex[a + 2].position[1] = (GLfloat)mesh_vertex[i2 * 3 + 1];
 							vertex[a + 2].position[2] = (GLfloat)mesh_vertex[i2 * 3 + 2];
-							vector3_t v0 = {
-								vertex[a].position[0],
-								vertex[a].position[1],
-								vertex[a].position[2]
-							};
-							vector3_t v1 = {
-								vertex[a + 1].position[0],
-								vertex[a + 1].position[1],
-								vertex[a + 1].position[2]
-							};
-							vector3_t v2 = {
-								vertex[a + 2].position[0],
-								vertex[a + 2].position[1],
-								vertex[a + 2].position[2]
-							};
+							vector3_t v0 = VECTOR3V(vertex[a].position);
+							vector3_t v1 = VECTOR3V(vertex[a + 1].position);
+							vector3_t v2 = VECTOR3V(vertex[a + 2].position);
 							vector3_t v_normal = Math3D_GetTriangleNormal(&v0, &v1, &v2);
 							vertex[a].normal[0] = v_normal.x;
 							vertex[a].normal[1] = v_normal.y;
@@ -527,7 +515,7 @@ GL_NETLizard_3D_Model * NETLizard_MakeGL3DModel(const NETLizard_3D_Model *model)
 				}
 
 				m->materials = materials;
-				m->vertex_array.vertex_data.gl = 1;
+				m->vertex_array.gl = OPENGL_RENDER_VERTEX_DATA;
 				m->vertex_array.vertex_data.vertex = vertex;
 				m->vertex_array.vertex_data.vertex_count = vertex_count;
 				m->vertex_array.vertex_data.index_count = index_count;
@@ -543,7 +531,7 @@ GL_NETLizard_3D_Model * NETLizard_MakeGL3DModel(const NETLizard_3D_Model *model)
 				{
 					GL_NETLizard_3D_Plane *glplane = planes + j;
 					NETLizard_3D_Plane *plane = ((NETLizard_3D_Plane *)(mesh->plane->array)) + j;
-					vector3_t normal = {plane->normal[0], plane->normal[1], plane->normal[2]};
+					vector3_t normal = VECTOR3V(plane->normal);
 					glplane->position[0] = (GLfloat)plane->position[0];
 					glplane->position[1] = (GLfloat)plane->position[1];
 					glplane->position[2] = (GLfloat)plane->position[2];
@@ -656,7 +644,7 @@ GL_NETLizard_3D_Model * NETLizard_MakeGL3DModel(const NETLizard_3D_Model *model)
 			m->item_mesh.count = 0;
 			m->item_mesh.materials = NULL;
 			m->item_mesh.tex_index = NULL;
-			m->item_mesh.vertex_array.vertex_data.gl = 1;
+			m->item_mesh.vertex_array.gl = OPENGL_RENDER_VERTEX_DATA;
 			m->item_mesh.vertex_array.vertex_data.vertex = NULL;
 			m->item_mesh.vertex_array.vertex_data.vertex_count = 0;
 			m->item_mesh.vertex_array.vertex_data.index = NULL;
@@ -763,21 +751,9 @@ GL_NETLizard_3D_Model * NETLizard_MakeGL3DModel(const NETLizard_3D_Model *model)
 							vertex[a + 2].position[0] = (GLfloat)mesh_vertex[i2 * 3];
 							vertex[a + 2].position[1] = (GLfloat)mesh_vertex[i2 * 3 + 1];
 							vertex[a + 2].position[2] = (GLfloat)mesh_vertex[i2 * 3 + 2];
-							vector3_t v0 = {
-								vertex[a].position[0],
-								vertex[a].position[1],
-								vertex[a].position[2]
-							};
-							vector3_t v1 = {
-								vertex[a + 1].position[0],
-								vertex[a + 1].position[1],
-								vertex[a + 1].position[2]
-							};
-							vector3_t v2 = {
-								vertex[a + 2].position[0],
-								vertex[a + 2].position[1],
-								vertex[a + 2].position[2]
-							};
+							vector3_t v0 = VECTOR3V(vertex[a].position);
+							vector3_t v1 = VECTOR3V(vertex[a + 1].position);
+							vector3_t v2 = VECTOR3V(vertex[a + 2].position);
 							vector3_t v_normal = Math3D_GetTriangleNormal(&v0, &v1, &v2);
 							vertex[a].normal[0] = v_normal.x;
 							vertex[a].normal[1] = v_normal.y;
@@ -826,7 +802,7 @@ GL_NETLizard_3D_Model * NETLizard_MakeGL3DModel(const NETLizard_3D_Model *model)
 				}
 
 				m->item_mesh.materials = materials;
-				m->item_mesh.vertex_array.vertex_data.gl = 1;
+				m->item_mesh.vertex_array.gl = OPENGL_RENDER_VERTEX_DATA;
 				m->item_mesh.vertex_array.vertex_data.vertex_count = vertex_count;
 				m->item_mesh.vertex_array.vertex_data.vertex = vertex;
 				m->item_mesh.vertex_array.vertex_data.index_count = index_count;
@@ -863,11 +839,7 @@ GL_NETLizard_3D_Model * NETLizard_MakeGL3DModel(const NETLizard_3D_Model *model)
 			bsp_data[j].direction = bsp[j].direction;
 			bsp_data[j].prev_scene = bsp[j].prev_scene;
 			bsp_data[j].next_scene = bsp[j].next_scene;
-			vector3_t normal = {
-				(float)bsp[j].normal[0],
-				(float)bsp[j].normal[1],
-				(float)bsp[j].normal[2]
-			};
+			vector3_t normal = VECTOR3V((float)bsp[j].normal);
 			Vector3_Normalize(&normal);
 			bsp_data[j].normal[0] = normal.x;
 			bsp_data[j].normal[1] = normal.y;
@@ -988,7 +960,7 @@ GL_NETLizard_3D_Animation_Model * NETLizard_MakeGL3DAnimationModel(const NETLiza
 		m->count = 0;
 		m->materials = NULL;
 		m->tex_index = NULL;
-		m->vertex_array.vertex_data.gl = 1;
+		m->vertex_array.gl = OPENGL_RENDER_VERTEX_DATA;
 		m->vertex_array.vertex_data.vertex = NULL;
 		m->vertex_array.vertex_data.vertex_count = 0;
 		m->vertex_array.vertex_data.index = NULL;
@@ -1043,21 +1015,9 @@ GL_NETLizard_3D_Animation_Model * NETLizard_MakeGL3DAnimationModel(const NETLiza
 				vertex[a + 2].position[0] = (GLfloat)mesh_vertex[i2 * 3];
 				vertex[a + 2].position[1] = (GLfloat)mesh_vertex[i2 * 3 + 1];
 				vertex[a + 2].position[2] = (GLfloat)mesh_vertex[i2 * 3 + 2];
-				vector3_t v0 = {
-					vertex[a].position[0],
-					vertex[a].position[1],
-					vertex[a].position[2]
-				};
-				vector3_t v1 = {
-					vertex[a + 1].position[0],
-					vertex[a + 1].position[1],
-					vertex[a + 1].position[2]
-				};
-				vector3_t v2 = {
-					vertex[a + 2].position[0],
-					vertex[a + 2].position[1],
-					vertex[a + 2].position[2]
-				};
+				vector3_t v0 = VECTOR3V(vertex[a].position);
+				vector3_t v1 = VECTOR3V(vertex[a + 1].position);
+				vector3_t v2 = VECTOR3V(vertex[a + 2].position);
 				vector3_t v_normal = Math3D_GetTriangleNormal(&v0, &v1, &v2);
 				vertex[a].normal[0] = v_normal.x;
 				vertex[a].normal[1] = v_normal.y;
@@ -1100,7 +1060,7 @@ GL_NETLizard_3D_Animation_Model * NETLizard_MakeGL3DAnimationModel(const NETLiza
 			m->tex_index = tex_index;
 			m->materials = materials;
 			m->count = count;
-			m->vertex_array.vertex_data.gl = 1;
+			m->vertex_array.gl = OPENGL_RENDER_VERTEX_DATA;
 			m->vertex_array.vertex_data.vertex_count = vertex_count;
 			m->vertex_array.vertex_data.vertex = vertex;
 			m->vertex_array.vertex_data.index_count = index_count;
@@ -1129,18 +1089,21 @@ GLvoid NETLizard_MakeGL23DModel(GL_NETLizard_3D_Model *model)
 		for(i = 0; i < model->count; i++)
 		{
 			GL_NETLizard_3D_Mesh *mesh = model->meshes + i;
-			if(mesh->vertex_array.gl != 1 || mesh->vertex_array.gl == 2)
+			if((mesh->vertex_array.gl & OPENGL_RENDER_VERTEX_DATA) == 0 || (mesh->vertex_array.gl & OPENGL_RENDER_VERTEX_BUFFER))
 				continue;
 			GLuint vertex_buffer = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, mesh->vertex_array.vertex_data.vertex_count * sizeof(GL_NETLizard_3D_Vertex), mesh->vertex_array.vertex_data.vertex, GL_STATIC_DRAW);
 			GLuint index_buffer = new_OpenGL_buffer_object(GL_ELEMENT_ARRAY_BUFFER, mesh->vertex_array.vertex_data.index_count * sizeof(GLushort), mesh->vertex_array.vertex_data.index, GL_STATIC_DRAW);
 
+#if OPENGL_RENDER_VERTEX_USING_UNION
 			free(mesh->vertex_array.vertex_data.vertex);
 			free(mesh->vertex_array.vertex_data.index);
 
 			memset(&mesh->vertex_array, 0, sizeof(GL_NETLizard_3D_Vertex_Array));
+#endif
+
 			GLuint vertex_count = mesh->vertex_array.vertex_data.vertex_count;
 			GLuint index_count = mesh->vertex_array.vertex_data.index_count;
-			mesh->vertex_array.vertex_buffer.gl = 2;
+			mesh->vertex_array.gl |= OPENGL_RENDER_VERTEX_BUFFER;
 			mesh->vertex_array.vertex_buffer.vertex_buffer = vertex_buffer;
 			mesh->vertex_array.vertex_buffer.index_buffer = index_buffer;
 			mesh->vertex_array.vertex_buffer.vertex_count = vertex_count;
@@ -1154,18 +1117,21 @@ GLvoid NETLizard_MakeGL23DModel(GL_NETLizard_3D_Model *model)
 		for(i = 0; i < model->item_count; i++)
 		{
 			GL_NETLizard_3D_Item_Mesh *mesh = model->item_meshes + i;
-			if(mesh->item_mesh.vertex_array.gl != 1 || mesh->item_mesh.vertex_array.gl == 2)
+			if((mesh->item_mesh.vertex_array.gl & OPENGL_RENDER_VERTEX_DATA) == 0 || (mesh->item_mesh.vertex_array.gl & OPENGL_RENDER_VERTEX_BUFFER))
 				continue;
 			GLuint vertex_buffer = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, mesh->item_mesh.vertex_array.vertex_data.vertex_count * sizeof(GL_NETLizard_3D_Vertex), mesh->item_mesh.vertex_array.vertex_data.vertex, GL_STATIC_DRAW);
 			GLuint index_buffer = new_OpenGL_buffer_object(GL_ELEMENT_ARRAY_BUFFER, mesh->item_mesh.vertex_array.vertex_data.index_count * sizeof(GLushort), mesh->item_mesh.vertex_array.vertex_data.index, GL_STATIC_DRAW);
 
+#if OPENGL_RENDER_VERTEX_USING_UNION
 			free(mesh->item_mesh.vertex_array.vertex_data.vertex);
 			free(mesh->item_mesh.vertex_array.vertex_data.index);
 
 			memset(&mesh->item_mesh.vertex_array, 0, sizeof(GL_NETLizard_3D_Vertex_Array));
+#endif
+
 			GLuint vertex_count = mesh->item_mesh.vertex_array.vertex_data.vertex_count;
 			GLuint index_count = mesh->item_mesh.vertex_array.vertex_data.index_count;
-			mesh->item_mesh.vertex_array.vertex_buffer.gl = 2;
+			mesh->item_mesh.vertex_array.gl |= OPENGL_RENDER_VERTEX_BUFFER;
 			mesh->item_mesh.vertex_array.vertex_buffer.vertex_buffer = vertex_buffer;
 			mesh->item_mesh.vertex_array.vertex_buffer.index_buffer = index_buffer;
 			mesh->item_mesh.vertex_array.vertex_buffer.vertex_count = vertex_count;
@@ -1184,18 +1150,21 @@ GLvoid NETLizard_MakeGL23DAnimationModel(GL_NETLizard_3D_Animation_Model *model)
 		for(i = 0; i < model->count; i++)
 		{
 			GL_NETLizard_3D_Mesh *mesh = model->meshes + i;
-			if(mesh->vertex_array.gl != 1 || mesh->vertex_array.gl == 2)
+			if((mesh->vertex_array.gl & OPENGL_RENDER_VERTEX_DATA) == 0 || (mesh->vertex_array.gl & OPENGL_RENDER_VERTEX_BUFFER))
 				continue;
 			GLuint vertex_buffer = new_OpenGL_buffer_object(GL_ARRAY_BUFFER, mesh->vertex_array.vertex_data.vertex_count * sizeof(GL_NETLizard_3D_Vertex), mesh->vertex_array.vertex_data.vertex, GL_STATIC_DRAW);
 			GLuint index_buffer = new_OpenGL_buffer_object(GL_ELEMENT_ARRAY_BUFFER, mesh->vertex_array.vertex_data.index_count * sizeof(GLushort), mesh->vertex_array.vertex_data.index, GL_STATIC_DRAW);
 
+#if OPENGL_RENDER_VERTEX_USING_UNION
 			free(mesh->vertex_array.vertex_data.vertex);
 			free(mesh->vertex_array.vertex_data.index);
 
 			memset(&mesh->vertex_array, 0, sizeof(GL_NETLizard_3D_Vertex_Array));
+#endif
+
 			GLuint vertex_count = mesh->vertex_array.vertex_data.vertex_count;
 			GLuint index_count = mesh->vertex_array.vertex_data.index_count;
-			mesh->vertex_array.vertex_buffer.gl = 2;
+			mesh->vertex_array.gl |= OPENGL_RENDER_VERTEX_BUFFER;
 			mesh->vertex_array.vertex_buffer.vertex_buffer = vertex_buffer;
 			mesh->vertex_array.vertex_buffer.index_buffer = index_buffer;
 			mesh->vertex_array.vertex_buffer.vertex_count = vertex_count;
@@ -1224,13 +1193,13 @@ GLvoid NETLizard_MoveItemModel(GL_NETLizard_3D_Item_Mesh *dst, GL_NETLizard_3D_I
 	memcpy(dst->item_mesh.ortho, src->item_mesh.ortho, sizeof(GLfloat) * 6);
 
 	dst->item_mesh.vertex_array.gl = src->item_mesh.vertex_array.gl;
-	if(src->item_mesh.vertex_array.gl == 1)
+	if(src->item_mesh.vertex_array.gl & OPENGL_RENDER_VERTEX_DATA)
 	{
 		memcpy(&dst->item_mesh.vertex_array.vertex_data, &src->item_mesh.vertex_array.vertex_data, sizeof(GL_NETLizard_3D_Vertex_Data));
 		src->item_mesh.vertex_array.vertex_data.vertex = NULL;
 		src->item_mesh.vertex_array.vertex_data.index = NULL;
 	}
-	else if(src->item_mesh.vertex_array.gl == 2)
+	else if(src->item_mesh.vertex_array.gl & OPENGL_RENDER_VERTEX_BUFFER)
 	{
 		memcpy(&dst->item_mesh.vertex_array.vertex_buffer, &src->item_mesh.vertex_array.vertex_buffer, sizeof(GL_NETLizard_3D_Vertex_Buffer));
 		src->item_mesh.vertex_array.vertex_buffer.vertex_buffer = 0;

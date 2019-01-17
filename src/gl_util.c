@@ -10,7 +10,7 @@
 #include <float.h>
 #include <math.h>
 
-#define CLAMP_COLOR_FLOAT(r, g, b) {r / 255.9f, g / 255.0f, b / 255.0f, 1.0f}
+#define CLAMP_COLOR_FLOAT(r, g, b) {r / 255.0f, g / 255.0f, b / 255.0f, 1.0f}
 
 static GLfloat X11_Color[total_color][4] =
 {

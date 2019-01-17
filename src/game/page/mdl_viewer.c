@@ -8,7 +8,9 @@
 #include "game_std.h"
 #include "game_util.h"
 #include "game_setting.h"
-#include "csol/hlsdk.h"
+#include "studio_game.h"
+
+#define PAGE_NAME "MDLViewer"
 
 #define MODEL_LIST_VIEW_X 0
 #define MODEL_LIST_VIEW_Y 140
@@ -85,6 +87,9 @@ static const char *MDL_Names[] = {
 	"Jessica",
 	"Jessica (Soilder edition)",
 	"Lucia",
+	"Natasha",
+	"ChoiJiYoon (Standard edition)",
+	"Yuri (Student edition)",
 
 	"Terror",
 	"Leet",
@@ -106,6 +111,9 @@ static const char *MDL_Paths[] = {
 	_KARIN_RESOURCE_DIR"resource/model/Girl/jennifer.mdl",
 	_KARIN_RESOURCE_DIR"resource/model/Girl/jennifer2.mdl",
 	_KARIN_RESOURCE_DIR"resource/model/Girl/marinegirl.mdl",
+	_KARIN_RESOURCE_DIR"resource/model/Girl/natasha.mdl",
+	_KARIN_RESOURCE_DIR"resource/model/Girl/choijiyoon2.mdl",
+	_KARIN_RESOURCE_DIR"resource/model/Girl/yuri2.mdl",
 
 	_KARIN_RESOURCE_DIR"resource/model/TR/terror.mdl",
 	_KARIN_RESOURCE_DIR"resource/model/TR/leet.mdl",
@@ -126,6 +134,50 @@ static float direction[3] = {0.0, 0.0, -1.0};
 static float up[3] = {0.0, 1.0, 0.0};
 static float scale = MDL_SCALE;
 static unsigned actions[back_to_menu_action] = { 0 };
+static unsigned int bone_index = 0;
+static unsigned render_part = 0;
+static char *Bone_Names[] = {
+	"Bip01",
+	"Bip01 Pelvis",
+	"Bip01 Spine",
+	"Bip01 Spine1",
+	"Bip01 Spine2",
+	"Bip01 Spine3",
+	"Bip01 Neck",
+	"Bip01 Head",
+	"Bip01 Neck_Sub",
+	"Bip01 L Clavicle",
+	"Bip01 L UpperArm",
+	"Bip01 L Forearm",
+	"Bip01 L Hand",
+	"L UpperArm_Sub",
+	"Bip01 L Clavicle_Sub",
+	"Bip01 R Clavicle",
+	"Bip01 R UpperArm",
+	"Bip01 R Forearm",
+	"Bip01 R Hand",
+	"Bip01 R Forearm_Sub",
+	"R UpperArm_Sub",
+	"Bip01 R Clavicle_Sub",
+	"Breast_Sub",
+	"Spine_Sub",
+	"Bip01 L Thigh",
+	"Bip01 L Calf",
+	"Bip01 L Foot",
+	"Bip01 L Toe0",
+	"L Hip_Sub",
+	"L Calf_Sub",
+	"Bip01 R Thigh",
+	"Bip01 R Calf",
+	"Bip01 R Foot",
+	"Bip01 R Toe0",
+	"R Hip_Sub",
+	"R Calf_Sub",
+	"Skult_Front",
+	"Skult_Back",
+	"CSO_Defuse",
+	"Cylinder05",
+};
 
 static void Menu_ResetMdlViewerTransform(void *data);
 static void Menu_ComputeDirection(void);
@@ -142,15 +194,17 @@ static void Menu_MoveDown(void *data);
 static void Menu_IncrScale(void *data);
 static void Menu_DecrScale(void *data);
 static void Menu_SetActionState(menu_action action, unsigned state);
-static int Menu_MDLViewerIdleEventFunc(void);
-static int Menu_MDLViewerKeyEventFunc(int k, int a, int p, int x, int y);
-static int Menu_MDLViewerMouseEventFunc(int b, int p, int x, int y);
-static int Menu_MDLViewerMouseClickEventFunc(int b, int x, int y);
-static int Menu_MDLViewerMouseMotionEventFunc(int b, int p, int x, int y, int dx, int dy);
-static void Menu_MDLViewerDrawFunc(void);
-static void Menu_MDLViewerReshapeFunc(int w, int h);
-static void Menu_MDLViewerInitFunc(void);
-static void Menu_MDLViewerFreeFunc(void);
+static int UI_IdleFunc(void);
+static int UI_KeyFunc(int k, int a, int p, int x, int y);
+static int UI_MouseFunc(int b, int p, int x, int y);
+static int UI_ClickFunc(int b, int x, int y);
+static int UI_MotionFunc(int b, int p, int x, int y, int dx, int dy);
+static void UI_DrawFunc(void);
+static void UI_ReshapeFunc(int w, int h);
+static void UI_InitFunc(void);
+static void UI_FreeFunc(void);
+static Main3DStoreFunction_f UI_StoreFunc = NULL;
+static Main3DRestoreFunction_f UI_RestoreFunc = NULL;
 
 static void Menu_ResetMdlViewer(void);
 static void Menu_MakeListViewData(void);
@@ -222,7 +276,7 @@ void Menu_SetMDLViewerPageSize(GLsizei w, GLsizei h)
 	}
 }
 
-int Menu_MDLViewerIdleEventFunc(void)
+int UI_IdleFunc(void)
 {
 	if(!has_init)
 		return 0;
@@ -250,7 +304,7 @@ int Menu_MDLViewerIdleEventFunc(void)
 	return 1;
 }
 
-void Menu_MDLViewerInitFunc(void)
+void UI_InitFunc(void)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glShadeModel(GL_SMOOTH);
@@ -268,7 +322,7 @@ void Menu_MDLViewerInitFunc(void)
 	oglDisable(GL_FOG);
 }
 
-void Menu_MDLViewerDrawFunc(void)
+void UI_DrawFunc(void)
 {
 	if(!has_init)
 		return;
@@ -318,7 +372,7 @@ void Menu_MDLViewerDrawFunc(void)
 	UI_RenderScene3D(&model_view);
 }
 
-void Menu_MDLViewerReshapeFunc(int w, int h)
+void UI_ReshapeFunc(int w, int h)
 {
 	glViewport (0, 0, (GLsizei)w, (GLsizei)h);
 	if(!has_init)
@@ -326,7 +380,7 @@ void Menu_MDLViewerReshapeFunc(int w, int h)
 	Menu_SetMDLViewerPageSize(w, h);
 }
 
-void Menu_MDLViewerFreeFunc(void)
+void UI_FreeFunc(void)
 {
 	if(!has_init)
 		return;
@@ -377,10 +431,12 @@ void Menu_MDLViewerFreeFunc(void)
 	}
 	Menu_ResetMdlViewer();
 	has_init = 0;
+
+	NL_PAGE_DESTROY_DEBUG(PAGE_NAME)
 }
 
 // for all X event pointer coord y, Using left-down as ori, like OpenGL, and not left-top of X11. so the y coord need to convert by screen height - y, and delta_y is invert.
-int Menu_MDLViewerKeyEventFunc(int key, int act, int pressed, int x, int y)
+int UI_KeyFunc(int key, int act, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -464,11 +520,36 @@ int Menu_MDLViewerKeyEventFunc(int key, int act, int pressed, int x, int y)
 				idle_time = 0.0f;
 			}
 			break;
+		case Harmattan_K_y:
+		case Harmattan_K_Y:
+			if(pressed)
+			{
+				bone_index--;
+				if(bone_index < 0)
+					bone_index = 39;
+			}
+			break;
+		case Harmattan_K_u:
+		case Harmattan_K_U:
+			if(pressed)
+			{
+				bone_index++;
+				if(bone_index > 39)
+					bone_index = 0;
+			}
+			break;
+		case Harmattan_K_f:
+		case Harmattan_K_F:
+			if(pressed)
+			{
+				render_part ^= 1;
+			}
+			break;
 	}
 	return 0;
 }
 
-int Menu_MDLViewerMouseEventFunc(int button, int pressed, int x, int y)
+int UI_MouseFunc(int button, int pressed, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -496,7 +577,7 @@ int Menu_MDLViewerMouseEventFunc(int button, int pressed, int x, int y)
 	return 0;
 }
 
-int Menu_MDLViewerMouseMotionEventFunc(int button, int pressed, int x, int y, int dx, int dy)
+int UI_MotionFunc(int button, int pressed, int x, int y, int dx, int dy)
 {
 	if(!has_init)
 		return 0;
@@ -537,19 +618,14 @@ int Menu_MDLViewerMouseMotionEventFunc(int button, int pressed, int x, int y, in
 	return res;
 }
 
-void Menu_MDLViewerRegisterFunction(void)
+void UI_MDLViewerRegisterFunction(void)
 {
 	if(!has_init)
 		return;
-	Main3D_SetInitFunction(Menu_MDLViewerInitFunc);
-	Main3D_SetDrawFunction(Menu_MDLViewerDrawFunc);
-	Main3D_SetFreeFunction(Menu_MDLViewerFreeFunc);
-	Main3D_SetKeyEventFunction(Menu_MDLViewerKeyEventFunc);
-	Main3D_SetIdleEventFunction(Menu_MDLViewerIdleEventFunc);
-	Main3D_SetReshapeFunction(Menu_MDLViewerReshapeFunc);
-	Main3D_SetMouseEventFunction(Menu_MDLViewerMouseEventFunc);
-	Main3D_SetMouseMotionEventFunction(Menu_MDLViewerMouseMotionEventFunc);
-	Main3D_SetMouseClickEventFunction(Menu_MDLViewerMouseClickEventFunc);
+	glk_function func;
+
+	func = REGISTER_RENDER_FUNCTION(UI);
+	Main3D_PushRenderPage(PAGE_NAME, &func);
 }
 
 void Menu_MakeListViewData(void)
@@ -645,7 +721,7 @@ void Menu_BackAction(void *data)
 	}
 }
 
-int Menu_MDLViewerMouseClickEventFunc(int button, int x, int y)
+int UI_ClickFunc(int button, int x, int y)
 {
 	if(!has_init)
 		return 0;
@@ -750,7 +826,10 @@ void Menu_RenderCharacterModel(void)
 		glRotatef(180.0, 0.0f, 0.0f, 1.0f);
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		{
-			DrawModel(model_list + current_mdl);
+			if(render_part)
+				DrawModelcv(model_list + current_mdl, Bone_Names[bone_index]);
+			else
+				DrawModel(model_list + current_mdl);
 		}
 		glPopAttrib();
 	}
@@ -927,14 +1006,14 @@ void Menu_TurnUp(void *data)
 {
 	if(!has_init)
 		return;
-		model_view.rotate.xr = Algo_FormatAngle(model_view.rotate.xr - MDL_ROTATE_UNIT * delta_time);
+	model_view.rotate.xr = Algo_FormatAngle(model_view.rotate.xr - MDL_ROTATE_UNIT * delta_time);
 }
 
 void Menu_TurnDown(void *data)
 {
 	if(!has_init)
 		return;
-		model_view.rotate.xr = Algo_FormatAngle(model_view.rotate.xr + MDL_ROTATE_UNIT * delta_time);
+	model_view.rotate.xr = Algo_FormatAngle(model_view.rotate.xr + MDL_ROTATE_UNIT * delta_time);
 }
 
 void Menu_ComputeDirection(void)

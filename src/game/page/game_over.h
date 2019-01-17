@@ -4,7 +4,9 @@
 #include "gl_3d_main.h"
 #include "game_mode.h"
 
-glk_function * new_game_over(glk_function *menu);
-void GameMenu_OpenGameOver(death_game_mode *m);
+#define GAME_OVER_PAGE_NAME "GameOver"
+
+void UI_GameOverRegisterFunction(void);
+void UI_OpenGameOver(death_game_mode *m);
 
 #endif

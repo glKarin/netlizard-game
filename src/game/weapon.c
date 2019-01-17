@@ -400,3 +400,53 @@ int Game_Rand4WeaponTypes(weapon_model_type wps[], unsigned int max, unsigned ma
 	}
 	return ret;
 }
+
+int Game_GetWeaponPosition(weapon_model_type type)
+{
+	switch(type){
+		case ct3d_Dagger:
+		case specnaz3d_Dagger:
+		case egypt3d_Dagger:
+		case egypt3d_The_Sword_of_Osiris:
+			return FIGHTING_WEAPON_INDEX;
+		case ct3d_USP:
+		case ct3d_Python:
+		case ct3d_Desert_Eagle:
+		case specnaz3d_Desert_Eagle:
+		case egypt3d_Colt_Walker:
+		case clone3d_Colt_Walker:
+			return SECONDARY_WEAPON_INDEX;
+		case ct3d_MP5:
+		case ct3d_M4a1:
+		case ct3d_AK47:
+		case ct3d_D3AU1:
+		case ct3d_AWP:
+		case specnaz3d_MP5:
+		case specnaz3d_M4a1:
+		case specnaz3d_AK47:
+		case specnaz3d_M32:
+		case egypt3d_MP40:
+		case egypt3d_Mosin_Nagant:
+		case egypt3d_AK47:
+		case egypt3d_Plasma_Gun:
+		case clone3d_SPAS12: 
+		case clone3d_M16:
+		case clone3d_Rocket_Launcher:
+			return MAIN_WEAPON_1_INDEX;
+		case ct3d_Flash_Grenade:
+		case ct3d_Fragmentation_Grenade:
+		case specnaz3d_Fragmentation_Grenade:
+			return LAUNCH_WEAPON_INDEX;
+		case egypt3d_Worm_Weapon:
+		case egypt3d_Scorpion_Weapon:
+		case egypt3d_Fly_Fish_Weapon:
+		case egypt3d_Anubis_Weapon:
+		case egypt3d_Tentacle_Weapon:
+		case egypt3d_Machine_Monster_Weapon:
+		case egypt3d_Fly_Machine_Weapon:
+		case clone3d_Machine_Weapon:
+		case total_weapon_model_type:
+		default:
+			return FIGHTING_WEAPON_INDEX;
+	}
+}

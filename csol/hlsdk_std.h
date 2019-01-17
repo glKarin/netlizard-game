@@ -14,8 +14,6 @@
 extern "C" {
 #endif
 
-#define HL_MDL_Z_TRANSLATE 35
-
 #define COPY_ARR(a, b, n) \
 	{ \
 		int karin_i; \

@@ -205,3 +205,15 @@ int equalsf(float a, float b)
 	float f = a - b;
 	return iszerof(f);
 }
+
+char * itobin(unsigned n)
+{
+	int len = sizeof(unsigned) * 8;
+	char *ret = calloc(len + 1, sizeof(char));
+	int i;
+	for(i = 0; i < len; i++)
+	{
+		ret[len - i - 1] = (n & (1 << i)) ? '1' : '0';
+	}
+	return ret;
+}

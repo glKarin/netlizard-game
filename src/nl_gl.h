@@ -5,6 +5,12 @@
 #include "gl_util.h"
 #include "netlizard/racingevolution3d_reader.h"
 #include "vector3.h"
+#include "nl_std.h"
+
+#define OPENGL_RENDER_VERTEX_DATA NL_MASK(0)
+#define OPENGL_RENDER_VERTEX_BUFFER NL_MASK(1)
+
+#define OPENGL_RENDER_VERTEX_USING_UNION 0
 
 typedef texture * (*new_netlizard_texture_from_file)(const char *name);
 
@@ -79,7 +85,9 @@ typedef struct _GL_NETLizard_3D_Vertex
 
 typedef struct _GL_NETLizard_3D_Vertex_Data
 {
+#if OPENGL_RENDER_VERTEX_USING_UNION
 	GLuint gl;
+#endif
 	GLuint vertex_count;
 	GLuint index_count;
 	GL_NETLizard_3D_Vertex *vertex;
@@ -88,14 +96,20 @@ typedef struct _GL_NETLizard_3D_Vertex_Data
 
 typedef struct _GL_NETLizard_3D_Vertex_Buffer
 {
+#if OPENGL_RENDER_VERTEX_USING_UNION
 	GLuint gl;
+#endif
 	GLuint vertex_count;
 	GLuint index_count;
 	GLuint vertex_buffer;
 	GLuint index_buffer;
 } GL_NETLizard_3D_Vertex_Buffer;
 
+#if OPENGL_RENDER_VERTEX_USING_UNION
 typedef union _GL_NETLizard_3D_Vertex_Array
+#else
+typedef struct _GL_NETLizard_3D_Vertex_Array
+#endif
 {
 	GLuint gl;
 	GL_NETLizard_3D_Vertex_Data vertex_data;
