@@ -7,6 +7,7 @@
 #include "game_ai.h"
 #include "weapon.h"
 #include "studio_game.h"
+#include "gl/nl_shadow.h"
 
 #define CHARACTER_VIEW_FOV 120.0
 
@@ -40,6 +41,9 @@
 #define NATASHA_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/natasha.mdl"
 #define CHOIJIYOON2_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/choijiyoon2.mdl"
 #define YURI2_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/yuri2.mdl"
+#define POLICE_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/police.mdl"
+#define MILA_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/mila.mdl"
+#define LISA_MDL _KARIN_RESOURCE_DIR"resource/model/Girl/lisa.mdl"
 
 #define TR1_TERROR_MDL _KARIN_RESOURCE_DIR"resource/model/TR/terror.mdl"
 #define TR2_LEET_MDL _KARIN_RESOURCE_DIR"resource/model/TR/leet.mdl"
@@ -89,6 +93,9 @@ typedef enum _csol_role_model_type
 	natasha,
 	choijiyoon2,
 	yuri2,
+	police,
+	mila,
+	lisa,
 
 	TR1_terror,
 	TR2_leet,
@@ -250,6 +257,7 @@ void delete_game_character(game_character *gamer);
 
 void Game_CharacterPlayAnimation(game_character *gamer, long long time, int fps, float delta);
 void Game_RenderGameCharacter(const game_character *gamer);
+void Game_RenderGameCharacterShadowVolume(const game_character *gamer, const Light_Source_s *light);
 void Game_UpdateCharacterPositionAndDirection(game_character *gamer, float x, float y, float z, float xr, float yr, unsigned up_wp);
 void Game_UpdateCharacterCurrentWeaponPositionAndDirection(game_character *gamer);
 game_character * new_game_character(game_character *c, int type, float x, float y, float z, float xr, float yr, int id, const char *name, int scene, const weapon_model_type wt[], unsigned int max);

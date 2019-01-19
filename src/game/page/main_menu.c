@@ -6,25 +6,20 @@
 #include "list_view.h"
 #include "action_signal_slot.h"
 
-#define PAGE_NAME "OldMainMenu"
+#define PAGE_NAME "MainMenu"
 
-#define LIST_VIEW_X 0
-#define LIST_VIEW_Y 100
-#define LIST_VIEW_W 504
-#define LIST_VIEW_H 300
-#define LIST_BUTTON_W 400
-#define LIST_BUTTON_H 50
-#define BTN_W 180
+#define BTN_W 150
 #define BTN_H 60
-#define ACTION_LIST_VIEW_X 550
+#define ACTION_LIST_VIEW_X 227
 #define ACTION_LIST_VIEW_Y 40
-#define ACTION_LIST_VIEW_W 304
+#define ACTION_LIST_VIEW_W 400
 #define ACTION_LIST_VIEW_H 360
-#define ACTION_BUTTON_W 280
+#define ACTION_BUTTON_W 380
 #define ACTION_BUTTON_H 50
 #define LABEL_H 80
 
 #define IDLE_TIME_DELAY 0.4
+#define MAIN_MENU_MUSIC_INDEX -1
 
 typedef enum _menu_action
 {
@@ -47,7 +42,7 @@ static const struct _game_menu_action
 	{"MDL Viewer", OPEN_MDL_VIEWER},
 	{"Help", OPEN_HELP},
 	{"About", OPEN_ABOUT},
-	{"Main Menu", INIT_MAIN_MENU},
+	{"Old Main Menu", INIT_OLD_MAIN_MENU},
 	{"Quit", QUIT}
 };
 
@@ -65,7 +60,6 @@ static Main3DRestoreFunction_f UI_RestoreFunc = NULL;
 
 static void Menu_EnterAction(void *args);
 static void Menu_ResetMenu(void);
-static void Menu_MakeListViewData(void);
 static void Menu_InitListView(void);
 static void Menu_EnterSubMenu(void *);
 static void Menu_BackAction(void *);
@@ -74,35 +68,23 @@ static void Menu_OpenAbout(void);
 static void Menu_SetPageSize(GLsizei w, GLsizei h);
 
 static const button_initilizer Btn_Infos[] = {
-	{60, 10, BTN_W, BTN_H, "Sure", Menu_EnterSubMenu, NULL},
-	{280, 10, BTN_W, BTN_H, "Back", Menu_BackAction, NULL},
+	{54, 10, BTN_W, BTN_H, "Sure", Menu_EnterSubMenu, NULL},
+	{650, 10, BTN_W, BTN_H, "Back", Menu_BackAction, NULL},
 };
 
-static button btn;
 static button btns[total_action_type];
 static button action_btn;
-static list_view lst;
 static list_view action_lst;
 static label lb;
+static int action_index = -1;
 static GLsizei page_width = HARMATTAN_FULL_WIDTH;
 static GLsizei page_height = HARMATTAN_FULL_HEIGHT;
 
-static int menu_level = 0;
-static int game = -1;
-static int level = -1;
 static bool_t has_init = 0;
 static menu_save_state save_state = menu_init_state;
-
-static int level_index = -1;
-static int action_index = -1;
-static float level_progress = 0.0;
 static float action_progress = 0.0;
-
-static list_view_data *data = NULL;
-static unsigned int data_count = 0;
 static list_view_data *action_data = NULL;
 static unsigned int action_data_count = 0;
-
 static float idle_time = 0.0f;
 
 void Menu_SetPageSize(GLsizei w, GLsizei h)
@@ -113,9 +95,7 @@ void Menu_SetPageSize(GLsizei w, GLsizei h)
 	page_height = h;
 	if(has_init)
 	{
-		UI_ResizeButton(&btn, LIST_BUTTON_W, LIST_BUTTON_H);
 		UI_ResizeButton(&action_btn, ACTION_BUTTON_W, ACTION_BUTTON_H);
-		UI_ResetListViewGeometry(&lst, LIST_VIEW_X, LIST_VIEW_Y, LIST_VIEW_W, LIST_VIEW_H);
 		UI_ResetListViewGeometry(&action_lst, ACTION_LIST_VIEW_X, ACTION_LIST_VIEW_Y, ACTION_LIST_VIEW_W, ACTION_LIST_VIEW_H);
 		UI_ResetLabelGeometry(&lb, 0.0, page_height - LABEL_H, page_width, LABEL_H);
 		int i;
@@ -134,9 +114,9 @@ int UI_IdleFunc(void)
 	while(idle_time - IDLE_TIME_DELAY > 0.0f)
 		idle_time -= IDLE_TIME_DELAY;
 	if(key_state[Harmattan_K_Up] || key_state[Harmattan_K_w] || key_state[Harmattan_K_W])
-		UI_MoveListViewCurrentIndex(&lst, -1);
+		UI_MoveListViewCurrentIndex(&action_lst, -1);
 	else if(key_state[Harmattan_K_Down] || key_state[Harmattan_K_s] || key_state[Harmattan_K_S])
-		UI_MoveListViewCurrentIndex(&lst, 1);
+		UI_MoveListViewCurrentIndex(&action_lst, 1);
 	else
 		idle_time = 0.0f;
 	return 1;
@@ -169,12 +149,6 @@ void UI_DrawFunc(void)
 	OpenGL_Render3DOrtho(0.0, width, 0.0, height);
 	{
 		//glPolygonMode(GL_FRONT, GL_LINE);
-		glPushMatrix();
-		{
-			glTranslatef(lst.base.x, lst.base.y, lst.base.z);
-			UI_RenderListView(&lst);
-		}
-		glPopMatrix();
 		glPushMatrix();
 		{
 			glTranslatef(action_lst.base.x, action_lst.base.y, action_lst.base.z);
@@ -216,39 +190,21 @@ void UI_FreeFunc(void)
 		return;
 	if(save_state == menu_last_state)
 	{
-		level_index = lst.current_index;
 		action_index = action_lst.current_index;
-		level_progress = lst.progress;
 		action_progress = action_lst.progress;
 	}
 	else
 	{
-		level_index = -1;
 		action_index = -1;
-		level_progress = 0.0;
 		action_progress = 0.0;
 	}
 
-	delete_button(&btn);
 	int m;
 	for(m = 0; m < total_action_type; m++)
 		delete_button(btns + m);
 	delete_button(&action_btn);
 	delete_label(&lb);
-	delete_list_view(&lst);
 	delete_list_view(&action_lst);
-	if(data)
-	{
-		GLuint i;
-		for(i = 0; i < data_count; i++)
-		{
-			FREE_PTR(data[i].text)
-				FREE_PTR(data[i].args)
-		}
-		free(data);
-		data = NULL;
-		data_count = 0;
-	}
 	if(action_data)
 	{
 		GLuint i;
@@ -303,7 +259,7 @@ int UI_KeyFunc(int key, int act, int pressed, int x, int y)
 		case Harmattan_K_W:
 			if(pressed)
 			{
-				UI_MoveListViewCurrentIndex(&lst, -1);
+				UI_MoveListViewCurrentIndex(&action_lst, -1);
 				idle_time = 0.0f;
 			}
 			break;
@@ -312,7 +268,7 @@ int UI_KeyFunc(int key, int act, int pressed, int x, int y)
 		case Harmattan_K_S:
 			if(pressed)
 			{
-				UI_MoveListViewCurrentIndex(&lst, 1);
+				UI_MoveListViewCurrentIndex(&action_lst, 1);
 				idle_time = 0.0f;
 			}
 			break;
@@ -347,11 +303,7 @@ int UI_MotionFunc(int button, int pressed, int x, int y, int dx, int dy)
 		int last_x = x - dx;
 		int last_gl_y = height - (y - dy);
 		int gl_y = height - y;
-		if(UI_PointInWidget(&lst.base, x, gl_y))
-		{
-			res |= UI_SlideListView(&lst, -dy);
-		}
-		else if(UI_PointInWidget(&action_lst.base, x, gl_y))
+		if(UI_PointInWidget(&action_lst.base, x, gl_y))
 		{
 			res |= UI_SlideListView(&action_lst, -dy);
 		}
@@ -374,7 +326,7 @@ int UI_MotionFunc(int button, int pressed, int x, int y, int dx, int dy)
 	return res;
 }
 
-void UI_MainMenuRegisterFunction(void)
+void UI_NewMainMenuRegisterFunction(void)
 {
 	glk_function func;
 
@@ -388,49 +340,7 @@ void UI_MainMenuRegisterFunction(void)
 
 	if(slot)
 	{
-		((void__func__int)slot)(game);
-	}
-}
-
-void Menu_MakeListViewData(void)
-{
-	if(!has_init)
-		return;
-	if(data)
-	{
-		GLuint i;
-		for(i = 0; i < data_count; i++)
-		{
-			FREE_PTR(data[i].text)
-				FREE_PTR(data[i].args)
-		}
-		free(data);
-		data = NULL;
-		data_count = 0;
-	}
-	if(menu_level == 0)
-	{
-		data = NEW_II(list_view_data, Game_Count);
-		data_count = Game_Count;
-		GLuint i;
-		for(i = 0; i < data_count; i++)
-		{
-			data[i].text = strdup(Game_Names[i]);
-			data[i].func = Menu_EnterSubMenu;
-			data[i].args = NULL;
-		}
-	}
-	else if(menu_level == 1)
-	{
-		data = NEW_II(list_view_data, Game_Level[game]);
-		data_count = Game_Level[game];
-		GLuint i;
-		for(i = 0; i < data_count; i++)
-		{
-			data[i].text = strdup(Game_Level_Name[game][i]);
-			data[i].func = Menu_EnterSubMenu;
-			data[i].args = NULL;
-		}
+		((void__func__int)slot)(MAIN_MENU_MUSIC_INDEX);
 	}
 }
 
@@ -438,36 +348,17 @@ void Menu_InitListView(void)
 {
 	if(!has_init)
 		return;
-	lst.data = data;
-	lst.count = data_count;
-	lst.current_index = 0;
-	lst.progress = 0.0;
 }
 
 void Menu_EnterSubMenu(void *args)
 {
 	if(!has_init)
 		return;
-	if(menu_level == 0)
+	action_index = action_lst.current_index;
+	const void *slot = SignalSlot_GetAction(Menu_Action[action_index].func);
+	if(slot)
 	{
-		menu_level++;
-		game = lst.current_index;
-		Menu_MakeListViewData();
-		Menu_InitListView();
-		const void *slot = SignalSlot_GetAction(PLAY_MENU_MUSIC);
-		if(slot)
-		{
-			((void__func__int)slot)(game);
-		}
-	}
-	else if(menu_level == 1)
-	{
-		level = lst.current_index;
-		const void *slot = SignalSlot_GetAction(OPEN_RUN_SETTING);
-		if(slot)
-		{
-			((void__func__int_int)slot)(game, level);
-		}
+		((void__func__void)slot)();
 	}
 }
 
@@ -475,13 +366,8 @@ void Menu_BackAction(void *args)
 {
 	if(!has_init)
 		return;
-	if(menu_level == 1)
-	{
-		menu_level--;
-		game = -1;
-		Menu_MakeListViewData();
-		Menu_InitListView();
-	}
+	// exit
+	Menu_QuitAction();
 }
 
 int UI_ClickFunc(int button, int x, int y)
@@ -489,12 +375,7 @@ int UI_ClickFunc(int button, int x, int y)
 	if(!has_init)
 		return 0;
 	int gl_y = height - y;
-	if(UI_PointInWidget(&lst.base, x, gl_y))
-	{
-		UI_ClickListView(&lst, x - lst.base.x, gl_y - lst.base.y);
-		return 1;
-	}
-	else if(UI_PointInWidget(&action_lst.base, x, gl_y))
+	if(UI_PointInWidget(&action_lst.base, x, gl_y))
 	{
 		UI_ClickListView(&action_lst, x - action_lst.base.x, gl_y - action_lst.base.y);
 		return 1;
@@ -532,7 +413,7 @@ void Menu_OpenAbout(void)
 	}
 }
 
-void Menu_InitMenu(void)
+void UI_InitMainMenu(void)
 {
 	if(has_init)
 		return;
@@ -545,11 +426,8 @@ void Menu_InitMenu(void)
 		loading_progress_func(0, 10, "Init main menu");
 	if(loading_progress_func)
 		loading_progress_func(0, 25, "Create menu component");
-	new_button(&btn, 0.0, 0.0, 0.0, LIST_BUTTON_W, LIST_BUTTON_H, 2.0, X11_COLOR(lightskyblue), X11_COLOR(green), X11_COLOR(lightseagreen), X11_COLOR(pink), X11_COLOR(darkgreen), X11_COLOR(seagreen), NULL);
-	btn.base.clip = GL_FALSE;
 	new_button(&action_btn, 0.0, 0.0, 0.0, ACTION_BUTTON_W, ACTION_BUTTON_H, 2.0, X11_COLOR(lightskyblue), X11_COLOR(green), X11_COLOR(lightsteelblue), X11_COLOR(skyblue), X11_COLOR(darkgreen), X11_COLOR(steelblue), NULL);
 	action_btn.base.clip = GL_FALSE;
-	btn.fnt = &fnt;
 	action_btn.fnt = &fnt;
 	int m;
 	for(m = 0; m < total_action_type; m++)
@@ -557,11 +435,6 @@ void Menu_InitMenu(void)
 		new_button(btns + m, Btn_Infos[m].x, Btn_Infos[m].y, 0.3, Btn_Infos[m].w, Btn_Infos[m].h, 2.0, X11_COLOR(white), X11_COLOR(green), X11_COLOR(black), X11_COLOR(gray), X11_COLOR(darkgreen), X11_COLOR(gray), Btn_Infos[m].label);
 		btns[m].fnt = &fnt;
 	}
-	new_list_view(&lst, LIST_VIEW_X, LIST_VIEW_Y, 0.0, LIST_VIEW_W, LIST_VIEW_H, 10, 20, 15, Color_GetColor(black_color, 0.0), X11_COLOR(lightgreen), X11_COLOR(darkgreen));
-	lst.delegate.component = &btn;
-	lst.delegate.update_func = UI_ButtonUpdateText;
-	lst.delegate.render_func = UI_RenderButtonItem;
-	lst.delegate.get_geometry_func = UI_GetWidgetGeometry;
 	new_list_view(&action_lst, ACTION_LIST_VIEW_X, ACTION_LIST_VIEW_Y, 0.0, ACTION_LIST_VIEW_W, ACTION_LIST_VIEW_H, 10, 20, 15, Color_GetColor(black_color, 0.0), X11_COLOR(lightgreen), X11_COLOR(darkgreen));
 	action_lst.delegate.component = &action_btn;
 	action_lst.delegate.update_func = UI_ButtonUpdateText;
@@ -597,12 +470,9 @@ void Menu_InitMenu(void)
 	if(loading_progress_func)
 		loading_progress_func(0, 75, "Make menu list");
 	has_init = 1;
-	Menu_MakeListViewData();
 	Menu_InitListView();
 	if(save_state == menu_last_state)
 	{
-		lst.current_index = level_index;
-		lst.progress = level_progress;
 		action_lst.current_index = action_index;
 		action_lst.progress = action_progress;
 	}
@@ -614,10 +484,8 @@ void Menu_ResetMenu(void)
 {
 	if(save_state == menu_init_state)
 	{
-		menu_level = 0;
-		game = -1;
+		action_index = -1;
 	}
-	level = -1;
 	page_width = width;
 	page_height = height;
 	idle_time = 0.0f;
@@ -632,13 +500,12 @@ void Menu_EnterAction(void *args)
 		((void__func__void)slot)();
 }
 
-void Menu_SetMenuSaveState(menu_save_state s)
+void UI_SetMainMenuSaveState(menu_save_state s)
 {
 	//if(has_init)
 	save_state = s;
 	if(save_state == menu_init_state)
 	{
-		menu_level = 0;
-		game = -1;
+		action_index = -1;
 	}
 }

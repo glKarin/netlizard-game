@@ -48,6 +48,7 @@ HEADERS += netlizard3d_viewer.h \
 					 gl/mesh.h \
 					 gl/camera.h \
 					 gl/shadow.h \
+					 gl/lightsource.h \
 					 gl/nl_shadow.h \
 					 csol/studio_game.h \
 					 game/game_event.h \
@@ -87,6 +88,8 @@ HEADERS += netlizard3d_viewer.h \
 					 game/page/weapon_chooser.h \
 					 game/page/character_model_chooser.h \
 					 game/page/mdl_viewer.h \
+					 game/page/map_viewer.h \
+					 game/page/main_menu.h \
 					 game/component/text_browser.h \
 					 game/component/button.h \
 					 game/component/progress_bar.h \
@@ -134,6 +137,7 @@ SOURCES += ../main.c \
 					 gl/camera.c \
 					 gl/shadow.c \
 					 gl/nl_shadow.c \
+					 gl/lightsource.c \
 					 csol/studio_game.c \
 					 game/game_event.c \
 					 game/nl_game.c \
@@ -171,6 +175,8 @@ SOURCES += ../main.c \
 					 game/page/weapon_chooser.c \
 					 game/page/character_model_chooser.c \
 					 game/page/mdl_viewer.c \
+					 game/page/map_viewer.c \
+					 game/page/main_menu.c \
 					 game/component/button.c \
 					 game/component/text_browser.c \
 					 game/component/progress_bar.c \

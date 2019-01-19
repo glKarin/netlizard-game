@@ -36,7 +36,7 @@
 #define FP_FILE _KARIN_RESOURCE_DIR"resource/c%d.png"
 #define EVENT_FILE _KARIN_RESOURCE_DIR"resource/lvl.event"
 
-static vector3_t lightpos = VECTOR3(1000, 2000, 6000);
+static Light_Source_s light;
 static person_mode p_mode = third_person_mode;
 static game_character player;
 static unsigned long long time = 0;
@@ -55,9 +55,9 @@ static unsigned int view_free_reason = view_auto_free_type;
 
 static NETLizard_Event *ev = NULL;
 static int ev_count = 0;
-static int tp_x_offset = 10;
-static int tp_y_offset = 25;
-static int tp_dis = 300;
+static int tp_x_offset = 15;
+static int tp_y_offset = 10;
+static int tp_dis = 250;
 
 static GLdouble frustum_far = FRUSTUM_FAR;
 static GLuint frustum_width = FRUSTUM_WIDTH;
@@ -95,22 +95,16 @@ void Viewer_InitSimpleLight(void)
 	GLfloat specular_light[] = {
 		1.0f, 1.0f, 1.0f, 1.0f
 	};
-	GLfloat light_position[] = {
-		0.0f, 0.0f, -45.0f, 1.0
-	};
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_light);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_light);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, specular_light);
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+	Lighting_SetColor(&light, LIGHT_AMBIANT_COLOR, ambient_light);
+	Lighting_SetColor(&light, LIGHT_DIFFUSE_COLOR, diffuse_light);
+	Lighting_SetColor(&light, LIGHT_SPECULAR_COLOR, specular_light);
 
 	GLfloat spot_directory[] = {
 		0.0, 0.0, -1.0
 	};
 	GLfloat spot_cutoff = 22.5f;
 	GLfloat spot_exponent = 128.0f;
-	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, spot_cutoff);
-	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spot_directory);
-	glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, spot_exponent);
 
 	GLfloat material_specular[] = {
 		1.0f, 1.0f, 1.0f, 1.0f
@@ -130,6 +124,7 @@ void Viewer_InitSimpleLight(void)
 	//glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 	//glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
 
+	Lighting_glLight(&light, GL_LIGHT0);
 	oglEnable(GL_LIGHT0);
 #endif
 }
@@ -187,13 +182,12 @@ void Viewer_NETLizard3DMapRegisterFunction(void)
 
 void Viewer_InitFunc(void)
 {
+	vector3_t lightpos;
+
 	Viewer_Init3DFunc();
 	GLfloat bg_color[] = {1.0, 1.0, 1.0, 1.0};
 	OpenGL_InitFog(GL_EXP2, FOG_NEAR, FOG_FAR, 0.1f, bg_color);
 	oglDisable(GL_FOG);
-#ifndef _HARMATTAN_OPENGLES2
-	Viewer_InitSimpleLight();
-#endif
 
 	glClearColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
 
@@ -270,13 +264,18 @@ void Viewer_InitFunc(void)
 	printff(frustum_far);
 	VECTOR_X(lightpos) = (max.x + min.x) / 2;
 	VECTOR_Y(lightpos) = (max.y + min.y) / 2;
-	VECTOR_Z(lightpos) = (max.z + min.z) + 1235;
+	VECTOR_Z(lightpos) = min.z + max.z * 2;
 	printfv3(lightpos);
+	new_point_light_source(&light, &lightpos);
+
+#ifndef _HARMATTAN_OPENGLES2
+	Viewer_InitSimpleLight();
+#endif
 }
 
 void Viewer_DrawFunc(void)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	int *scenes = NULL;
 	unsigned int count = 0;
 
@@ -358,13 +357,13 @@ void Viewer_DrawFunc(void)
 			if(scenes)
 			{
 				NETLizard_RenderGL3DMapModelScene(map_model, scenes, count);
-				Shadow_RenderNETLizardModelScene(map_model, scenes, count, &lightpos);
+				Shadow_RenderNETLizardModelScene(map_model, scenes, count, &light);
 				Shadow_RenderMask();
 			}
 			else
 			{
 				NETLizard_RenderGL3DModel(map_model);
-				Shadow_RenderNETLizardModel(map_model, &lightpos);
+				Shadow_RenderNETLizardModel(map_model, &light);
 				Shadow_RenderMask();
 			}
 

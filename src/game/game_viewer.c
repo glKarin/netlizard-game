@@ -93,10 +93,11 @@ typedef struct _zoom
 
 char shared_str[DEBUG_STRING_MAX_LENGTH];
 
+static Light_Source_s light;
+
 static unsigned lighting_move_state[lighting_total_move_type] = { 0 };
 static float lighting_x_angle = 0.0;
 static float lighting_y_angle = 0.0;
-static GLfloat light_position[] = { 1000.0f, 2000.0f, 6000.0f, 0.0 };
 static zoom zm = {no_zoom_type, 0, FOXY_MAX, FOXY_MAX, FOXY_MAX, 0, 0, 0};
 static int my_character_index = WHO_AM_I;
 static vkb vkb_layer;
@@ -138,6 +139,7 @@ static int tp_y_offset = 25;
 static int tp_dis = 300;
 static bool_t lighting_effect = 0;
 static bool_t fog_effect = 0;
+static bool_t shadow_effect = 1;
 static bool_t tps_using_ray_crosshair = 0;
 
 static void Game_ResetViewer(void);
@@ -205,11 +207,8 @@ void Game_InitPlayerLighting(void)
 void Game_InitGlobalLighting(void)
 {
 #ifndef _HARMATTAN_OPENGLES2
-	vector3_t dir = {light_position[0], light_position[1], light_position[2]};
+	vector3_t dir = light.position;
 	Vector3_Normalize(&dir);
-	light_position[0] = dir.x;
-	light_position[1] = dir.y;
-	light_position[2] = dir.z;
 	Algo_GetNormalAngle(&dir, &lighting_y_angle, &lighting_x_angle);
 	GLfloat ambient_light[] = {
 		0.4f, 0.4f, 0.4f, 1.0f
@@ -220,9 +219,9 @@ void Game_InitGlobalLighting(void)
 	GLfloat specular_light[] = {
 		1.0f, 1.0f, 1.0f, 1.0f
 	};
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_light);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_light);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, specular_light);
+	Lighting_SetColor(&light, LIGHT_AMBIANT_COLOR, ambient_light);
+	Lighting_SetColor(&light, LIGHT_DIFFUSE_COLOR, diffuse_light);
+	Lighting_SetColor(&light, LIGHT_SPECULAR_COLOR, specular_light);
 
 	GLfloat material_specular[] = {
 		1.0f, 1.0f, 1.0f, 1.0f
@@ -242,6 +241,7 @@ void Game_InitGlobalLighting(void)
 	//glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 	//glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
 
+	Lighting_glLight(&light, GL_LIGHT0);
 	oglEnable(GL_LIGHT0);
 #endif
 }
@@ -320,6 +320,9 @@ void Game_ViewerRegisterFunction(void)
 
 int Game_InitGame(void)
 {
+	vector3_t lightpos;
+	GLfloat bg_color[] = {0.2, 0.2, 0.2, 1.0};
+
 	if(has_init)
 		return 0;
 	//move_unit_3d = 800;
@@ -331,18 +334,10 @@ int Game_InitGame(void)
 	void__func__int_int_constcharptr loading_progress_func = NULL;
 	if(slot)
 		loading_progress_func = (void__func__int_int_constcharptr)slot;
-	if(loading_progress_func)
-		loading_progress_func(0, 20, "Init GL State");
-	GLfloat bg_color[] = {0.2, 0.2, 0.2, 1.0};
-	OpenGL_InitFog(GL_EXP, FOG_NEAR, FOG_FAR, 0.0002f, bg_color);
-#ifndef _HARMATTAN_OPENGLES2
-	Game_InitGlobalLighting();
-	Game_InitPlayerLighting();
-#endif
 
 	printf("Read NETLizard map file: %s\n", map_file);
 	if(loading_progress_func)
-		loading_progress_func(0, 30, "Reading map file");
+		loading_progress_func(0, 20, "Reading map file");
 	switch(game)
 	{
 		case nl_contr_terrorism_3d:
@@ -369,12 +364,12 @@ int Game_InitGame(void)
 	if(map_model)
 	{
 		if(loading_progress_func)
-			loading_progress_func(0, 40, "Read map model successful");
+			loading_progress_func(0, 30, "Read map model successful");
 		new_scene_2d(&bg, 0.0f, 0.0f, width, height, 1.0, left_bottom_anchor_type, Color_GetColor(white_color, 0.0), NULL);
 		NETLizard_MakeGL23DModel(map_model);
 		bg.tex = map_model->bg_tex;
 		if(loading_progress_func)
-			loading_progress_func(0, 50, "Reading map event");
+			loading_progress_func(0, 40, "Reading map event");
 		event = Event_LoadEvent(EVENT_FILE, game, level);
 	}
 	else
@@ -384,11 +379,11 @@ int Game_InitGame(void)
 		return 0;
 	}
 	if(loading_progress_func)
-		loading_progress_func(0, 60, "Init game setting");
+		loading_progress_func(0, 50, "Init game setting");
 	Game_GetSetting();
 
 	if(loading_progress_func)
-		loading_progress_func(0, 70, "Get game resource");
+		loading_progress_func(0, 60, "Get game resource");
 	new_optical_sight_cross_hair(&opticalsight, height / 2, 1.0, 2.0, X11_COLOR(black), 2.0, X11_COLOR(black));
 
 	new_first_person(&fp, fp_right_hand_type, width, 0.0, 0.1, 0.0, 20, -20, 0, 30, 60, 12);
@@ -408,7 +403,7 @@ int Game_InitGame(void)
 	int scene = Algo_GetPointInAABBInNETLizard3DMap(&p, map_model);
 
 	if(loading_progress_func)
-		loading_progress_func(0, 80, "Init game character");
+		loading_progress_func(0, 70, "Init game character");
 	Game_LoadWeaponModel();
 	int cc = CHARACTER_COUNT;
 	int gc = GROUP_COUNT;
@@ -438,13 +433,26 @@ int Game_InitGame(void)
 		Game_RandStartPosition(map_model, characters + i, -1);
 	}
 	frustum_far = FRUSTUM_FAR;
-#ifndef _HARMATTAN_OPENGL
 	nl_vector3_t min = {0.0, 0.0, 0.0};
 	nl_vector3_t max = {0.0, 0.0, 0.0};
 	Algo_GetNETLizard3DMapRange(map_model, NULL, 0, &min, &max);
+#ifndef _HARMATTAN_OPENGL
 	frustum_far = KARIN_MAX(max.y - min.y, (KARIN_MAX(max.x - min.x, max.z - min.z)));
-	//printff(frustum_far);
 #endif
+	//printff(frustum_far);
+	VECTOR_X(lightpos) = (max.x + min.x) / 2;
+	VECTOR_Y(lightpos) = (max.y + min.y) / 2;
+	VECTOR_Z(lightpos) = min.z + max.z * 2;
+	//printfv3(lightpos);
+	new_point_light_source(&light, &lightpos);
+	if(loading_progress_func)
+		loading_progress_func(0, 80, "Init GL State");
+	OpenGL_InitFog(GL_EXP, FOG_NEAR, FOG_FAR, 0.0002f, bg_color);
+#ifndef _HARMATTAN_OPENGLES2
+	Game_InitGlobalLighting();
+	Game_InitPlayerLighting();
+#endif
+
 	if(loading_progress_func)
 		loading_progress_func(0, 90, "Init game mode");
 	int point = 200;
@@ -571,7 +579,7 @@ void Game_DrawFunc(void)
 				if(lighting_effect)
 				{
 					oglEnable(GL_LIGHT0);
-					glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+					//glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 				}
 				else
 					oglDisable(GL_LIGHT0);
@@ -624,16 +632,23 @@ void Game_DrawFunc(void)
 				}
 #endif
 
-				vector3_t lightpos = VECTOR3(1000, 2000, 6000);
+				if(shadow_effect)
+				{
+					if(scenes)
+					{
+						Shadow_RenderNETLizardModelScene(map_model, scenes, count, &light);
+					}
+					else
+					{
+						Shadow_RenderNETLizardModel(map_model, &light);
+					}
+					Game_RenderCharactersShadowVolume(game_mode.characters, 0, game_mode.current_character, scenes, count, &light);
+					Game_RenderCharactersShadowVolume(game_mode.characters, game_mode.current_character + 1, game_mode.character_count, scenes, count, &light);
 
-				if(scenes)
-				{
-					Shadow_RenderNETLizardModelScene(map_model, scenes, count, &lightpos);
-					Shadow_RenderMask();
-				}
-				else
-				{
-					Shadow_RenderNETLizardModel(map_model, &lightpos);
+					// 渲染角色第三人称视角
+					if(pm == third_person_mode)
+						Game_RenderGameCharacterShadowVolume(game_mode.characters + game_mode.current_character, &light);
+
 					Shadow_RenderMask();
 				}
 
@@ -1414,6 +1429,7 @@ void Game_ResetViewer(void)
 	tp_dis = 300;
 	lighting_effect = 0;
 	fog_effect = 0;
+	shadow_effect = 1;
 	tps_using_ray_crosshair = 0;
 
 	zm.type = no_zoom_type;
@@ -1904,6 +1920,9 @@ void Game_GetSetting(void)
 	b = 0;
 	if(Setting_GetSettingBoolean(THIRD_PERSON_VIEW_CROSSHAIR_SETTING, &b))
 		tps_using_ray_crosshair = b;
+	b = 0;
+	if(Setting_GetSettingBoolean(SHADOW_EFFECT_SETTING, &b))
+		shadow_effect = b;
 }
 
 void Game_ReplayGame(void)
@@ -1981,18 +2000,11 @@ void Game_GameOver(void)
 void Game_UpdateLightingDirection(void)
 {
 	nl_vector3_t dir = Algo_ComputeDirection(lighting_y_angle, lighting_x_angle);
-	light_position[0] = dir.x;
-	light_position[1] = dir.y;
-	light_position[2] = dir.z;
 }
 
 void Game_RenderLightingSource(void)
 {
-	vector3_t dir = {
-		light_position[0],
-		light_position[1],
-		light_position[2]
-	};
+	vector3_t dir = light.position;
 	dir = Vector3_Scale(&dir, frustum_far);
 	const GLfloat length[3] = {
 		LIGHTING_SOURCE_LENGTH, LIGHTING_SOURCE_LENGTH, LIGHTING_SOURCE_LENGTH,

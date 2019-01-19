@@ -224,11 +224,11 @@ void Matrix44_glRotateSelf(glmatrix44_t *mat, NLfloat angle, NLfloat x, NLfloat 
 		/*    M(2,3) = 0.0F; */
 
 		/*
-		 *       M(3,0) = 0.0F;
-		 *             M(3,1) = 0.0F;
-		 *                   M(3,2) = 0.0F;
-		 *                         M(3,3) = 1.0F;
-		 *                         */
+			 M(3,0) = 0.0F;
+			 M(3,1) = 0.0F;
+			 M(3,2) = 0.0F;
+			 M(3,3) = 1.0F;
+			 */
 	}
 #undef M
 

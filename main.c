@@ -12,7 +12,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define SPLASH_FILE _KARIN_RESOURCE_DIR"resource/caitlyn_splash.png"
+#define SPLASH_FILE _KARIN_RESOURCE_DIR"resource/lz.png"
 
 static void Main_ParseOpt(int argc, char *argv[]);
 static void Main_PrintHelp(const char *bin);
@@ -218,10 +218,10 @@ int main(int argc, char *argv[])
 
 void Main_ShowSplash(void)
 {
-	if(Viewer_ImageInitMain("Bridge Interactive", SPLASH_FILE))
+	if(Viewer_NETLizardImageInitMain("Bridge Interactive", SPLASH_FILE))
 	{
-		Main3D_InitGLK(0, 0, 640, 360, "OpenGL NETLizard 3D - caitlyn", 30, 1);
-		Viewer_ImageRegisterFunction();
+		Main3D_InitGLK(0, 0, 640, 360, "OpenGL NETLizard 3D - "_KARIN_DEVCODE, 30, 1);
+		Viewer_NETLizardImageRegisterFunction();
 		Main3D_MainLoop();
 	}
 }
@@ -233,7 +233,9 @@ void Main_PlayGame(void)
 
 void Main_Running(void)
 {
-	int need_gl = 0;
+	Main3DRegisterRenderFunction_f func;
+	
+	func = NULL;
 	if(cmdopts.option & View_3DScene_Option || cmdopts.option & View_3DItem_Option || cmdopts.option & View_3DAnimation_Option)
 	{
 		if(!cmdopts.game)
@@ -262,8 +264,7 @@ void Main_Running(void)
 				{
 					if(Viewer_RE3DInitMain(cmdopts.game, "map", cmdopts.dir, cmdopts.source, cmdopts.level))
 					{
-						Viewer_RE3DRegisterFunction();
-						need_gl = 1;
+						func = Viewer_RE3DRegisterFunction;
 					}
 				}
 				else if(cmdopts.option & View_3DItem_Option)
@@ -278,8 +279,7 @@ void Main_Running(void)
 					{
 						if(Viewer_RE3DInitMain(cmdopts.game, "car", cmdopts.dir, cmdopts.source, cmdopts.level))
 						{
-							Viewer_RE3DRegisterFunction();
-							need_gl = 1;
+							func = Viewer_RE3DRegisterFunction;
 						}
 					}
 				}
@@ -290,16 +290,14 @@ void Main_Running(void)
 				{
 					if(Viewer_NETLizard3DMapInitMain(cmdopts.game, cmdopts.dir, cmdopts.source, cmdopts.level))
 					{
-						Viewer_NETLizard3DMapRegisterFunction();
-						need_gl = 1;
+						func = Viewer_NETLizard3DMapRegisterFunction;
 					}
 				}
 				else if(cmdopts.option & View_3DItem_Option)
 				{
 					if(Viewer_NETLizard3DItemInitMain(cmdopts.game, cmdopts.dir, cmdopts.source, cmdopts.level))
 					{
-						Viewer_NETLizard3DItemRegisterFunction();
-						need_gl = 1;
+						func = Viewer_NETLizard3DItemRegisterFunction;
 					}
 				}
 				else if(cmdopts.option & View_3DAnimation_Option)
@@ -314,8 +312,7 @@ void Main_Running(void)
 					{
 						if(Viewer_NETLizard3DAnimationInitMain(cmdopts.game, cmdopts.dir, cmdopts.source, cmdopts.level, cmdopts.animation))
 						{
-							Viewer_NETLizard3DAnimationRegisterFunction();
-							need_gl = 1;
+							func = Viewer_NETLizard3DAnimationRegisterFunction;
 						}
 					}
 				}
@@ -332,10 +329,9 @@ void Main_Running(void)
 		}
 		if(!fail)
 		{
-			if(Viewer_ImageInitMain(cmdopts.game, cmdopts.source))
+			if(Viewer_NETLizardImageInitMain(cmdopts.game, cmdopts.source))
 			{
-				Viewer_ImageRegisterFunction();
-				need_gl = 1;
+				func = Viewer_NETLizardImageRegisterFunction;
 			}
 		}
 	}
@@ -356,10 +352,9 @@ void Main_Running(void)
 				printf("Output file -> %s\n", dst_file);
 				if(cmdopts.option & View_DecodeEncode_Option)
 				{
-					if(Viewer_ImageInitMain("Bridge Interactive", dst_file))
+					if(Viewer_NETLizardImageInitMain("Bridge Interactive", dst_file))
 					{
-						Viewer_ImageRegisterFunction();
-						need_gl = 1;
+						func = Viewer_NETLizardImageRegisterFunction;
 					}
 				}
 			}
@@ -390,10 +385,9 @@ void Main_Running(void)
 				printf("Output file -> %s\n", dst_file);
 				if(cmdopts.option & View_DecodeEncode_Option)
 				{
-					if(Viewer_ImageInitMain(cmdopts.game, dst_file))
+					if(Viewer_NETLizardImageInitMain(cmdopts.game, dst_file))
 					{
-						Viewer_ImageRegisterFunction();
-						need_gl = 1;
+						func = Viewer_NETLizardImageRegisterFunction;
 					}
 				}
 			}
@@ -498,9 +492,10 @@ void Main_Running(void)
 				fprintf(stderr, "Unknow type or file not exists.");
 		}
 	}
-	if(need_gl)
+	if(func)
 	{
-		Main3D_InitGLK(0, 0, 640, 360, "OpenGL NETLizard 3D - caitlyn", 30, cmdopts.option & Show_Fullscreen);
+		Main3D_InitGLK(0, 0, 640, 360, "OpenGL NETLizard 3D - "_KARIN_DEVCODE, 30, cmdopts.option & Show_Fullscreen);
+		func();
 		Main3D_MainLoop();
 	}
 }

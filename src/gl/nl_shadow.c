@@ -1,8 +1,12 @@
 #include "nl_shadow.h"
 #include "shadow.h"
+#include "nl_std.h"
+#include "netlizard.h"
+
+#include <string.h>
+#include <stdio.h>
 
 #define SHADOW_BEGIN \
-	glClear(GL_STENCIL_BUFFER_BIT); \
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); \
 	glDepthMask(GL_FALSE); \
 	glEnable(GL_STENCIL_TEST); \
@@ -16,7 +20,7 @@
 	glCullFace(GL_BACK); \
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
-void Shadow_RenderNETLizardModelScene(const GL_NETLizard_3D_Model *map_model, const int *scenes, unsigned int count, const vector3_t *lightpos)
+void Shadow_RenderNETLizardModelScene(const GL_NETLizard_3D_Model *map_model, const int *scenes, unsigned int count, const Light_Source_s *light)
 {
 	GLuint i;
 	GLint c;
@@ -24,7 +28,7 @@ void Shadow_RenderNETLizardModelScene(const GL_NETLizard_3D_Model *map_model, co
 	GL_NETLizard_3D_Mesh *m;
 	GL_NETLizard_3D_Item_Mesh *im;
 
-	if(!map_model || !lightpos)
+	if(!map_model || !light)
 		return;
 	if(!map_model->item_meshes)
 		return;
@@ -44,21 +48,21 @@ void Shadow_RenderNETLizardModelScene(const GL_NETLizard_3D_Model *map_model, co
 				continue;
 			if(im->item_type == Item_Box_Type)
 				continue;
-			Shadow_RenderShadow(im, lightpos);
+			Shadow_RenderItemShadow(im, light);
 		}
 	}
 
 	SHADOW_END
 }
 
-void Shadow_RenderNETLizardModel(const GL_NETLizard_3D_Model *map_model, const vector3_t *lightpos)
+void Shadow_RenderNETLizardModel(const GL_NETLizard_3D_Model *map_model, const Light_Source_s *light)
 {
 	GLuint i;
 	GLuint j;
 	GL_NETLizard_3D_Mesh *m;
 	GL_NETLizard_3D_Item_Mesh *im;
 
-	if(!map_model || !lightpos)
+	if(!map_model || !light)
 		return;
 	if(!map_model->item_meshes)
 		return;
@@ -75,13 +79,15 @@ void Shadow_RenderNETLizardModel(const GL_NETLizard_3D_Model *map_model, const v
 					continue;
 				if(im->item_type == Item_Box_Type)
 					continue;
-				Shadow_RenderShadow(im, lightpos);
+				Shadow_RenderItemShadow(im, light);
 			}
 		}
 
 	SHADOW_END
 }
 
+#define SHADOW_MASK_Z 10
+#define SHADOW_MASK_W 5000
 void Shadow_RenderMask(void)
 {
 	const GLfloat mask_color[] = {
@@ -92,19 +98,19 @@ void Shadow_RenderMask(void)
 	};
 #endif
 	GLfloat mask[] = {
-		-5000, -5000, -10,
-		5000, -5000, -10,
-		-5000, 5000, -10,
-		5000, 5000, -10
+		-SHADOW_MASK_W, -SHADOW_MASK_W, -SHADOW_MASK_Z,
+		SHADOW_MASK_W, -SHADOW_MASK_W, -SHADOW_MASK_Z,
+		-SHADOW_MASK_W, SHADOW_MASK_W, -SHADOW_MASK_Z,
+		SHADOW_MASK_W, SHADOW_MASK_W, -SHADOW_MASK_Z
 	};
 
 	//glDisable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
-	//glStencilFunc(GL_ALWAYS, 0, ~0);
+	glDepthMask(GL_FALSE);
 #if SHADOW_MASK_LIGHT
-	glStencilFunc(GL_EQUAL, 0, ~0);
+	glStencilFunc(GL_EQUAL, 0, ~0U);
 #else
-	glStencilFunc(GL_NOTEQUAL, 0, ~0);
+	glStencilFunc(GL_NOTEQUAL, 0, ~0U);
 #endif
 
 
@@ -119,5 +125,86 @@ void Shadow_RenderMask(void)
 
 	glPopMatrix();
 	glDisable(GL_STENCIL_TEST);
-	glEnable(GL_DEPTH_TEST);
+	glStencilFunc(GL_ALWAYS, 0, ~0U);
+	glDepthMask(GL_TRUE);
+	//glEnable(GL_DEPTH_TEST);
+}
+
+void Shadow_RenderNETLizard3DAnimationModel(const GL_NETLizard_3D_Animation_Model *m, int a, int f, const float pos[3], float xangle, float yangle, const Light_Source_s *light)
+{
+	GL_NETLizard_3D_Item_Mesh item_mesh;
+	NETLizard_3D_Role_Animation *animation;
+	GL_NETLizard_3D_Mesh *mesh;
+	unsigned int anim;
+	unsigned int frame;
+
+	if(!m || !light)
+		return;
+
+	SHADOW_BEGIN
+
+	anim = a;
+	frame = f;
+	ZERO(&item_mesh, GL_NETLizard_3D_Item_Mesh);
+
+	if(anim >= m->anim_count)
+		anim = 0;
+	animation = m->animations + anim;
+	if(frame > animation->end - animation->begin)
+		frame = 0;
+	mesh = m->meshes + animation->begin + frame;
+
+	if(pos)
+	{
+		item_mesh.pos[0] = pos[0];
+		item_mesh.pos[1] = pos[1];
+		item_mesh.pos[2] = pos[2];
+	}
+	item_mesh.angle[0] = xangle;
+	item_mesh.angle[1] = yangle;
+
+	item_mesh.item_mesh = *mesh;
+
+	Shadow_RenderItemShadow(&item_mesh, light);
+
+	SHADOW_END
+}
+
+void Shadow_RenderNETLizard3DItemMesh(const GL_NETLizard_3D_Item_Mesh *m, const Light_Source_s *light)
+{
+	if(!m || !light)
+		return;
+
+	SHADOW_BEGIN
+
+	Shadow_RenderItemShadow(m, light);
+
+	SHADOW_END
+}
+
+void Shadow_RenderNETLizard3DMesh(const GL_NETLizard_3D_Mesh *m, const float pos[3], float xangle, float yangle, const Light_Source_s *light)
+{
+	GL_NETLizard_3D_Item_Mesh item_mesh;
+
+	if(!m || !light)
+		return;
+
+	SHADOW_BEGIN
+
+	ZERO(&item_mesh, GL_NETLizard_3D_Item_Mesh);
+
+	if(pos)
+	{
+		item_mesh.pos[0] = pos[0];
+		item_mesh.pos[1] = pos[1];
+		item_mesh.pos[2] = pos[2];
+	}
+	item_mesh.angle[0] = xangle;
+	item_mesh.angle[1] = yangle;
+
+	item_mesh.item_mesh = *m;
+
+	Shadow_RenderShadow(m, light);
+
+	SHADOW_END
 }

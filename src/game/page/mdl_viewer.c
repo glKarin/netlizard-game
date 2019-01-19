@@ -90,6 +90,9 @@ static const char *MDL_Names[] = {
 	"Natasha",
 	"ChoiJiYoon (Standard edition)",
 	"Yuri (Student edition)",
+	"Police",
+	"Mila",
+	"Lisa",
 
 	"Terror",
 	"Leet",
@@ -114,6 +117,9 @@ static const char *MDL_Paths[] = {
 	_KARIN_RESOURCE_DIR"resource/model/Girl/natasha.mdl",
 	_KARIN_RESOURCE_DIR"resource/model/Girl/choijiyoon2.mdl",
 	_KARIN_RESOURCE_DIR"resource/model/Girl/yuri2.mdl",
+	_KARIN_RESOURCE_DIR"resource/model/Girl/police.mdl",
+	_KARIN_RESOURCE_DIR"resource/model/Girl/mila.mdl",
+	_KARIN_RESOURCE_DIR"resource/model/Girl/lisa.mdl",
 
 	_KARIN_RESOURCE_DIR"resource/model/TR/terror.mdl",
 	_KARIN_RESOURCE_DIR"resource/model/TR/leet.mdl",

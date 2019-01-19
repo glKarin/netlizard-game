@@ -22,6 +22,8 @@
 #include "weapon_chooser.h"
 #include "character_model_chooser.h"
 #include "mdl_viewer.h"
+#include "map_viewer.h"
+#include "main_menu.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -46,6 +48,11 @@ static void MainGame_SetGameState(game_state s);
 static void MainGame_WriteSetting(void);
 static void MainGame_SaveKeyMap(void);
 static void MainGame_OpenMainMenu(void);
+static void MainGame_OpenOldMainMenu(void);
+static void MainGame_OpenMapViewer(void);
+static void MainGame_OpenFileChooser(void);
+static void MainGame_OpenGameLevelMenu(void);
+static void MainGame_LoadMainMenu(void);
 
 void MainGame_Run(void)
 {
@@ -90,6 +97,11 @@ void MainGame_Run(void)
 	SignalSlot_AddAction(SET_GAME_STATE, MainGame_SetGameState);
 	SignalSlot_AddAction(REPLAY_GAME, Game_ReplayGame);
 	SignalSlot_AddAction(INIT_MAIN_MENU, MainGame_OpenMainMenu);
+	SignalSlot_AddAction(INIT_OLD_MAIN_MENU, MainGame_OpenOldMainMenu);
+	SignalSlot_AddAction(OPEN_MAP_VIEWER, MainGame_OpenMapViewer);
+	SignalSlot_AddAction(OPEN_FILE_CHOOSER, MainGame_OpenFileChooser);
+	SignalSlot_AddAction(OPEN_GAME_LEVEL_MENU, MainGame_OpenGameLevelMenu);
+	SignalSlot_AddAction(LOAD_MAIN_MENU, MainGame_LoadMainMenu);
 
 	Splash_SetSplashImageFile(_SPLASH_FILE);
 	Splash_SetSplashShowFinishedAction(INIT_MAIN_MENU);
@@ -393,6 +405,42 @@ void MainGame_OpenMDLViewer(void)
 }
 
 void MainGame_OpenMainMenu(void)
+{
+	UI_InitMainMenu();
+	UI_NewMainMenuRegisterFunction();
+}
+
+void MainGame_OpenMapViewer(void)
+{
+	UI_InitMapViewer();
+	UI_MapViewerRegisterFunction();
+	MainGame_SetGameState(game_in_setting_state);
+}
+
+void MainGame_OpenFileChooser(void)
+{
+}
+
+void MainGame_OpenGameLevelMenu(void)
+{
+	UI_SetMapViewerEnterActionFunction(MainGame_RunGameLevel);
+	UI_InitMapViewer();
+	UI_MapViewerRegisterFunction();
+	MainGame_SetGameState(game_in_setting_state);
+}
+
+void MainGame_LoadMainMenu(void)
+{
+	UI_LoadingRegisterFunction();
+	Menu_SetLoadingTitle("NETLizard 3D Game");
+	Menu_SetLoadingAuto(GL_TRUE);
+	Menu_SetLoadingFinishedAction(BACK_MAIN_MENU);
+	Menu_SetLoadingFailAction(BACK_MAIN_MENU);
+	UI_InitMainMenu();
+	MainGame_SetGameState(game_in_main_menu_state);
+}
+
+void MainGame_OpenOldMainMenu(void)
 {
 	Menu_InitMenu();
 	UI_MainMenuRegisterFunction();

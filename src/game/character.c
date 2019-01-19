@@ -76,6 +76,9 @@ static const game_model_resource Game_Model_Resource[lol_total_model] = {
 	{natasha, NATASHA_MDL, NULL, NULL, NATASHA_CHARACTER_SCALE, long_attack_type, 50, 180, 250, MOVE_UNIT, TURN_UNIT, JUMP_SPEED},
 	{choijiyoon2, CHOIJIYOON2_MDL, NULL, NULL, NATASHA_CHARACTER_SCALE, long_attack_type, 50, 180, 250, MOVE_UNIT, TURN_UNIT, JUMP_SPEED},
 	{yuri2, YURI2_MDL, NULL, NULL, NATASHA_CHARACTER_SCALE, long_attack_type, 50, 180, 250, MOVE_UNIT, TURN_UNIT, JUMP_SPEED},
+	{police, POLICE_MDL, NULL, NULL, NATASHA_CHARACTER_SCALE, long_attack_type, 50, 180, 250, MOVE_UNIT, TURN_UNIT, JUMP_SPEED},
+	{mila, MILA_MDL, NULL, NULL, NATASHA_CHARACTER_SCALE, long_attack_type, 50, 180, 250, MOVE_UNIT, TURN_UNIT, JUMP_SPEED},
+	{lisa, LISA_MDL, NULL, NULL, NATASHA_CHARACTER_SCALE, long_attack_type, 50, 180, 250, MOVE_UNIT, TURN_UNIT, JUMP_SPEED},
 
 	{TR1_terror, TR1_TERROR_MDL, NULL, NULL, NATASHA_CHARACTER_SCALE, long_attack_type, 50, 180, 250, MOVE_UNIT, TURN_UNIT, JUMP_SPEED},
 	{TR2_leet, TR2_LEET_MDL, NULL, NULL, NATASHA_CHARACTER_SCALE, long_attack_type, 50, 180, 250, MOVE_UNIT, TURN_UNIT, JUMP_SPEED},
@@ -118,6 +121,9 @@ const char *Character_Model_Name[lol_total_model] = {
 	"Natasha",
 	"ChoiJiYoon (Standard edition)",
 	"Yuri (Student edition)",
+	"Police",
+	"Mila",
+	"Lisa",
 
 	"Terror",
 	"Leet",
@@ -1363,7 +1369,7 @@ unsigned Game_UpdateNETLizardCharacterStatus(game_character_model *model, const 
 		else
 			anim = -1;
 	}
-	else if((status & attack_status_type) || (status & reload_status_type))
+	else if(((status & attack_status_type) || (status & reload_status_type)) && ((status & run_status_type) == 0))
 	{
 		int a1 = Game_GetNETLizardAnimationIndex(m->model, Animation_Attack1_Type);
 		int a2 = Game_GetNETLizardAnimationIndex(m->model, Animation_Attack2_Type);
@@ -1383,9 +1389,32 @@ unsigned Game_UpdateNETLizardCharacterStatus(game_character_model *model, const 
 				anim = -1;
 		}
 	}
-	else if(status & run_status_type || status & jump_status_type)
+	else if((status & run_status_type) || (status & jump_status_type))
 	{
-		anim = Game_GetNETLizardAnimationIndex(m->model, Animation_Run_Type);
+		if((status & attack_status_type) || (status & reload_status_type))
+		{
+			int a1 = Game_GetNETLizardAnimationIndex(m->model, Animation_Fighting1_Type);
+			int a2 = Game_GetNETLizardAnimationIndex(m->model, Animation_Fighting2_Type);
+			if(wp && ((IS_NEAR_WEAPON(*wp)) || (IS_GRENADE_WEAPON(*wp))))
+				anim = a1;
+			else if(wp && ((IS_LONG_WEAPON(*wp)) || (IS_LAUNCHER_WEAPON(*wp))))
+				anim = a2;
+			else
+			{
+				if(a1 != -1 && a2 != -1)
+					anim = rand() % 2 == 0 ? a1 : a2;
+				else if(a1 != -1)
+					anim = a1;
+				else if(a2 != -1)
+					anim = a2;
+				else
+					anim = -1;
+			}
+			if(anim == -1)
+				anim = Game_GetNETLizardAnimationIndex(m->model, Animation_Run_Type);
+		}
+		else
+			anim = Game_GetNETLizardAnimationIndex(m->model, Animation_Run_Type);
 	}
 	else
 	{
@@ -1660,4 +1689,87 @@ status_compare_result Game_CompareStatus(unsigned a, unsigned b)
 			r |= (1 << i);
 	}
 	return (status_compare_result)r;
+}
+
+void Game_RenderGameCharacterShadowVolume(const game_character *gamer, const Light_Source_s *light)
+{
+	const weapon *wp;
+
+	if(!gamer || !light)
+		return;
+
+	wp = Game_CharacterCurrentWeapon((game_character *)gamer);
+
+	if(gamer->model.source == lol_model_type)
+	{
+		if(!gamer->model.lol_character.model)
+			return;
+	}
+
+	else if(gamer->model.source == netlizard_model_type)
+	{
+		if(!gamer->model.netlizard_character.model)
+			return;
+
+#if 0
+		if(wp && wp->model && wp->model->tp_model)
+		{
+			glPushMatrix();
+			{
+				if(gamer->current_status & attack_status_type)
+				{
+					glTranslatef(wp->render_position[0], wp->render_position[1], wp->render_position[2]);
+					glRotatef(gamer->y_angle, 0.0f, 0.0f, 1.0f);
+					glTranslatef(0.0, gamer->width, 0.0);
+					glTranslatef(wp->model->position[0], wp->model->position[1], wp->model->position[2]);
+					if((IS_NEAR_WEAPON(*wp)) || (IS_GRENADE_WEAPON(*wp)))
+						glTranslatef(0.0, -90.0, 0.0);
+				}
+				else if(gamer->current_status == death_status_type)
+				{
+					glTranslatef(gamer->position[0], gamer->position[1], gamer->position[2]);
+					glRotatef(gamer->y_angle, 0.0f, 0.0f, 1.0f);
+					glTranslatef(wp->model->position[0], wp->model->position[1], wp->model->position[2]);
+				}
+				else
+				{
+					if((IS_NEAR_WEAPON(*wp)) || (IS_GRENADE_WEAPON(*wp)))
+					{
+						glTranslatef(gamer->position[0], gamer->position[1], gamer->position[2] + gamer->full_height / 2);
+						glRotatef(gamer->y_angle, 0.0f, 0.0f, 1.0f);
+						glRotatef(90.0, 1.0f, 0.0f, 0.0f);
+						glTranslatef(-30.0, 0.0, 0.0);
+						glTranslatef(0.0, 0.0, wp->model->position[2]);
+					}
+					else if((IS_LONG_WEAPON(*wp)) || (IS_LAUNCHER_WEAPON(*wp)))
+					{
+						glTranslatef(wp->render_position[0], wp->render_position[1], wp->render_position[2]);
+						glRotatef(gamer->y_angle, 0.0f, 0.0f, 1.0f);
+						glTranslatef(0.0, gamer->width, 0.0);
+						glRotatef(90.0, 1.0f, 0.0f, 0.0f);
+						glRotatef(90.0, 0.0f, 1.0f, 0.0f);
+						glTranslatef(30.0, 0.0, 0.0);
+						glTranslatef(0.0, 0.0, wp->model->position[2]);
+					}
+				}
+				glRotatef(wp->model->tp_model->item_meshes[0].angle[0], 1.0f, 0.0f, 0.0f);
+				glRotatef(wp->model->tp_model->item_meshes[0].angle[1], 0.0f, 0.0f, 1.0f);
+				if(wp->model->scale != 1.0)
+					glScalef(wp->model->scale, wp->model->scale, wp->model->scale);
+
+				Shadow_RenderNETLizard3DMesh(&(wp->model->tp_model->item_meshes[0].item_mesh), NULL, 0, 0, lightpos);
+			}
+			glPopMatrix();
+		}
+#endif
+		Shadow_RenderNETLizard3DAnimationModel(gamer->model.netlizard_character.model, gamer->animation.idata[0].anim, gamer->animation.idata[0].frame, gamer->position, 0, gamer->y_angle + gamer->model.netlizard_character.z_offset, light);
+	}
+
+	else if(gamer->model.source == csol_model_type)
+	{
+		if(!gamer->model.csol_character.model)
+			return;
+	}
+	else
+		return;
 }

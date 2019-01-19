@@ -3,6 +3,8 @@ netlizard-game (0.9.0harmattan1) unstable; urgency=low
   * Add shadow volume render support.
   * Add some math function, and OpenGL matrix(Column-major).
   * Add page stack support.
+  * Add new main menu.
+  * Add map viewer.
   * Fixed some bugs.
 
  -- Karin Zhao <beyondk2000@gmail.com>  Tue, 15 Jan 2019 16:15:28 +0800

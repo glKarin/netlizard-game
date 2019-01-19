@@ -3430,3 +3430,31 @@ void Game_CharacterRand4Weapons(game_character *gamer)
 	Game_Rand4WeaponTypes(types, countof(types), mask);
 	Game_GetWeapon(gamer, types, CHARACTER_WEAPON_COUNT);
 }
+
+void Game_RenderCharactersShadowVolume(const game_character *characters, int start, int cc, const int *scenes, int sc, const Light_Source_s *light)
+{
+	if(!characters || cc == 0 || !light)
+		return;
+	if(scenes && sc != 0)
+	{
+		int i;
+		for(i = start; i < cc; i++)
+		{
+			int j;
+			for(j = 0; j < sc; j++)
+			{
+				if(scenes[j] == characters[i].scene)
+					Game_RenderGameCharacterShadowVolume(characters + i, light);
+
+			}
+		}
+	}
+	else
+	{
+		int i;
+		for(i = start; i < cc; i++)
+		{
+			Game_RenderGameCharacterShadowVolume(characters + i, light);
+		}
+	}
+}

@@ -18,7 +18,7 @@
 #define TYPE_LIST_VIEW_W 220
 #define TYPE_LIST_VIEW_H 400
 #define TYPE_BUTTON_W 200
-#define TYPE_BUTTON_H 40
+#define TYPE_BUTTON_H 50
 
 #define WEAPON_LIST_VIEW_X 240
 #define WEAPON_LIST_VIEW_Y 0
@@ -86,8 +86,8 @@ static int Menu_SwipeWeapon(int x, int y, int dx, int dy);
 static void Menu_SetWeaponChooserPageSize(GLsizei w, GLsizei h);
 
 static const button_initilizer Btn_Infos[] = {
-	{500, 10, BTN_W, BTN_H, "Sure", Menu_ChooseWeapon, NULL},
-	{700, 10, BTN_W, BTN_H, "Back", Menu_BackAction, NULL},
+	{560, 10, BTN_W, BTN_H, "Sure", Menu_ChooseWeapon, NULL},
+	{720, 10, BTN_W, BTN_H, "Back", Menu_BackAction, NULL},
 };
 
 static button btn;
@@ -310,17 +310,6 @@ int UI_KeyFunc(int key, int act, int pressed, int x, int y)
 			 return 1;
 			 }
 			 break;
-			 */
-		case Harmattan_K_Control_R:
-		case Harmattan_K_Control_L:
-		case Harmattan_K_BackSpace:
-		case Harmattan_K_Escape:
-			if(pressed)
-			{
-				Menu_BackAction(NULL);
-				return 1;
-			}
-			break;
 		case Harmattan_K_Up:
 		case Harmattan_K_w:
 		case Harmattan_K_W:
@@ -337,6 +326,17 @@ int UI_KeyFunc(int key, int act, int pressed, int x, int y)
 			{
 				UI_MoveListViewCurrentIndex(&lst, 1);
 				idle_time = 0.0f;
+			}
+			break;
+			 */
+		case Harmattan_K_Control_R:
+		case Harmattan_K_Control_L:
+		case Harmattan_K_BackSpace:
+		case Harmattan_K_Escape:
+			if(pressed)
+			{
+				Menu_BackAction(NULL);
+				return 1;
 			}
 			break;
 	}
@@ -661,11 +661,15 @@ void Menu_RenderWeapon(void)
 	glPushAttrib(GL_POLYGON_BIT);
 	{
 		oglDisable(GL_CULL_FACE);
-		glRotatef(wp->model->tp_model->item_meshes[0].angle[0], 1.0f, 0.0f, 0.0f);
-		glRotatef(wp->model->tp_model->item_meshes[0].angle[1], 0.0f, 0.0f, 1.0f);
-		if(wp->model->scale != 1.0)
-			glScalef(wp->model->scale, wp->model->scale, wp->model->scale);
-		NETLizard_RenderGL3DMesh(&(wp->model->tp_model->item_meshes[0].item_mesh), wp->model->tp_model->texes);
+		glPushMatrix();
+		{
+			glRotatef(wp->model->tp_model->item_meshes[0].angle[0], 1.0f, 0.0f, 0.0f);
+			glRotatef(wp->model->tp_model->item_meshes[0].angle[1], 0.0f, 0.0f, 1.0f);
+			if(wp->model->scale != 1.0)
+				glScalef(wp->model->scale, wp->model->scale, wp->model->scale);
+			NETLizard_RenderGL3DMesh(&(wp->model->tp_model->item_meshes[0].item_mesh), wp->model->tp_model->texes);
+		}
+		glPopMatrix();
 	}
 	glPopAttrib();
 }

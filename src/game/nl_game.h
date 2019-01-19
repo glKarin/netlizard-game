@@ -34,6 +34,7 @@ game_character * Game_InitCharacter(float x, float y, float z, float xr, float y
 void Game_DeleteCharacter(game_character *characters, int count);
 // 绘制角色
 void Game_RenderCharacters(const game_character *characters, int start, int cc, const int *scenes, int sc);
+void Game_RenderCharactersShadowVolume(const game_character *characters, int start, int cc, const int *scenes, int sc, const Light_Source_s *light);
 // 空闲时调用
 // 执行角色AI行为，或人工操作行为
 void Game_HandleCharacterAction(const GL_NETLizard_3D_Model *model, game_character *characters, int start, int count, long long time);
@@ -106,6 +107,7 @@ int Game_HandleForceAI(const GL_NETLizard_3D_Model *map_model, game_character *g
 int Game_ReloadWeapon(weapon *w, long long game_time);
 // 转向某个方向
 void Game_LookatCharacter(const GL_NETLizard_3D_Model *map_model, game_character *gamer, const nl_vector3_t *dir);
+
 void Game_CharacterRand4Weapons(game_character *gamer);
 
 #endif

@@ -7,13 +7,13 @@
 #define OPEN_MDL_VIEWER "open_mdl_viewer"
 #define OPEN_KEYMAP_SETTING "open_keymap_setting"
 #define OPEN_ABOUT "open_about"
-#define OPEN_MAIN_MENU "open_main_menu"
+#define OPEN_MAIN_MENU "open_main_menu" // old, loading old main menu page.
 #define OPEN_HELP "open_help"
 #define QUIT "quit"
 #define LOAD_GAME "load_game"
 #define START_GAME "start_game"
 #define START_RACING_GAME "start_racing_game"
-#define BACK_MAIN_MENU "back_menu"
+#define BACK_MAIN_MENU "back_menu" // all, pop a other page that above main menu page, so show main menu page.
 #define LOADING_PROGRESS_CALLBACK "loading_progress_callback"
 #define CLOSE_GAME_MENU "close_game_menu"
 #define OPEN_GAME_MENU "open_game_menu"
@@ -25,7 +25,11 @@
 #define OPEN_RUN_SETTING "open_game_setting"
 #define REPLAY_GAME "replay_game"
 #define OPEN_MAP_VIEWER "open_map_viewer"
-#define INIT_MAIN_MENU "init_main_menu"
+#define INIT_MAIN_MENU "init_main_menu" // new, open main menu directly.
+#define INIT_OLD_MAIN_MENU "old_main_menu" // old, open main menu directly.
+#define OPEN_FILE_CHOOSER "open_file_chooser"
+#define OPEN_GAME_LEVEL_MENU "open_game_level_menu"
+#define LOAD_MAIN_MENU "load_main_menu" // new, loading main menu page.
 
 #ifndef _SPLASH_FILE
 #define _SPLASH_FILE _KARIN_RESOURCE_DIR"resource/lz.png"

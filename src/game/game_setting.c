@@ -41,6 +41,7 @@ const setting_item Setting_Items[total_setting] = {
 
 	{group_count_setting, integer_value_type, GROUP_COUNT_SETTING, "Group count", "2", "2", "4"},
 	{character_count_setting, integer_value_type, CHARACTER_COUNT_SETTING, "Character count", "4", "1", "8"},
+	{shadow_effect_setting, boolean_value_type, SHADOW_EFFECT_SETTING, "Shadow effect", "true", NULL, NULL},
 	{lighting_effect_setting, boolean_value_type, LIGHTING_EFFECT_SETTING, "Lighting effect", "false", NULL, NULL},
 	{fog_effect_setting, boolean_value_type, FOG_EFFECT_SETTING, "Fog effect", "false", NULL, NULL},
 	{god_mode_setting, boolean_value_type, GOD_MODE_SETTING, "God mode", "false", NULL, NULL},
