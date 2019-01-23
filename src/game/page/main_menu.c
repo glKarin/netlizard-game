@@ -43,6 +43,7 @@ static const struct _game_menu_action
 	{"Help", OPEN_HELP},
 	{"About", OPEN_ABOUT},
 	{"Old Main Menu", INIT_OLD_MAIN_MENU},
+	{"File Chooser", OPEN_FILE_CHOOSER},
 	{"Quit", QUIT}
 };
 

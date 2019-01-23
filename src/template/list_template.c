@@ -514,3 +514,49 @@ int List_PopEnd(list_template *lst)
 	}
 	return lst->count;
 }
+
+void * List_ToArray(list_template *lst)
+{
+	char *r;
+	const void *d;
+	unsigned int i;
+
+	r = NULL;
+
+	if(!lst || lst->count == 0)
+		return r;
+
+	r = calloc(lst->count, lst->size);
+	for(i = 0; i < lst->count; i++)
+	{
+		d = List_GetDataConstByIndex(lst, i);
+		memcpy(r + i, d, lst->size);
+	}
+
+	return r;
+}
+
+unsigned int List_ToArrayV(list_template *lst, void *r, unsigned int max)
+{
+	unsigned int count;
+	const void *d;
+	char *cr;
+	unsigned int i;
+
+	cr = r;
+	count = 0;
+
+	if(!lst || lst->count == 0 || !r || max == 0)
+		return count;
+
+	for(i = 0; i < lst->count; i++)
+	{
+		if(count + lst->size > max)
+			break;
+		d = List_GetDataConstByIndex(lst, i);
+		memcpy(cr + (lst->size * i), d, lst->size);
+		count += lst->size;
+	}
+
+	return count;
+}

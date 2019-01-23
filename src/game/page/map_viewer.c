@@ -44,8 +44,6 @@
 
 #define IDLE_TIME_DELAY 0.4
 
-#define WEAPON_TYPE_COUNT 9
-
 typedef enum _menu_action
 {
 	enter_action = 0,

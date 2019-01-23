@@ -14,12 +14,15 @@
 #define SHADOW_MASK 1 // 
 #define SHADOW_MASK_LIGHT 0 // 
 
-vector3_t Algo_LightingDir(const vector3_t *v, const vector3_t *lightpos, int dirlight);
-void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s *mat);
-void Shadow_RenderVolume(const material_s *nl_mesh, const Light_Source_s *l);
+#define SHADOW_Z_PASS 0
+#define SHADOW_Z_FAIL 1
 
-void Shadow_CaleTrans(material_s *r, const GL_NETLizard_3D_Mesh *src, const matrix44_t *mat);
-void Shadow_RenderItemShadow(const GL_NETLizard_3D_Item_Mesh *mesh, const Light_Source_s *light);
-void Shadow_RenderShadow(const GL_NETLizard_3D_Mesh *mesh, const Light_Source_s *light);
+vector3_t Algo_LightingDir(const vector3_t *v, const vector3_t *lightpos, int dirlight);
+void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s *mat, int m);
+void Shadow_RenderVolume(const material_s *nl_mesh, const Light_Source_s *l, int method);
+
+void Shadow_CaleTrans(material_s *r, const GL_NETLizard_3D_Mesh *src, const matrix44_t *mat, int invert);
+void Shadow_RenderItemShadow(const GL_NETLizard_3D_Item_Mesh *mesh, const Light_Source_s *light, int method);
+void Shadow_RenderShadow(const GL_NETLizard_3D_Mesh *mesh, const Light_Source_s *light, int method);
 
 #endif

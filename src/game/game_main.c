@@ -24,6 +24,7 @@
 #include "mdl_viewer.h"
 #include "map_viewer.h"
 #include "main_menu.h"
+#include "file_chooser.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -419,11 +420,15 @@ void MainGame_OpenMapViewer(void)
 
 void MainGame_OpenFileChooser(void)
 {
+	UI_InitFileChooser("/home/user");
+	UI_FileChooserRegisterFunction();
+	MainGame_SetGameState(game_in_setting_state);
 }
 
 void MainGame_OpenGameLevelMenu(void)
 {
-	UI_SetMapViewerEnterActionFunction(MainGame_RunGameLevel);
+	//k UI_SetMapViewerEnterActionFunction(MainGame_RunGameLevel);
+	UI_SetMapViewerEnterActionFunction(MainGame_OpenRunSetting);
 	UI_InitMapViewer();
 	UI_MapViewerRegisterFunction();
 	MainGame_SetGameState(game_in_setting_state);

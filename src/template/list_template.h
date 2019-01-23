@@ -88,5 +88,8 @@ int List_PopFront(list_template *lst);
 int List_PopEnd(list_template *lst);
 // 查找
 void * List_Find(list_template *lst, List_cmp_f cmp, const void *user_data, int *index);
+// 转换数组
+void * List_ToArray(list_template *lst);
+unsigned int List_ToArrayV(list_template *lst, void *r, unsigned int max);
 
 #endif

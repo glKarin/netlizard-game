@@ -636,11 +636,11 @@ void Game_DrawFunc(void)
 				{
 					if(scenes)
 					{
-						Shadow_RenderNETLizardModelScene(map_model, scenes, count, &light);
+						Shadow_RenderNETLizardModelScene(map_model, scenes, count, &light, SHADOW_Z_PASS);
 					}
 					else
 					{
-						Shadow_RenderNETLizardModel(map_model, &light);
+						Shadow_RenderNETLizardModel(map_model, &light, SHADOW_Z_PASS);
 					}
 					Game_RenderCharactersShadowVolume(game_mode.characters, 0, game_mode.current_character, scenes, count, &light);
 					Game_RenderCharactersShadowVolume(game_mode.characters, game_mode.current_character + 1, game_mode.character_count, scenes, count, &light);

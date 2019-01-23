@@ -36,3 +36,18 @@ char * System_GetPathFromHome(const char *p)
 	//printf("%s\n", r);
 	return r;
 }
+
+#if 0
+void File_GetSize(unsigned long bytes, int max_unit, int type, file_size_s *r)
+{
+	if(!r)
+		return;
+	
+	r->type = type;
+	r->unit = max_unit;
+	if(type == FILE_SIZE_FLOAT)
+	{
+		r->data.f = (double)bytes / (double);
+	}
+}
+#endif

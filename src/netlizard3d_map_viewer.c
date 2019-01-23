@@ -357,13 +357,13 @@ void Viewer_DrawFunc(void)
 			if(scenes)
 			{
 				NETLizard_RenderGL3DMapModelScene(map_model, scenes, count);
-				Shadow_RenderNETLizardModelScene(map_model, scenes, count, &light);
+				Shadow_RenderNETLizardModelScene(map_model, scenes, count, &light, SHADOW_Z_PASS);
 				Shadow_RenderMask();
 			}
 			else
 			{
 				NETLizard_RenderGL3DModel(map_model);
-				Shadow_RenderNETLizardModel(map_model, &light);
+				Shadow_RenderNETLizardModel(map_model, &light, SHADOW_Z_PASS);
 				Shadow_RenderMask();
 			}
 

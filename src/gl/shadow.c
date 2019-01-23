@@ -102,7 +102,7 @@ vector3_t Algo_LightingDir(const vector3_t *v, const vector3_t *lightpos, int di
 	return r;
 }
 
-void Shadow_CaleTrans(material_s *r, const GL_NETLizard_3D_Mesh *nl_mesh, const glmatrix44_t *mat)
+void Shadow_CaleTrans(material_s *r, const GL_NETLizard_3D_Mesh *nl_mesh, const glmatrix44_t *mat, int invert)
 {
 	glmatrix44_t nor_mat;
 	int count;
@@ -163,8 +163,18 @@ void Shadow_CaleTrans(material_s *r, const GL_NETLizard_3D_Mesh *nl_mesh, const 
 		{
 			v = Math3D_Vector3MultiplyMatrix44_3x3(&v, &nor_mat);
 			Vector3_Normalize(&v);
+			if(invert)
+				Vector3_InvertSelf(&v);
 		}
 		Shadow_Vector3ToArray(point->normal, &v);
+	}
+
+	if(invert)
+	{
+		for(i = 0; i < (unsigned int)r->count; i += 3)
+		{
+			NL_SWAP(r->points[i + 1], r->points[i + 2], point_s);
+		}
 	}
 
 #if 0
@@ -230,7 +240,7 @@ void Shadow_CaleTrans(material_s *r, const GL_NETLizard_3D_Mesh *nl_mesh, const 
 }
 
 // cale shadow volume
-void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s *mat)
+void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s *mat, int method)
 {
 	int has;
 	line_segment_t lp, *lpptr;
@@ -238,24 +248,16 @@ void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s 
 	point_s *pa;
 	material_s *m;
 	list_t(line_segment_t) lines; // line_s
-#if ZFAIL_SHADOW
 	list_t(vector3_t) tops, bottoms; // vector3_t
-#endif
 	GLfloat *v;
 
 	if(!r || !light || !mat || !mat->count)
 		return;
 
 	LIST(&lines, line_segment_t);
-#if ZFAIL_SHADOW
 	LIST(&tops, vector3_t);
 	LIST(&bottoms, vector3_t);
-#endif
-#if ZFAIL_SHADOW
-	newmesh(r, 3); // top[1] bottom[2] caps, and side[0]
-#else
-	newmesh(r, 1); // top[1] bottom[2] caps, and side[0]
-#endif
+	newmesh(r, method == SHADOW_Z_FAIL ? 3 : 1); // top[1] bottom[2] caps, and side[0]
 	for(i = 0; i < mat->count / 3; i++) // cale triangle
 	{
 		pa = mat->points + (i * 3);
@@ -392,17 +394,19 @@ void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s 
 #endif
 				}
 			}
-#if ZFAIL_SHADOW
 			// top cap triangle
-			tops.vvv(&tops, Shadow_MakeHeapVector3From4(pa[0].vertex))->vvv(&tops, Shadow_MakeHeapVector3From4(pa[1].vertex))->vvv(&tops, Shadow_MakeHeapVector3From4(pa[2].vertex));
-#endif
+			if(method == SHADOW_Z_FAIL)
+			{
+				tops.vvv(&tops, Shadow_MakeHeapVector3From4(pa[0].vertex))->vvv(&tops, Shadow_MakeHeapVector3From4(pa[1].vertex))->vvv(&tops, Shadow_MakeHeapVector3From4(pa[2].vertex));
+			}
 		}
 		else
 		{
-#if ZFAIL_SHADOW
 			// bottom cap triangle
-			bottoms.vvv(&bottoms, Shadow_MakeHeapVector3From4(pa[0].vertex))->vvv(&bottoms, Shadow_MakeHeapVector3From4(pa[1].vertex))->vvv(&bottoms, Shadow_MakeHeapVector3From4(pa[2].vertex));
-#endif
+			if(method == SHADOW_Z_FAIL)
+			{
+				bottoms.vvv(&bottoms, Shadow_MakeHeapVector3From4(pa[0].vertex))->vvv(&bottoms, Shadow_MakeHeapVector3From4(pa[1].vertex))->vvv(&bottoms, Shadow_MakeHeapVector3From4(pa[2].vertex));
+			}
 		}
 	}
 #if 0
@@ -594,53 +598,54 @@ void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s 
 		k++;
 	}
 
-#if ZFAIL_SHADOW
-	// cale top cap of shadow volume
-	// using triangles of the mesh faces to lighting source
-	m = r->materials + 1;
-	newmat(m, tops.count);
-	for(k = 0; k < tops.count; k += 3)
+	if(method == SHADOW_Z_FAIL)
 	{
-		const vector3_t *first = List_GetDataByIndexT(&tops, k, vector3_t);
-		const vector3_t *sec = List_GetDataByIndexT(&tops, k + 1, vector3_t);
-		const vector3_t *third = List_GetDataByIndexT(&tops, k + 2, vector3_t);
-		pa = m->points + k;
-		Shadow_Vector3ToArray(pa->vertex, first);
-		pa = m->points + k + 1;
-		Shadow_Vector3ToArray(pa->vertex, sec);
-		pa = m->points + k + 2;
-		Shadow_Vector3ToArray(pa->vertex, third);
+		// cale top cap of shadow volume
+		// using triangles of the mesh faces to lighting source
+		m = r->materials + 1;
+		newmat(m, tops.count);
+		for(k = 0; k < tops.count; k += 3)
+		{
+			const vector3_t *first = List_GetDataByIndexT(&tops, k, vector3_t);
+			const vector3_t *sec = List_GetDataByIndexT(&tops, k + 1, vector3_t);
+			const vector3_t *third = List_GetDataByIndexT(&tops, k + 2, vector3_t);
+			pa = m->points + k;
+			Shadow_Vector3ToArray(pa->vertex, first);
+			pa = m->points + k + 1;
+			Shadow_Vector3ToArray(pa->vertex, sec);
+			pa = m->points + k + 2;
+			Shadow_Vector3ToArray(pa->vertex, third);
+		}
+
+		// cale bottom cap of shadow volume
+		// using triangles of the mesh not faces to lighting source
+		m = r->materials + 2;
+		newmat(m, bottoms.count);
+		for(k = 0; k < bottoms.count; k += 3)
+		{
+			const vector3_t *first = List_GetDataByIndexT(&bottoms, k, vector3_t);
+			const vector3_t *sec = List_GetDataByIndexT(&bottoms, k + 1, vector3_t);
+			const vector3_t *third = List_GetDataByIndexT(&bottoms, k + 2, vector3_t);
+
+			// point lighting
+			vector3_t dir_a = Algo_LightingDir(first, &light->position, LIGHT_IS_DIRECTION(light));
+			Vector3_ScaleSelf(&dir_a, LIGHT_IS_DIRECTION(light));
+			vector3_t dir_b = Algo_LightingDir(sec, &light->position, LIGHT_IS_DIRECTION(light));
+			Vector3_ScaleSelf(&dir_b, SHADOW_VOLUME_LENGTH);
+			vector3_t dir_c = Algo_LightingDir(third, &light->position, LIGHT_IS_DIRECTION(light));
+			Vector3_ScaleSelf(&dir_c, SHADOW_VOLUME_LENGTH);
+
+			pa = m->points + k;
+			Shadow_Vector3ToArray(pa->vertex, &dir_a);
+			pa->vertex[3] = SHADOW_VOLUME_FAR_W;
+			pa = m->points + k + 1;
+			Shadow_Vector3ToArray(pa->vertex, &dir_b);
+			pa->vertex[3] = SHADOW_VOLUME_FAR_W;
+			pa = m->points + k + 2;
+			Shadow_Vector3ToArray(pa->vertex, &dir_c);
+			pa->vertex[3] = SHADOW_VOLUME_FAR_W;
+		}
 	}
-
-	// cale bottom cap of shadow volume
-	// using triangles of the mesh not faces to lighting source
-	m = r->materials + 2;
-	newmat(m, bottoms.count);
-	for(k = 0; k < bottoms.count; k += 3)
-	{
-		const vector3_t *first = List_GetDataByIndexT(&bottoms, k, vector3_t);
-		const vector3_t *sec = List_GetDataByIndexT(&bottoms, k + 1, vector3_t);
-		const vector3_t *third = List_GetDataByIndexT(&bottoms, k + 2, vector3_t);
-
-		// point lighting
-		vector3_t dir_a = Algo_LightingDir(first, &light->position, LIGHT_IS_DIRECTION(light));
-		Vector3_ScaleSelf(&dir_a, SHADOW_VLIGHT_IS_DIRECTION(light));
-		vector3_t dir_b = Algo_LightingDir(sec, &light->position, LIGHT_IS_DIRECTION(light));
-		Vector3_ScaleSelf(&dir_b, SHADOW_VOLUME_LENGTH);
-		vector3_t dir_c = Algo_LightingDir(third, &light->position, LIGHT_IS_DIRECTION(light));
-		Vector3_ScaleSelf(&dir_c, SHADOW_VOLUME_LENGTH);
-
-		pa = m->points + k;
-		Shadow_Vector3ToArray(pa->vertex, &dir_a);
-		pa->vertex[3] = SHADOW_VOLUME_FAR_W;
-		pa = m->points + k + 1;
-		Shadow_Vector3ToArray(pa->vertex, &dir_b);
-		pa->vertex[3] = SHADOW_VOLUME_FAR_W;
-		pa = m->points + k + 2;
-		Shadow_Vector3ToArray(pa->vertex, &dir_c);
-		pa->vertex[3] = SHADOW_VOLUME_FAR_W;
-	}
-#endif
 
 #if 0
 	//glDisable(GL_DEPTH_TEST);
@@ -681,13 +686,14 @@ void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s 
 
 __Exit:
 	List_DeleteAll(&lines);
-#if ZFAIL_SHADOW
-	List_DeleteAll(&tops);
-	List_DeleteAll(&bottoms);
-#endif
+	if(m == SHADOW_Z_FAIL)
+	{
+		List_DeleteAll(&tops);
+		List_DeleteAll(&bottoms);
+	}
 }
 
-void Shadow_RenderVolume(const material_s *nl_mesh, const Light_Source_s *l)
+void Shadow_RenderVolume(const material_s *nl_mesh, const Light_Source_s *l, int m)
 {
 	mesh_s *vol;
 
@@ -696,7 +702,7 @@ void Shadow_RenderVolume(const material_s *nl_mesh, const Light_Source_s *l)
 
 	vol = (mesh_s *)calloc(1, sizeof(mesh_s));
 
-	Shadow_MakeVolume(vol, l, nl_mesh);
+	Shadow_MakeVolume(vol, l, nl_mesh, m);
 
 	// render
 	// 1: get depth buffer of scene
@@ -715,71 +721,77 @@ void Shadow_RenderVolume(const material_s *nl_mesh, const Light_Source_s *l)
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	//glDepthFunc(GL_LEQUAL);
-#if ZFAIL_SHADOW
-	// 2: Z-Fail
+
+	if(m == SHADOW_Z_FAIL)
+	{
+		// 2: Z-Fail
 #ifdef GL_ARB_depth_clamp
-	glEnable(GL_DEPTH_CLAMP);
+		glEnable(GL_DEPTH_CLAMP);
 #endif
-	glDepthMask(GL_FALSE);
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-	glEnable(GL_STENCIL_TEST);
-	glStencilFunc(GL_ALWAYS, 0, ~0U);
+#if 0
+		glDepthMask(GL_FALSE);
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		glEnable(GL_STENCIL_TEST);
+		glStencilFunc(GL_ALWAYS, 0, ~0U);
+#endif
 
-	// 2-1: cale front faces of shadow volume
+		// 2-1: cale front faces of shadow volume
 #ifdef _HARMATTAN_OPENGLES
-	glStencilOp(GL_KEEP, GL_INCR_WRAP, GL_KEEP);
-	glCullFace(GL_FRONT);
-	rendermesh(vol);
+		glStencilOp(GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+		glCullFace(GL_FRONT);
+		rendermesh(vol);
 
-	// 2-1: cale back faces of shadow volume
-	glStencilOp(GL_KEEP, GL_DECR_WRAP, GL_KEEP);
-	glCullFace(GL_BACK);
-	rendermesh(vol);
+		// 2-1: cale back faces of shadow volume
+		glStencilOp(GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+		glCullFace(GL_BACK);
+		rendermesh(vol);
 #else
-	glDisable(GL_CULL_FACE);
-	glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
-	glStencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
-	rendermesh(vol);
-	glEnable(GL_CULL_FACE);
+		glDisable(GL_CULL_FACE);
+		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+		rendermesh(vol);
+		glEnable(GL_CULL_FACE);
 #endif
 
 #ifdef GL_ARB_depth_clamp
-	glDisable(GL_DEPTH_CLAMP);
+		glDisable(GL_DEPTH_CLAMP);
 #endif
-#else
-	// 2: Z-Pass
+	}
+	else
+	{
+		// 2: Z-Pass
 #if 0
-	glDepthMask(GL_FALSE);
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-	glEnable(GL_STENCIL_TEST);
-	glStencilFunc(GL_ALWAYS, 0, ~0U);
+		glDepthMask(GL_FALSE);
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		glEnable(GL_STENCIL_TEST);
+		glStencilFunc(GL_ALWAYS, 0, ~0U);
 #endif
 
 #if 0
-	vol->materials->use_color = 1;
-	vol->materials->color[0] = 
-	vol->materials->color[1] = 
-	vol->materials->color[2] = 0.0;
-	vol->materials->color[3] = 0.2;
+		vol->materials->use_color = 1;
+		vol->materials->color[0] = 
+			vol->materials->color[1] = 
+			vol->materials->color[2] = 0.0;
+		vol->materials->color[3] = 0.2;
 #endif
-	// 2-1: cale front faces of shadow volume
+		// 2-1: cale front faces of shadow volume
 #ifdef _HARMATTAN_OPENGLES
-	glStencilOp(GL_KEEP, GL_KEEP, GL_INCR_WRAP);
-	glCullFace(GL_BACK);
-	rendermesh(vol);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_INCR_WRAP);
+		glCullFace(GL_BACK);
+		rendermesh(vol);
 
-	// 2-1: cale back faces of shadow volume
-	glStencilOp(GL_KEEP, GL_KEEP, GL_DECR_WRAP);
-	glCullFace(GL_FRONT);
-	rendermesh(vol);
+		// 2-1: cale back faces of shadow volume
+		glStencilOp(GL_KEEP, GL_KEEP, GL_DECR_WRAP);
+		glCullFace(GL_FRONT);
+		rendermesh(vol);
 #else
-	glDisable(GL_CULL_FACE);
-	glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
-	glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
-	rendermesh(vol);
-	glEnable(GL_CULL_FACE);
+		glDisable(GL_CULL_FACE);
+		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
+		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
+		rendermesh(vol);
+		glEnable(GL_CULL_FACE);
 #endif
-#endif
+	}
 	//glDepthFunc(GL_LESS);
 	glDisableClientState(GL_VERTEX_ARRAY);
 
@@ -841,7 +853,7 @@ __Exit:
 	free(vol);
 }
 
-void Shadow_RenderItemShadow(const GL_NETLizard_3D_Item_Mesh *mesh, const Light_Source_s *light)
+void Shadow_RenderItemShadow(const GL_NETLizard_3D_Item_Mesh *mesh, const Light_Source_s *light, int method)
 {
 	material_s m;
 	glmatrix44_t mat;
@@ -866,15 +878,15 @@ void Shadow_RenderItemShadow(const GL_NETLizard_3D_Item_Mesh *mesh, const Light_
 	glPopMatrix();
 #endif
 
-	Shadow_CaleTrans(&m, &mesh->item_mesh, &mat);
+	Shadow_CaleTrans(&m, &mesh->item_mesh, &mat, 0);
 
-	Shadow_RenderVolume(&m, light);
+	Shadow_RenderVolume(&m, light, method);
 
 __Exit:
 	freemat(&m);
 }
 
-void Shadow_RenderShadow(const GL_NETLizard_3D_Mesh *mesh, const Light_Source_s *light)
+void Shadow_RenderShadow(const GL_NETLizard_3D_Mesh *mesh, const Light_Source_s *light, int method)
 {
 	material_s m;
 
@@ -883,9 +895,9 @@ void Shadow_RenderShadow(const GL_NETLizard_3D_Mesh *mesh, const Light_Source_s 
 
 	memset(&m, 0, sizeof(material_s));
 
-	Shadow_CaleTrans(&m, mesh, NULL);
+	Shadow_CaleTrans(&m, mesh, NULL, 1);
 
-	Shadow_RenderVolume(&m, light);
+	Shadow_RenderVolume(&m, light, method);
 
 __Exit:
 	freemat(&m);

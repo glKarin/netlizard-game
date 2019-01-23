@@ -1277,6 +1277,9 @@ void DrawPoints (StudioModel *mdl)
 	glEnable(GL_BLEND);
 	glDepthFunc(GL_LESS);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glAlphaFunc(GL_GREATER, 0.1f);
+	oglEnable(GL_ALPHA_TEST);
 #undef _COPY_VERTEX3
 #undef _COPY_TEXCOORD2
 #undef _COPY_COLOR4

@@ -9,6 +9,26 @@
 #define NL_MASK(x) (1 << (x))
 #define NL_MASK_ALL (~0U)
 
+#define NL_SWAP(a, b, T) \
+{ \
+	T __x = (a); \
+	a = (b) ; \
+	b = __x; \
+}
+
+#define NL_SWAP_V(a, b, T) \
+{ \
+	T __x = *(a); \
+	*(a) = *(b) ; \
+	*(b) = __x; \
+}
+
+#define NL_MOVE(dst, src) \
+{ \
+	(dst) = (src); \
+	(src) = NULL; \
+}
+
 typedef unsigned long mask_t; // GLbitfield
 typedef unsigned int enum_t; // GLenum
 typedef signed char byte_t; // GLbyte

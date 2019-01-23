@@ -1,5 +1,4 @@
 #include "nl_shadow.h"
-#include "shadow.h"
 #include "nl_std.h"
 #include "netlizard.h"
 
@@ -20,7 +19,7 @@
 	glCullFace(GL_BACK); \
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
-void Shadow_RenderNETLizardModelScene(const GL_NETLizard_3D_Model *map_model, const int *scenes, unsigned int count, const Light_Source_s *light)
+void Shadow_RenderNETLizardModelScene(const GL_NETLizard_3D_Model *map_model, const int *scenes, unsigned int count, const Light_Source_s *light, int method)
 {
 	GLuint i;
 	GLint c;
@@ -41,6 +40,7 @@ void Shadow_RenderNETLizardModelScene(const GL_NETLizard_3D_Model *map_model, co
 		if(scenes[i] < 0 && scenes[i] >= c)
 			continue;
 		m = map_model->meshes + scenes[i];
+		//Shadow_RenderShadow(m, light);
 		for(j = m->item_index_range[0]; j < m->item_index_range[1]; j++) 
 		{
 			im = map_model->item_meshes + j;
@@ -48,14 +48,14 @@ void Shadow_RenderNETLizardModelScene(const GL_NETLizard_3D_Model *map_model, co
 				continue;
 			if(im->item_type == Item_Box_Type)
 				continue;
-			Shadow_RenderItemShadow(im, light);
+			Shadow_RenderItemShadow(im, light, method);
 		}
 	}
 
 	SHADOW_END
 }
 
-void Shadow_RenderNETLizardModel(const GL_NETLizard_3D_Model *map_model, const Light_Source_s *light)
+void Shadow_RenderNETLizardModel(const GL_NETLizard_3D_Model *map_model, const Light_Source_s *light, int method)
 {
 	GLuint i;
 	GLuint j;
@@ -79,7 +79,7 @@ void Shadow_RenderNETLizardModel(const GL_NETLizard_3D_Model *map_model, const L
 					continue;
 				if(im->item_type == Item_Box_Type)
 					continue;
-				Shadow_RenderItemShadow(im, light);
+				Shadow_RenderItemShadow(im, light, method);
 			}
 		}
 
@@ -130,7 +130,7 @@ void Shadow_RenderMask(void)
 	//glEnable(GL_DEPTH_TEST);
 }
 
-void Shadow_RenderNETLizard3DAnimationModel(const GL_NETLizard_3D_Animation_Model *m, int a, int f, const float pos[3], float xangle, float yangle, const Light_Source_s *light)
+void Shadow_RenderNETLizard3DAnimationModel(const GL_NETLizard_3D_Animation_Model *m, int a, int f, const float pos[3], float xangle, float yangle, const Light_Source_s *light, int method)
 {
 	GL_NETLizard_3D_Item_Mesh item_mesh;
 	NETLizard_3D_Role_Animation *animation;
@@ -165,24 +165,24 @@ void Shadow_RenderNETLizard3DAnimationModel(const GL_NETLizard_3D_Animation_Mode
 
 	item_mesh.item_mesh = *mesh;
 
-	Shadow_RenderItemShadow(&item_mesh, light);
+	Shadow_RenderItemShadow(&item_mesh, light, method);
 
 	SHADOW_END
 }
 
-void Shadow_RenderNETLizard3DItemMesh(const GL_NETLizard_3D_Item_Mesh *m, const Light_Source_s *light)
+void Shadow_RenderNETLizard3DItemMesh(const GL_NETLizard_3D_Item_Mesh *m, const Light_Source_s *light, int method)
 {
 	if(!m || !light)
 		return;
 
 	SHADOW_BEGIN
 
-	Shadow_RenderItemShadow(m, light);
+	Shadow_RenderItemShadow(m, light, method);
 
 	SHADOW_END
 }
 
-void Shadow_RenderNETLizard3DMesh(const GL_NETLizard_3D_Mesh *m, const float pos[3], float xangle, float yangle, const Light_Source_s *light)
+void Shadow_RenderNETLizard3DMesh(const GL_NETLizard_3D_Mesh *m, const float pos[3], float xangle, float yangle, const Light_Source_s *light, int method)
 {
 	GL_NETLizard_3D_Item_Mesh item_mesh;
 
@@ -204,7 +204,7 @@ void Shadow_RenderNETLizard3DMesh(const GL_NETLizard_3D_Mesh *m, const float pos
 
 	item_mesh.item_mesh = *m;
 
-	Shadow_RenderShadow(m, light);
+	Shadow_RenderShadow(m, light, method);
 
 	SHADOW_END
 }

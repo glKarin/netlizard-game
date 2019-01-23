@@ -1757,12 +1757,12 @@ void Game_RenderGameCharacterShadowVolume(const game_character *gamer, const Lig
 				if(wp->model->scale != 1.0)
 					glScalef(wp->model->scale, wp->model->scale, wp->model->scale);
 
-				Shadow_RenderNETLizard3DMesh(&(wp->model->tp_model->item_meshes[0].item_mesh), NULL, 0, 0, lightpos);
+				Shadow_RenderNETLizard3DMesh(&(wp->model->tp_model->item_meshes[0].item_mesh), NULL, 0, 0, lightpos, SHADOW_Z_FAIL);
 			}
 			glPopMatrix();
 		}
 #endif
-		Shadow_RenderNETLizard3DAnimationModel(gamer->model.netlizard_character.model, gamer->animation.idata[0].anim, gamer->animation.idata[0].frame, gamer->position, 0, gamer->y_angle + gamer->model.netlizard_character.z_offset, light);
+		Shadow_RenderNETLizard3DAnimationModel(gamer->model.netlizard_character.model, gamer->animation.idata[0].anim, gamer->animation.idata[0].frame, gamer->position, 0, gamer->y_angle + gamer->model.netlizard_character.z_offset, light, SHADOW_Z_PASS);
 	}
 
 	else if(gamer->model.source == csol_model_type)

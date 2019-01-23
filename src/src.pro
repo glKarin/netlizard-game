@@ -34,8 +34,6 @@ DESTDIR = ..
 HEADERS += netlizard3d_viewer.h \
            netlizard_converter.h \
 					 gl_3d_main.h \
-					 gl_util.h \
-					 gl_object.h \
 					 nl_event.h \
 					 nl_algo.h \
 					 nl_struct_info.h \
@@ -43,6 +41,8 @@ HEADERS += netlizard3d_viewer.h \
 					 game_util.h \
 					 font.h \
 					 page_stack.h \
+					 gl/gl_util.h \
+					 gl/gl_object.h \
 					 nl_std.h \
 					 nl_dbg.h \
 					 gl/mesh.h \
@@ -90,6 +90,7 @@ HEADERS += netlizard3d_viewer.h \
 					 game/page/mdl_viewer.h \
 					 game/page/map_viewer.h \
 					 game/page/main_menu.h \
+					 game/page/file_chooser.h \
 					 game/component/text_browser.h \
 					 game/component/button.h \
 					 game/component/progress_bar.h \
@@ -108,8 +109,6 @@ HEADERS += netlizard3d_viewer.h \
 					 physics/gravity.h
 
 SOURCES += ../main.c \
-           gl_util.c \
-					 gl_object.c \
            re3d_viewer.c \
            netlizard3d_map_viewer.c \
            netlizard3d_item_viewer.c \
@@ -133,6 +132,8 @@ SOURCES += ../main.c \
 					 nl_std.c \
 					 font.c \
 					 page_stack.c \
+           gl/gl_util.c \
+					 gl/gl_object.c \
 					 gl/mesh.c \
 					 gl/camera.c \
 					 gl/shadow.c \
@@ -177,6 +178,7 @@ SOURCES += ../main.c \
 					 game/page/mdl_viewer.c \
 					 game/page/map_viewer.c \
 					 game/page/main_menu.c \
+					 game/page/file_chooser.c \
 					 game/component/button.c \
 					 game/component/text_browser.c \
 					 game/component/progress_bar.c \
