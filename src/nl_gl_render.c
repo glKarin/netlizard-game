@@ -190,12 +190,12 @@ GLvoid NETLizard_RenderGL3DMesh(const GL_NETLizard_3D_Mesh *m, texture **const t
 		for(j = 0; j < vcount; j++)
 		{
 			int start = m->vertex_array.vertex_data.index[m->materials[i].index_start + j];
-			vector3_t rv = VECTOR3V(m->vertex_array.vertex_data.vertex[start].position);
+			vector3_s rv = VECTOR3V(m->vertex_array.vertex_data.vertex[start].position);
 			nv[0] = VECTOR_X(rv);
 			nv[1] = VECTOR_Y(rv);
 			nv[2] = VECTOR_Z(rv);
 
-			vector3_t rv2 = VECTOR3V(m->vertex_array.vertex_data.vertex[start].normal);
+			vector3_s rv2 = VECTOR3V(m->vertex_array.vertex_data.vertex[start].normal);
 			Vector3_ScaleSelf(&rv2, 20);
 			rv2 = Vector3_PlusVector3(&rv, &rv2);
 			nv[3] = VECTOR_X(rv2);

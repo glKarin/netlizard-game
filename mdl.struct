@@ -1,0 +1,131 @@
+mdl{
+	int 4: id; // Magic
+	int 4: version; // 版本
+	char 1 * 64: name; // 名
+	int 4: length; //  
+
+	float 4 * 3: eyeposition;	// ideal eye position
+	float 4 * 3: min;			// ideal movement hull size
+	float 4 * 3: max;			
+	float 4 * 3: bbmin;			// clipping bounding box
+	float 4 * 3: bbmax;		
+
+	int 4: flags;
+
+	int 4: numbones; // 骨骼数量
+	int 4: boneindex; // 骨骼数据偏移字节
+	bone {
+		char 1 * 32: name; // 骨骼名称	// bone name for symbolic links
+		int 4: parent; // 父骨骼索引		// parent bone
+		int 4: flags;		// ??
+		int 4 * 6: bonecontroller[6];	// bone controller index, -1 == none
+		float	4 * 6: value;	// default DoF values
+		float 4 * 6: scale;   // scale for delta DoF values
+	} mstudiobone_t;
+
+	int	4: numbonecontrollers;		// bone controllers
+	int	4:bonecontrollerindex;
+	bone_controller {
+		int	4: bone;	// -1 == 0
+		int	4: type; // 骨骼数据类型	// X, Y, Z, XR, YR, ZR, M
+		float 4: start;
+		float 4: end;
+		int	4: rest;	// Byte index value at rest
+		int	4: index;	// 0-3 user set controller, 4 mouth
+	} mstudiobonecontroller_t;
+
+	int 4: numhitboxes; // 命中盒子数量			// complex bounding boxes
+	int 4: hitboxindex; // 命中盒子数据字节偏移		
+	box {
+		int 4: bone;
+		int 4: group;			// intersection group
+		float 3 * 4: bbmin; // 盒子最小点坐标		// bounding box
+		float 3 * 4: bbmax; // 盒子最大点坐标	
+	} mstudiobbox_t;
+
+	int 4: numseq; // 动画数量				// animation sequences
+	int 4: seqindex; // 动画数据字节偏移
+	sequence {
+		char 1 * 32: label[32];	// sequence label
+
+		float 4: fps;		// frames per second	
+		int	4: flags;		// looping/non-looping flags
+
+		int	4: activity;
+		int	4: actweight;
+
+		int	4: numevents;
+		int	4: eventindex;
+
+		int	4: numframes;	// number of frames per sequence
+
+		int	4: numpivots;	// number of foot pivots
+		int	4: pivotindex;
+
+		int	4: motiontype;	
+		int	4: motionbone;
+		float 3 * 4: linearmovement;
+		int	4: automoveposindex;
+		int	4: automoveangleindex;
+
+		float 3 * 4: bbmin;		// per sequence bounding box
+		float 3 * 4: bbmax;		
+
+		int	4: numblends;
+		int	4: animindex;		// mstudioanim_t pointer relative to start of sequence group data
+		// [blend][bone][X, Y, Z, XR, YR, ZR]
+
+		int	4: blendtype[2];	// X, Y, Z, XR, YR, ZR
+		float	4: blendstart[2];	// starting value
+		float	4: blendend[2];	// ending value
+		int	4: blendparent;
+
+		int	4: seqgroup;		// sequence group for demand loading
+
+		int	4: entrynode;		// transition node at entry
+		int	4: exitnode;		// transition node at exit
+		int	4: nodeflags;		// transition rules
+
+		int	4: nextseq;		// auto advancing sequences
+	} mstudioseqdesc_t;
+
+	int 4: numseqgroups;		// demand loaded sequences
+	int	4: seqgroupindex;
+
+	int 4: numtextures;	// 纹理数量	// raw textures
+	int 4: textureindex; // 纹理数据字节偏移
+	int	4: texturedataindex;
+
+	int	4: numskinref;			// replaceable textures
+	int	4: numskinfamilies;
+	int	4: skinindex;
+
+	int	4: numbodyparts; // 身体部分数量		
+	int	4: bodypartindex; // 身体部分数据字节偏移
+typedef struct
+{
+	char				name[64];
+	int					nummodels;
+	int					base;
+	int					modelindex; // index into models array
+} mstudiobodyparts_t;
+
+	int	4: numattachments; // 附加点数量		// queryable attachable points
+	int	4: attachmentindex; // 附加点数据字节索引
+	attachment {
+		char 1 * 32: name[];
+		int	4: type;
+		int	4: bone;
+		float 4 * 3: org;	// attachment point
+		float 4 * 3 * 3: vectors[];
+	} mstudioattachment_t;
+
+int	4: soundtable;
+int	4: soundindex;
+int	4: soundgroups;
+int	4: soundgroupindex;
+
+int	4: numtransitions;		// animation node to animation node transition graph
+int	4: transitionindex;
+} studiohdr_t;
+

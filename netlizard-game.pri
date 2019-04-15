@@ -1,10 +1,23 @@
 
 
 
+BUILD_DIR = $$PWD
+#QMAKE_CXXFLAGS += -std=c++0x
+QT = 
+CONFIG -= qt
+CONFIG += debug_and_release
+CONFIG(debug, debug|release) {
+	DESTDIR = $$BUILD_DIR/.debug
+} else {
+	DESTDIR = $$BUILD_DIR/.release
+}
+OBJECTS_DIR = $$BUILD_DIR/.obj/$$TARGET
+LIBS += -L. -L.. -L$${DESTDIR}
+
 DEFINES += _KARIN_APPBIN=\\\"netlizard-game\\\"
 DEFINES += _KARIN_APPNAME=\\\"NETLizard-Game\\\"
 DEFINES += _KARIN_RELEASE=\\\"2016\\\"
-DEFINES += _KARIN_VERSION=\\\"0.8.0harmattan1\\\"
+DEFINES += _KARIN_VERSION=\\\"0.9.0harmattan1\\\"
 DEFINES += _KARIN_DEVELOPER=\\\"Karin\\\"
 DEFINES += _KARIN_HOME=\\\".netlizard-game\\\"
 DEFINES += _KARIN_DEVCODE=\\\"Natasha\\\"

@@ -1,7 +1,7 @@
 #ifndef KARIN_GAME_WIDGETBASE_H
 #define KARIN_GAME_WIDGETBASE_H
 
-#include "opengl.h"
+#include "opengl/opengl.h"
 #include "font.h"
 #include "gl_util.h"
 

@@ -3,7 +3,7 @@
 #include "netlizard/netlizard.h"
 #include "game_util.h"
 
-#include "opengl.h"
+#include "opengl/opengl.h"
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
@@ -820,7 +820,7 @@ void Game_UpdateCharacterPositionAndDirection(game_character *gamer, float x, fl
 	gamer->position[2] = z;
 	gamer->x_angle = xr;
 	gamer->y_angle = yr;
-	nl_vector3_t dir = Algo_ComputeDirection(gamer->y_angle, gamer->x_angle);
+	nl_vector3_s dir = Algo_ComputeDirection(gamer->y_angle, gamer->x_angle);
 	gamer->direction[0] = dir.x;
 	gamer->direction[1] = dir.y;
 	gamer->direction[2] = dir.z;
@@ -828,7 +828,7 @@ void Game_UpdateCharacterPositionAndDirection(game_character *gamer, float x, fl
 	if(!wp)
 		return;
 	dir = Vector3_Scale(&dir, gamer->width);
-	vector3_t v = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
+	vector3_s v = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
 	dir = Vector3_PlusVector3(&v, &dir);
 	wp->render_position[0] = dir.x;
 	wp->render_position[1] = dir.y;
@@ -852,9 +852,9 @@ void Game_UpdateCharacterCurrentWeaponPositionAndDirection(game_character *gamer
 	weapon *wp = Game_CharacterCurrentWeapon(gamer);
 	if(!wp)
 		return;
-	nl_vector3_t dir = Algo_ComputeDirection(gamer->y_angle, gamer->x_angle);
+	nl_vector3_s dir = Algo_ComputeDirection(gamer->y_angle, gamer->x_angle);
 	dir = Vector3_Scale(&dir, gamer->width);
-	vector3_t v = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
+	vector3_s v = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
 	dir = Vector3_PlusVector3(&v, &dir);
 	wp->render_position[0] = dir.x;
 	wp->render_position[1] = dir.y;

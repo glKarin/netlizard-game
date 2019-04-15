@@ -4,22 +4,14 @@
 
 TEMPLATE = lib
 TARGET = netlizard
-DEPENDPATH += . .. ../SOIL
-INCLUDEPATH += . .. ../SOIL
 
-#QMAKE_CXXFLAGS += -std=c++0x
+include(../netlizard-game.pri)
+
+DEPENDPATH += . $$BUILD_DIR/libs
+INCLUDEPATH += . $$BUILD_DIR/libs
 
 CONFIG += plugin
-QT -= core gui
-CONFIG -= qt
-CONFIG += debug_and_release shared 
-CONFIG(debug, debug|release) {
-OBJECTS_DIR = ../.debug_obj/netlizard
-DESTDIR = ../libdebug.so
-} else {
-OBJECTS_DIR = ../.release_obj/netlizard
-DESTDIR = ../librelease.so
-}
+CONFIG += shared 
 
 # Input
 HEADERS += nl_util.h \
@@ -60,7 +52,7 @@ SOURCES += nl_util.c \
 					 media_util.c \
 					 netlizard_3d.c
 
-libnetlizard.files = ../librelease.so/libnetlizard*
-libnetlizard.path = /usr/lib #/caitlyn
+libnetlizard.files = $$DESTDIR/libnetlizard*
+libnetlizard.path = /usr/lib
 
 INSTALLS += libnetlizard

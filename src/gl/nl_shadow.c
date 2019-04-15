@@ -1,6 +1,6 @@
 #include "nl_shadow.h"
 #include "nl_std.h"
-#include "netlizard.h"
+#include "netlizard/netlizard.h"
 
 #include <string.h>
 #include <stdio.h>

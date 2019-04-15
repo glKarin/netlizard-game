@@ -156,8 +156,8 @@ void Game_OperateAIMoveToPosition(const GL_NETLizard_3D_Model *map_model, const 
 {
 	if(!map_model || !gamer || !characters)
 		return;
-	nl_vector3_t dir = Algo_ComputeDirection(gamer->y_angle, gamer->x_angle);
-	nl_vector3_t pos = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
+	nl_vector3_s dir = Algo_ComputeDirection(gamer->y_angle, gamer->x_angle);
+	nl_vector3_s pos = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
 	int i;
 	for(i = start; i < count; i++)
 	{
@@ -171,7 +171,7 @@ void Game_OperateAIMoveToPosition(const GL_NETLizard_3D_Model *map_model, const 
 		if(!Game_CharacterCanViewCharacter(map_model, gamer, b))
 			continue;
 		float dis = 0.0;
-		nl_vector3_t point = {0.0, 0.0, 0.0};
+		nl_vector3_s point = {0.0, 0.0, 0.0};
 		// 取得指向位置的坐标
 		int r = Algo_RayCollisionTestingInNETLizard3DMap(map_model, &pos, &dir, b->width, NULL, &dis, &point, NULL);
 		if(r == 0)
@@ -196,8 +196,8 @@ void Game_OperateAIMoveToPosition(const GL_NETLizard_3D_Model *map_model, const 
 			// 更新角色的操作AI
 		}
 		// 获取目标位置的角度
-		nl_vector3_t vg = {b->position[0], b->position[1], b->position[2] + b->height};
-		nl_vector3_t v = Vector3_SubtractVector3(&vg, &point);
+		nl_vector3_s vg = {b->position[0], b->position[1], b->position[2] + b->height};
+		nl_vector3_s v = Vector3_SubtractVector3(&vg, &point);
 		float xl = v.x;
 		float yl = v.y;
 		float f = Algo_FormatAngle(rtoa(atan2(yl, xl)) - 90.0);
@@ -225,7 +225,7 @@ void Game_OperateAIBackToMe(const GL_NETLizard_3D_Model *map_model, const game_c
 {
 	if(!map_model || !gamer || !characters)
 		return;
-	nl_vector3_t pos = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
+	nl_vector3_s pos = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
 	int i;
 	for(i = start; i < count; i++)
 	{
@@ -243,8 +243,8 @@ void Game_OperateAIBackToMe(const GL_NETLizard_3D_Model *map_model, const game_c
 		AI_ClearAction(&ai);
 		ai.type = ai_operate_type;
 		ai.action = aiaction_no_type;
-		nl_vector3_t vg = {b->position[0], b->position[1], b->position[2] + b->height};
-		nl_vector3_t dir = Vector3_SubtractVector3(&vg, &pos);
+		nl_vector3_s vg = {b->position[0], b->position[1], b->position[2] + b->height};
+		nl_vector3_s dir = Vector3_SubtractVector3(&vg, &pos);
 		float dis = Vector3_Mag(&dir);
 		// 目标距离小于角色宽度 不操作
 		if(dis > b->width)
@@ -329,17 +329,17 @@ void Game_OperateAIGoMe(const GL_NETLizard_3D_Model *map_model, const game_chara
 	}
 }
 
-int Game_GetRayPointCoord(const GL_NETLizard_3D_Model *map_model, const game_character *character, GLboolean dy, int *scene, nl_vector3_t *cpoint, nl_vector3_t *normal, float *distance)
+int Game_GetRayPointCoord(const GL_NETLizard_3D_Model *map_model, const game_character *character, GLboolean dy, int *scene, nl_vector3_s *cpoint, nl_vector3_s *normal, float *distance)
 {
 	if(!map_model || !character)
 		return 0;
 	const weapon *wp = Game_CharacterCurrentWeapon((game_character *)character);
-	nl_vector3_t direction;
+	nl_vector3_s direction;
 	if(dy && wp)
 		direction = Algo_ComputeDirection(wp->y_angle, wp->x_angle);
 	else
 		direction = Algo_ComputeDirection(character->y_angle, character->x_angle);
-	nl_vector3_t position;
+	nl_vector3_s position;
 	if(wp)
 	{
 		position.x = wp->position[0]; 
@@ -354,8 +354,8 @@ int Game_GetRayPointCoord(const GL_NETLizard_3D_Model *map_model, const game_cha
 	}
 	float dis = 0.0;
 	int s = -1;
-	nl_vector3_t point = {0.0, 0.0, 0.0};
-	nl_vector3_t nml = {0.0, 0.0, 0.0};
+	nl_vector3_s point = {0.0, 0.0, 0.0};
+	nl_vector3_s nml = {0.0, 0.0, 0.0};
 	int r = Algo_RayCollisionTestingInNETLizard3DMap(map_model, &position, &direction, 1, &s, &dis, &point, &nml);
 	if(r)
 	{
@@ -375,24 +375,24 @@ int Game_CharacterCanViewCharacter(const GL_NETLizard_3D_Model *model, const gam
 {
 	if(!c1 || !c2)
 		return 0;
-	nl_vector3_t v1 = {
+	nl_vector3_s v1 = {
 		c1->position[0],
 		c1->position[1],
 		c1->position[2] + c1->height
 	};
-	nl_vector3_t v2 = {
+	nl_vector3_s v2 = {
 		c2->position[0],
 		c2->position[1],
 		c2->position[2] + c2->height
 	};
 	if(Algo_PointCanViewPointInNETLizard3DMap(model, &v1, &v2, NULL))
 	{
-		nl_vector3_t dir1 = {
+		nl_vector3_s dir1 = {
 			c1->direction[0],
 			c1->direction[1],
 			c1->direction[2]
 		};
-		nl_vector3_t dir2 = Math3D_ComputeTwoPointNormal(&v1, &v2);
+		nl_vector3_s dir2 = Math3D_ComputeTwoPointNormal(&v1, &v2);
 		float r = acos(Vector3_DotVector3(&dir2, &dir1));
 		r = rtoa(r);
 		r = Algo_FormatAngle(r);
@@ -421,7 +421,7 @@ int Game_ShotCharacter2D(const GL_NETLizard_3D_Model *model, game_character *gam
 		return -1;
 	if(wp->status != firing_type)
 		return -1;
-	const nl_vector3_t me = {
+	const nl_vector3_s me = {
 		wp->position[0],
 		wp->position[1],
 		wp->position[2]
@@ -439,18 +439,18 @@ int Game_ShotCharacter2D(const GL_NETLizard_3D_Model *model, game_character *gam
 		if(!Game_CharacterCanViewCharacter(model, gamer, b))
 			continue;
 		//计算目标与主角之间的角度
-		nl_vector3_t tg = {
+		nl_vector3_s tg = {
 			b->position[0],
 			b->position[1],
 			b->position[2] + b->height
 		};
-		nl_vector3_t va = Vector3_SubtractVector3(&me, &tg);
+		nl_vector3_s va = Vector3_SubtractVector3(&me, &tg);
 		float xl = va.x;
 		float yl = va.y;
 		float ft = Algo_FormatAngle(rtoa(atan2(yl, xl)) - 90.0);
 
 		// 计算击中目标的最大角度
-		vector2_t v2 = {xl, yl};
+		vector2_s v2 = {xl, yl};
 		float dis = Vector2_Mag(&v2);
 		if(dis == 0.0f)
 			return i;
@@ -467,12 +467,12 @@ int Game_ShotCharacter2D(const GL_NETLizard_3D_Model *model, game_character *gam
 	return -1;
 }
 
-int Algo_ComputeCharacterPositionInNETLizard3DMap(const GL_NETLizard_3D_Model *map_model, game_character *gamer, const nl_vector3_t *new_v, nl_vector3_t *return_v)
+int Algo_ComputeCharacterPositionInNETLizard3DMap(const GL_NETLizard_3D_Model *map_model, game_character *gamer, const nl_vector3_s *new_v, nl_vector3_s *return_v)
 {
 	if(!map_model || !gamer || !new_v || !return_v)
 		return 0;
 
-	nl_vector3_t ori_v = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
+	nl_vector3_s ori_v = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
 	int r = Algo_LadderItemCollisionFromScene(map_model, &ori_v, new_v, gamer->x_angle, gamer->y_angle, gamer->width, gamer->height, &gamer->scene, &gamer->collision_item, return_v);
 	if(!r)
 	{
@@ -482,7 +482,7 @@ int Algo_ComputeCharacterPositionInNETLizard3DMap(const GL_NETLizard_3D_Model *m
 	return r;
 }
 
-int Algo_ComputeThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, const game_character *gamer, float yr, float xr, float tps_factory, int cross, int free_view, float free_yr, float free_xr, gl_vector3_t *v, float *ryr, float *rxr)
+int Algo_ComputeThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, const game_character *gamer, float yr, float xr, float tps_factory, int cross, int free_view, float free_yr, float free_xr, gl_vector3_s *v, float *ryr, float *rxr)
 {
 	if(!gamer || !v)
 		return 0;
@@ -502,15 +502,15 @@ int Algo_ComputeThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, cons
 	float oyr = Algo_FormatAngle(yr_tmp + yr);
 	float oxr = Algo_FormatAngle(xr_tmp + xr);
 
-	nl_vector3_t d = Algo_ComputeDirection(oyr, oxr);
+	nl_vector3_s d = Algo_ComputeDirection(oyr, oxr);
 	Vector3_Inverse(&d);
-	nl_vector3_t dir = Vector3_Scale(&d, tps_factory);
+	nl_vector3_s dir = Vector3_Scale(&d, tps_factory);
 	if(ryr)
 		*ryr = Algo_FormatAngle(- yr_tmp - 180.0);
 	if(rxr)
 		*rxr = xr_tmp;
 
-	nl_vector3_t new_position = {gamer->position[0] + dir.x, gamer->position[1] + dir.y, gamer->position[2] + gamer->height + dir.z };
+	nl_vector3_s new_position = {gamer->position[0] + dir.x, gamer->position[1] + dir.y, gamer->position[2] + gamer->height + dir.z };
 
 	if(cross)
 	{
@@ -527,7 +527,7 @@ int Algo_ComputeThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, cons
 	if(res == map_only_in_aabb_type)
 	{
 		const GL_NETLizard_3D_Mesh *mesh = map_model->meshes + scene;
-		aabb_t aabb = {
+		bound_s aabb = {
 			{mesh->ortho[3], mesh->ortho[4], mesh->ortho[5]},
 			{mesh->ortho[0], mesh->ortho[1], mesh->ortho[2]}
 		};
@@ -535,10 +535,10 @@ int Algo_ComputeThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, cons
 		int find = 0;
 		int p = -1;
 		float distance = FLT_MAX;
-		nl_vector3_t dt = {-d.x, -d.y, -d.z};
-		line_t l = {new_position, dt};
-		nl_vector3_t po = {0.0, 0.0, 0.0};
-		nl_vector3_t no = {0.0, 0.0, 0.0};
+		nl_vector3_s dt = {-d.x, -d.y, -d.z};
+		ray_s l = {new_position, dt};
+		nl_vector3_s po = {0.0, 0.0, 0.0};
+		nl_vector3_s no = {0.0, 0.0, 0.0};
 		for(j = 0; j < mesh->plane_count; j++)
 		{
 			plane_t plane = {
@@ -546,7 +546,7 @@ int Algo_ComputeThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, cons
 				{-mesh->plane[j].normal[0], -mesh->plane[j].normal[1], -mesh->plane[j].normal[2]}
 			};
 			float dis = 0.0;
-			nl_vector3_t n = {0.0, 0.0, 0.0};
+			nl_vector3_s n = {0.0, 0.0, 0.0};
 			int r = Math3D_LineToPlaneCollision(&l, &plane, &dis, &n);
 			if(r != 1)
 				continue;
@@ -592,7 +592,7 @@ int Algo_ComputeThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, cons
 		else
 		{
 			float bdis = KARIN_MIN(gamer->width, gamer->full_height - gamer->height);
-			nl_vector3_t dd = Vector3_Scale(&d,  bdis);
+			nl_vector3_s dd = Vector3_Scale(&d,  bdis);
 			v->x = -(gamer->position[0] + dd.x);
 			v->y = -(gamer->position[2] + gamer->height + dd.z);
 			v->z = gamer->position[1] + dd.y;
@@ -635,16 +635,16 @@ int Algo_ComputeThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, cons
 		int p = -1;
 		int s = -2;
 		float distance = FLT_MAX;
-		nl_vector3_t dt = {-d.x, -d.y, -d.z};
-		line_t l = {new_position, dt};
-		nl_vector3_t po = {0.0, 0.0, 0.0};
-		nl_vector3_t no = {0.0, 0.0, 0.0};
+		nl_vector3_s dt = {-d.x, -d.y, -d.z};
+		ray_s l = {new_position, dt};
+		nl_vector3_s po = {0.0, 0.0, 0.0};
+		nl_vector3_s no = {0.0, 0.0, 0.0};
 		for(i = cur - 1; i >= 0; i--)
 		{
 			if(scenes[i] == 0)
 				break;
 			mesh = map_model->meshes + (scenes[i] - 1);
-			aabb_t aabb = {
+			bound_s aabb = {
 				{mesh->ortho[3], mesh->ortho[4], mesh->ortho[5]},
 				{mesh->ortho[0], mesh->ortho[1], mesh->ortho[2]}
 			};
@@ -655,7 +655,7 @@ int Algo_ComputeThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, cons
 					{mesh->plane[j].position[0], mesh->plane[j].position[1], mesh->plane[j].position[2]},
 					{-mesh->plane[j].normal[0], -mesh->plane[j].normal[1], -mesh->plane[j].normal[2]}
 				};
-				nl_vector3_t n = {0.0, 0.0, 0.0};
+				nl_vector3_s n = {0.0, 0.0, 0.0};
 				float dis = 0.0;
 				int r = Math3D_LineToPlaneCollision(&l, &plane, &dis, &n);
 				if(r != 1)
@@ -705,7 +705,7 @@ int Algo_ComputeThirdPersonPosition(const GL_NETLizard_3D_Model *map_model, cons
 		else
 		{
 			float bdis = KARIN_MIN(gamer->width, gamer->full_height - gamer->height);
-			nl_vector3_t dd = Vector3_Scale(&d,  bdis);
+			nl_vector3_s dd = Vector3_Scale(&d,  bdis);
 			v->x = -(gamer->position[0] + dd.x);
 			v->y = -(gamer->position[2] + gamer->height + dd.z);
 			v->z = gamer->position[1] + dd.y;
@@ -743,7 +743,7 @@ void Game_CharacterAttack(const GL_NETLizard_3D_Model *model, game_character *a,
 	int state = 0;
 	float distance = 0.0;
 	int index = 0;
-	nl_vector3_t v1 = {a->position[0], a->position[1], a->position[2] + a->height};
+	nl_vector3_s v1 = {a->position[0], a->position[1], a->position[2] + a->height};
 	int j;
 	for(j = start; j < count; j++)
 	{
@@ -756,8 +756,8 @@ void Game_CharacterAttack(const GL_NETLizard_3D_Model *model, game_character *a,
 			continue;
 		if(!Game_CharacterCanViewCharacter(model, a, b))
 			continue;
-		nl_vector3_t v2 = {b->position[0], b->position[1], b->position[2] + b->height};
-		nl_vector3_t v = Vector3_SubtractVector3(&v1, &v2);
+		nl_vector3_s v2 = {b->position[0], b->position[1], b->position[2] + b->height};
+		nl_vector3_s v = Vector3_SubtractVector3(&v1, &v2);
 		float d = Vector3_Mag(&v);
 		if(state == 0)
 		{
@@ -798,8 +798,8 @@ void Game_CharacterAttack(const GL_NETLizard_3D_Model *model, game_character *a,
 		if(a->ai.type != ai_trigger_type || (((a->ai.action & aiaction_attack_type) == 0) && (a->ai.action & aiaction_fight_type) == 0))
 			AI_Copy(&a->ai, &ai);
 		attack++;
-		nl_vector3_t v2 = {b->position[0], b->position[1], b->position[2] + b->height};
-		nl_vector3_t v = Vector3_SubtractVector3(&v1, &v2);
+		nl_vector3_s v2 = {b->position[0], b->position[1], b->position[2] + b->height};
+		nl_vector3_s v = Vector3_SubtractVector3(&v1, &v2);
 		float yr = 0.0;
 		float xr = 0.0;
 		Algo_GetNormalAngle(&v, &yr, &xr);
@@ -821,7 +821,7 @@ void Game_CharacterAttack(const GL_NETLizard_3D_Model *model, game_character *a,
 		a->x_angle = xr;
 		if(wp->type <= short_attack_type)
 		{
-			nl_vector3_t dir = Vector3_SubtractVector3(&v2, &v1);
+			nl_vector3_s dir = Vector3_SubtractVector3(&v2, &v1);
 			float dis = Vector3_Mag(&dir);
 			// 目标距离小于角色宽度 不操作
 			if(dis > a->width + b->width)
@@ -883,7 +883,7 @@ void Game_HandlePlayerAI(const GL_NETLizard_3D_Model *map_model, game_character 
 	float turn_unit = player->turn_unit * per;
 	float move_unit = player->move_unit * per;
 
-	nl_vector3_t ori_v = {player->position[0], player->position[1], player->position[2] + player->height};
+	nl_vector3_s ori_v = {player->position[0], player->position[1], player->position[2] + player->height};
 	float oxr = player->x_angle;
 	float oyr = player->y_angle;
 
@@ -917,7 +917,7 @@ void Game_HandlePlayerAI(const GL_NETLizard_3D_Model *map_model, game_character 
 	// get return var
 	float ryr = 0.0;
 	float rxr = 0.0;
-	nl_vector3_t rv = ori_v;
+	nl_vector3_s rv = ori_v;
 
 	Algo_TransformPositionAndAngle(p, &ori_v, move_unit, &rv, o, oxr, oyr, turn_unit, &rxr, &ryr, is_cross);
 
@@ -944,8 +944,8 @@ void Game_HandlePlayerAI(const GL_NETLizard_3D_Model *map_model, game_character 
 			player->z_moving.speed = Physics_GetJumpSpeed(player->z_moving.jump_speed, GAME_G, delta);
 		}
 		// collision testing
-		nl_vector3_t v = ori_v;
-		nl_vector3_t cv = {0.0, 0.0, 0.0};
+		nl_vector3_s v = ori_v;
+		nl_vector3_s cv = {0.0, 0.0, 0.0};
 		if(Algo_CharacterCollisionTesting(map_model, player, &rv, characters, 0, character_count, NULL, &cv))
 		{
 			rv.x = cv.x;
@@ -1024,13 +1024,13 @@ void Game_HandleComputeAI(const GL_NETLizard_3D_Model *map_model, game_character
 	float turn_unit = gamer->turn_unit * per;
 	float move_unit = gamer->move_unit * per;
 
-	nl_vector3_t ov = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
+	nl_vector3_s ov = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
 	float oxr = gamer->x_angle;
 	float oyr = gamer->y_angle;
 	float rxr = 0.0;
 	float ryr = 0.0;
 
-	nl_vector3_t rv = ov;
+	nl_vector3_s rv = ov;
 	// 旋转
 	position_type p = center_position_type;
 	orientation_type o = center_orientation_type;
@@ -1077,8 +1077,8 @@ void Game_HandleComputeAI(const GL_NETLizard_3D_Model *map_model, game_character
 		rv.z += -Physics_GetFalldownDistance(gamer->z_moving.jump_speed, GAME_G, delta);
 		gamer->z_moving.speed = Physics_GetJumpSpeed(gamer->z_moving.jump_speed, GAME_G, delta);
 	}
-	nl_vector3_t v = ov;
-	nl_vector3_t cv = {0.0, 0.0, 0.0};
+	nl_vector3_s v = ov;
+	nl_vector3_s cv = {0.0, 0.0, 0.0};
 	if(Algo_CharacterCollisionTesting(map_model, gamer, &rv, characters, 0, character_count, NULL, &cv))
 	{
 		rv.x = cv.x;
@@ -1146,8 +1146,8 @@ void Game_HandleOperateAI(const GL_NETLizard_3D_Model *map_model, game_character
 	float turn_unit = gamer->turn_unit * per;
 	float move_unit = gamer->move_unit * per;
 
-	nl_vector3_t ov = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
-	nl_vector3_t rv = ov;
+	nl_vector3_s ov = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
+	nl_vector3_s rv = ov;
 
 	// 重新计算是否需要旋转
 	float oxr = gamer->x_angle;
@@ -1156,17 +1156,17 @@ void Game_HandleOperateAI(const GL_NETLizard_3D_Model *map_model, game_character
 	float ryr = 0.0;
 	position_type p = center_position_type;
 	orientation_type o = center_orientation_type;
-	nl_vector3_t vg = {
+	nl_vector3_s vg = {
 		gamer->position[0],
 		gamer->position[1],
 		gamer->position[2]
 	};
-	nl_vector3_t point = {
+	nl_vector3_s point = {
 		gamer->ai.position_target[0],
 		gamer->ai.position_target[1],
 		gamer->ai.position_target[2]
 	};
-	nl_vector3_t va = Vector3_SubtractVector3(&vg, &point);
+	nl_vector3_s va = Vector3_SubtractVector3(&vg, &point);
 	float xl = va.x;
 	float yl = va.y;
 	float f = Algo_FormatAngle(rtoa(atan2(yl, xl)) - 90.0);
@@ -1187,15 +1187,15 @@ void Game_HandleOperateAI(const GL_NETLizard_3D_Model *map_model, game_character
 	}
 
 	// 前进
-	nl_vector2_t vp = {
+	nl_vector2_s vp = {
 		gamer->ai.position_progress[0],
 		gamer->ai.position_progress[1]
 	};
-	nl_vector2_t vt = {
+	nl_vector2_s vt = {
 		gamer->ai.position_target[0],
 		gamer->ai.position_target[1]
 	};
-	nl_vector2_t v2 = Vector2_SubtractVector2(&vt, &vp);
+	nl_vector2_s v2 = Vector2_SubtractVector2(&vt, &vp);
 	float dis = Vector2_Mag(&v2);
 	// 位置距离目标位置小于计算宽度 停止动作进度
 	if(abs(dis) <= gamer->ai.position_range)
@@ -1234,8 +1234,8 @@ void Game_HandleOperateAI(const GL_NETLizard_3D_Model *map_model, game_character
 		rv.z += -Physics_GetFalldownDistance(gamer->z_moving.jump_speed, GAME_G, delta);
 		gamer->z_moving.speed = Physics_GetJumpSpeed(gamer->z_moving.jump_speed, GAME_G, delta);
 	}
-	nl_vector3_t v = ov;
-	nl_vector3_t cv = {0.0, 0.0, 0.0};
+	nl_vector3_s v = ov;
+	nl_vector3_s cv = {0.0, 0.0, 0.0};
 	if(Algo_CharacterCollisionTesting(map_model, gamer, &rv, characters, 0, character_count, NULL, &cv))
 	{
 		rv.x = cv.x;
@@ -1309,8 +1309,8 @@ void Game_HandleTriggerAI(const GL_NETLizard_3D_Model *map_model, game_character
 	float turn_unit = gamer->turn_unit * per;
 	float move_unit = gamer->move_unit * per;
 
-	nl_vector3_t ov = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
-	nl_vector3_t rv = ov;
+	nl_vector3_s ov = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
+	nl_vector3_s rv = ov;
 
 	// 重新计算是否需要旋转
 	float oxr = gamer->x_angle;
@@ -1319,17 +1319,17 @@ void Game_HandleTriggerAI(const GL_NETLizard_3D_Model *map_model, game_character
 	float ryr = 0.0;
 	position_type p = center_position_type;
 	orientation_type o = center_orientation_type;
-	nl_vector3_t vg = {
+	nl_vector3_s vg = {
 		gamer->position[0],
 		gamer->position[1],
 		gamer->position[2] + gamer->height
 	};
-	nl_vector3_t point = {
+	nl_vector3_s point = {
 		gamer->ai.position_target[0],
 		gamer->ai.position_target[1],
 		gamer->ai.position_target[2]
 	};
-	nl_vector3_t va = Vector3_SubtractVector3(&vg, &point);
+	nl_vector3_s va = Vector3_SubtractVector3(&vg, &point);
 	float xl = va.x;
 	float yl = va.y;
 	float f = Algo_FormatAngle(rtoa(atan2(yl, xl)) - 90.0);
@@ -1351,17 +1351,17 @@ void Game_HandleTriggerAI(const GL_NETLizard_3D_Model *map_model, game_character
 
 	if(gamer->ai.action & aiaction_fight_type)
 	{
-		nl_vector3_t me = {
+		nl_vector3_s me = {
 			gamer->position[0],
 			gamer->position[1],
 			gamer->position[2]
 		};
-		nl_vector3_t tg = {
+		nl_vector3_s tg = {
 			gamer->ai.position_target[0],
 			gamer->ai.position_target[1],
 			gamer->ai.position_target[2]
 		};
-		nl_vector3_t v2 = Vector3_SubtractVector3(&tg, &me);
+		nl_vector3_s v2 = Vector3_SubtractVector3(&tg, &me);
 		float dis = Vector3_Mag(&v2);
 		// 位置距离目标位置小于计算宽度 停止动作进度
 		if(wp && wp->type <= short_attack_type && abs(dis) < wp->shot_range) // ?? 20180718 4wps
@@ -1419,8 +1419,8 @@ void Game_HandleTriggerAI(const GL_NETLizard_3D_Model *map_model, game_character
 		rv.z += -Physics_GetFalldownDistance(gamer->z_moving.jump_speed, GAME_G, delta);
 		gamer->z_moving.speed = Physics_GetJumpSpeed(gamer->z_moving.jump_speed, GAME_G, delta);
 	}
-	nl_vector3_t v = ov;
-	nl_vector3_t cv = {0.0, 0.0, 0.0};
+	nl_vector3_s v = ov;
+	nl_vector3_s cv = {0.0, 0.0, 0.0};
 	if(Algo_CharacterCollisionTesting(map_model, gamer, &rv, characters, 0, character_count, NULL, &cv))
 	{
 		rv.x = cv.x;
@@ -1544,7 +1544,7 @@ void Game_AttackEvent(const GL_NETLizard_3D_Model *map_model, game_character *ch
 	{
 		healths[j] = characters[j].health;
 	}
-	nl_vector3_t cur_pos = {characters[current].position[0], characters[current].position[1], characters[current].position[2]};
+	nl_vector3_s cur_pos = {characters[current].position[0], characters[current].position[1], characters[current].position[2]};
 	for(j = start; j < count; j++)
 	{
 		weapon *wp = Game_CharacterCurrentWeapon(characters + j);
@@ -1555,8 +1555,8 @@ void Game_AttackEvent(const GL_NETLizard_3D_Model *map_model, game_character *ch
 		{
 			if(sound)
 			{
-				nl_vector3_t wp_pos = {wp->position[0], wp->position[1], wp->position[2]};
-				nl_vector3_t direction = Vector3_SubtractVector3(&wp_pos, &cur_pos);
+				nl_vector3_s wp_pos = {wp->position[0], wp->position[1], wp->position[2]};
+				nl_vector3_s direction = Vector3_SubtractVector3(&wp_pos, &cur_pos);
 				float distance = Vector3_Mag(&direction);
 				if(distance < SOUND_RANGE)
 				{
@@ -1583,14 +1583,14 @@ void Game_AttackEvent(const GL_NETLizard_3D_Model *map_model, game_character *ch
 			int item = -1;
 			human_body_type body = human_body_total;
 			int r = 0;
-			nl_vector3_t cv = {0.0, 0.0, 0.0};
-			nl_vector3_t cn = {0.0, 0.0, 0.0};
+			nl_vector3_s cv = {0.0, 0.0, 0.0};
+			nl_vector3_s cn = {0.0, 0.0, 0.0};
 
-			nl_vector3_t c_pos1 = {0.0, 0.0, 0.0};
-			nl_vector3_t c_nml1 = {0.0, 0.0, 0.0};
+			nl_vector3_s c_pos1 = {0.0, 0.0, 0.0};
+			nl_vector3_s c_nml1 = {0.0, 0.0, 0.0};
 			float dis1 = 0.0;
-			nl_vector3_t c_pos2 = {0.0, 0.0, 0.0};
-			nl_vector3_t c_nml2 = {0.0, 0.0, 0.0};
+			nl_vector3_s c_pos2 = {0.0, 0.0, 0.0};
+			nl_vector3_s c_nml2 = {0.0, 0.0, 0.0};
 			float dis2 = 0.0;
 			int cr = Game_BulletCharacterCollisionTesting(bt, characters, start, count, &index, &dis1, &body, &c_pos1, &c_nml1);
 			int mr = Game_BulletMapCollisionTesting(map_model, bt, &dis2, &scene, &item, &c_pos2, &c_nml2);
@@ -1693,7 +1693,7 @@ void Game_AttackEvent(const GL_NETLizard_3D_Model *map_model, game_character *ch
 							{
 								if(characters[index].ai.type == ai_compute_type || characters[index].ai.type == ai_operate_type)
 								{
-									nl_vector3_t btdir = Algo_ComputeDirection(bt->y_angle, bt->x_angle);
+									nl_vector3_s btdir = Algo_ComputeDirection(bt->y_angle, bt->x_angle);
 									Vector3_Inverse(&btdir);
 									Game_LookatCharacter(map_model, characters + index, &btdir);
 								}
@@ -1714,10 +1714,10 @@ void Game_AttackEvent(const GL_NETLizard_3D_Model *map_model, game_character *ch
 							if(bt->group == characters[l].group && bt->character != characters[l].index)
 								continue;
 							float dis = 0.0;
-							nl_vector3_t b_pos = {0.0, 0.0, 0.0};
-							nl_vector3_t b_nml = {0.0, 0.0, 0.0};
+							nl_vector3_s b_pos = {0.0, 0.0, 0.0};
+							nl_vector3_s b_nml = {0.0, 0.0, 0.0};
 							human_body_type body = human_body_total;
-							nl_vector3_t boom = Vector3_PlusVector3(&cv, &cn);
+							nl_vector3_s boom = Vector3_PlusVector3(&cv, &cn);
 							int br = Game_BoomAttack(map_model, &boom, characters + l, &dis, &b_pos, &b_nml, &body);
 							if(!br)
 								continue;
@@ -1761,13 +1761,13 @@ void Game_AttackEvent(const GL_NETLizard_3D_Model *map_model, game_character *ch
 									{
 										if(characters[l].ai.type == ai_compute_type || characters[l].ai.type == ai_operate_type)
 										{
-											nl_vector3_t btdir = Algo_ComputeDirection(bt->y_angle, bt->x_angle);
+											nl_vector3_s btdir = Algo_ComputeDirection(bt->y_angle, bt->x_angle);
 											Vector3_Inverse(&btdir);
 											Game_LookatCharacter(map_model, characters + l, &btdir);
 										}
 									}
 								}
-								nl_vector3_t nb_nml = b_nml;
+								nl_vector3_s nb_nml = b_nml;
 								if(nb_nml.z > -BOOM_ZERO && nb_nml.z < BOOM_ZERO)
 								{
 									float dp = (float)damage / (float)bt->damage * 1000.0;
@@ -1812,10 +1812,10 @@ void Game_AttackEvent(const GL_NETLizard_3D_Model *map_model, game_character *ch
 						if(bt->group == characters[l].group && bt->character != characters[l].index)
 							continue;
 						float dis = 0.0;
-						nl_vector3_t b_pos = {0.0, 0.0, 0.0};
-						nl_vector3_t b_nml = {0.0, 0.0, 0.0};
+						nl_vector3_s b_pos = {0.0, 0.0, 0.0};
+						nl_vector3_s b_nml = {0.0, 0.0, 0.0};
 						human_body_type body = human_body_total;
-						nl_vector3_t boom = Vector3_PlusVector3(&cv, &cn);
+						nl_vector3_s boom = Vector3_PlusVector3(&cv, &cn);
 						int br = Game_BoomAttack(map_model, &boom, characters + l, &dis, &b_pos, &b_nml, &body);
 						if(!br)
 							continue;
@@ -1856,7 +1856,7 @@ void Game_AttackEvent(const GL_NETLizard_3D_Model *map_model, game_character *ch
 									}
 								}
 							}
-							nl_vector3_t nb_nml = b_nml;
+							nl_vector3_s nb_nml = b_nml;
 							if(nb_nml.z > -BOOM_ZERO && nb_nml.z < BOOM_ZERO)
 							{
 								float dp = (float)damage / (float)bt->damage * 1000.0;
@@ -2227,8 +2227,8 @@ int Game_RandStartPosition(const GL_NETLizard_3D_Model *model, game_character *g
 		float x = rand_f(mesh->ortho[3] + gamer->width * 2, mesh->ortho[0] - gamer->width * 2, 1);
 		float y = rand_f(mesh->ortho[4] + gamer->width * 2, mesh->ortho[1] - gamer->width * 2, 1);
 		float z = rand_f(mesh->ortho[5] + 1, mesh->ortho[2] - 1, 1);
-		nl_vector3_t pos = {x, y, z};
-		nl_vector3_t rv = pos;
+		nl_vector3_s pos = {x, y, z};
+		nl_vector3_s rv = pos;
 		int ci = -1;
 		int r = Algo_ComputePositionInNETLizard3DMap(model, &pos, &pos, gamer->width, gamer->height, &rv, &s, &ci);
 		if(r)
@@ -2246,7 +2246,7 @@ int Game_RandStartPosition(const GL_NETLizard_3D_Model *model, game_character *g
 	return 0;
 }
 
-int Game_ShotCharacter(const GL_NETLizard_3D_Model *model, game_character *gamer, game_character *characters, int start, int count, human_body_type *type, nl_vector3_t *c, nl_vector3_t *n)
+int Game_ShotCharacter(const GL_NETLizard_3D_Model *model, game_character *gamer, game_character *characters, int start, int count, human_body_type *type, nl_vector3_s *c, nl_vector3_s *n)
 {
 	if(!model || !gamer || !characters)
 		return -1;
@@ -2266,7 +2266,7 @@ int Game_ShotCharacter(const GL_NETLizard_3D_Model *model, game_character *gamer
 			gamer->ai.action & aiaction_attack_type &&
 			(gamer->ai.action & aiaction_movexy_type) == 0)
 		gamer->ai.attack_count++;
-	const nl_vector3_t me = {
+	const nl_vector3_s me = {
 		wp->position[0],
 		wp->position[1],
 		wp->position[2]
@@ -2275,10 +2275,10 @@ int Game_ShotCharacter(const GL_NETLizard_3D_Model *model, game_character *gamer
 	int index = -1;
 	int res = 0;
 	float distance = 0.0;
-	nl_vector3_t d = Algo_ComputeDirection(wp->y_angle, wp->x_angle);
-	nl_vector3_t glc_pos = {0.0, 0.0, 0.0};
-	nl_vector3_t glc_nml = {0.0, 0.0, 0.0};
-	line_t line = {me, d};
+	nl_vector3_s d = Algo_ComputeDirection(wp->y_angle, wp->x_angle);
+	nl_vector3_s glc_pos = {0.0, 0.0, 0.0};
+	nl_vector3_s glc_nml = {0.0, 0.0, 0.0};
+	ray_s line = {me, d};
 	int i;
 	for(i = start; i < count; i++)
 	{
@@ -2293,21 +2293,21 @@ int Game_ShotCharacter(const GL_NETLizard_3D_Model *model, game_character *gamer
 			 if(!Game_CharacterCanViewCharacter(model, gamer, b))
 			 continue;
 			 */
-		nl_vector3_t tg = {
+		nl_vector3_s tg = {
 			b->position[0],
 			b->position[1],
 			b->position[2]
 		};
 		if(gamer->ai.action & aiaction_fight_type)
 		{
-			nl_vector3_t dis = Vector3_SubtractVector3(&tg, &me);
+			nl_vector3_s dis = Vector3_SubtractVector3(&tg, &me);
 			if(Vector3_Mag(&dis) > (gamer->width + b->width + CHARACTER_MIN_SPACING + wp->shot_range) / cos(ator(wp->x_angle)))
 				continue;
 		}
 		float lamda = 0.0;
-		vector3_t c_pos = {0.0, 0.0, 0.0};
-		vector3_t c_nml = {0.0, 0.0, 0.0};
-		cylinder_t cylinder = {
+		vector3_s c_pos = {0.0, 0.0, 0.0};
+		vector3_s c_nml = {0.0, 0.0, 0.0};
+		cylinder_s cylinder = {
 			tg, 
 			{0.0, 0.0, 1.0},
 			b->width
@@ -2359,7 +2359,7 @@ int Game_ShotCharacter(const GL_NETLizard_3D_Model *model, game_character *gamer
 			{
 				continue;
 			}
-			aabb_t aabb = {
+			bound_s aabb = {
 				{im->item_mesh.ortho[3] + im->pos[0], im->item_mesh.ortho[4] + im->pos[1], im->item_mesh.ortho[5] + im->pos[2]},
 				{im->item_mesh.ortho[0] + im->pos[0], im->item_mesh.ortho[1] + im->pos[1], im->item_mesh.ortho[2] + im->pos[2]}
 			};
@@ -2374,7 +2374,7 @@ int Game_ShotCharacter(const GL_NETLizard_3D_Model *model, game_character *gamer
 						{planes[j].normal[0], planes[j].normal[1], planes[j].normal[2]}
 					};
 					float lamda = 0.0;
-					nl_vector3_t point = {0.0, 0.0, 0.0};
+					nl_vector3_s point = {0.0, 0.0, 0.0};
 					int r;
 					r = Math3D_LineToPlaneIntersect(&line, &plane, &point);
 					if(r && Math3D_PointInAABB(&point, &aabb))
@@ -2410,12 +2410,12 @@ int Game_ShotCharacter(const GL_NETLizard_3D_Model *model, game_character *gamer
 	}
 }
 
-int Algo_RayCharacterCollisionTesting(const game_character *gamer, const game_character *characters, int start, int count, GLboolean dy, int *scene, float *dis, nl_vector3_t *pos)
+int Algo_RayCharacterCollisionTesting(const game_character *gamer, const game_character *characters, int start, int count, GLboolean dy, int *scene, float *dis, nl_vector3_s *pos)
 {
 	if(!characters || !gamer)
 		return 0;
 	const weapon *wp = Game_CharacterCurrentWeapon((game_character *)gamer);
-	nl_vector3_t me = {0.0, 0.0, 0.0};
+	nl_vector3_s me = {0.0, 0.0, 0.0};
 	if(wp)
 	{
 		me.x = wp->position[0];
@@ -2428,16 +2428,16 @@ int Algo_RayCharacterCollisionTesting(const game_character *gamer, const game_ch
 		me.y = gamer->position[1];
 		me.z = gamer->position[2] + gamer->height;
 	}
-	nl_vector3_t d;
+	nl_vector3_s d;
 	if(wp && dy)
 		d = Algo_ComputeDirection(wp->y_angle, wp->x_angle);
 	else
 		d = Algo_ComputeDirection(gamer->y_angle, gamer->x_angle);
-	line_t line = {me, d};
+	ray_s line = {me, d};
 	int state = 0;
 	int s = -1;
 	float distance = 0.0;
-	nl_vector3_t point = {0.0, 0.0, 0.0};
+	nl_vector3_s point = {0.0, 0.0, 0.0};
 	int j;
 	for(j = start; j < count; j++)
 	{
@@ -2450,14 +2450,14 @@ int Algo_RayCharacterCollisionTesting(const game_character *gamer, const game_ch
 			 if(!Game_CharacterCanViewCharacter(model, a, b))
 			 continue;
 			 */
-		nl_vector3_t tg = {
+		nl_vector3_s tg = {
 			b->position[0],
 			b->position[1],
 			b->position[2] + b->height
 		};
 		float lamda = 0.0;
-		vector3_t c_pos = {0.0, 0.0, 0.0};
-		cylinder_t cylinder = {
+		vector3_s c_pos = {0.0, 0.0, 0.0};
+		cylinder_s cylinder = {
 			tg, 
 			{0.0, 0.0, 1.0},
 			b->width
@@ -2500,7 +2500,7 @@ int Algo_RayCharacterCollisionTesting(const game_character *gamer, const game_ch
 	return 0;
 }
 
-int Algo_CharacterCollisionTesting(const GL_NETLizard_3D_Model *map_model, const game_character *gamer, const nl_vector3_t *new_v, const game_character *characters, int start, int count, int *character_index, nl_vector3_t *rv)
+int Algo_CharacterCollisionTesting(const GL_NETLizard_3D_Model *map_model, const game_character *gamer, const nl_vector3_s *new_v, const game_character *characters, int start, int count, int *character_index, nl_vector3_s *rv)
 {
 	if(!map_model || !characters || !gamer || !new_v)
 		return 0;
@@ -2539,19 +2539,19 @@ int Algo_CharacterCollisionTesting(const GL_NETLizard_3D_Model *map_model, const
 		}
 	}
 
-	nl_vector3_t me = {
+	nl_vector3_s me = {
 		gamer->position[0],
 		gamer->position[1],
 		gamer->position[2] + gamer->height
 	};
-	nl_vector3_t direction = Vector3_SubtractVector3(new_v, &me);
+	nl_vector3_s direction = Vector3_SubtractVector3(new_v, &me);
 	me.z -= gamer->height;
 	Vector3_Normalize(&direction);
-	line_t line = {me, direction};
+	ray_s line = {me, direction};
 	int res = 0;
 	int index = -1;
 	float distance = 0.0;
-	nl_vector3_t point = {0.0, 0.0, 0.0};
+	nl_vector3_s point = {0.0, 0.0, 0.0};
 	int j;
 	for(j = start; j < count; j++)
 	{
@@ -2578,15 +2578,15 @@ int Algo_CharacterCollisionTesting(const GL_NETLizard_3D_Model *map_model, const
 			 if(!Game_CharacterCanViewCharacter(model, a, b))
 			 continue;
 			 */
-		nl_vector3_t tg = {
+		nl_vector3_s tg = {
 			b->position[0],
 			b->position[1],
 			b->position[2]
 		};
 		float lamda = 0.0;
-		vector3_t c_pos = {0.0, 0.0, 0.0};
+		vector3_s c_pos = {0.0, 0.0, 0.0};
 		float radius = gamer->width + b->width;
-		cylinder_t cylinder = {
+		cylinder_s cylinder = {
 			tg, 
 			{0.0, 0.0, 1.0},
 			radius
@@ -2622,15 +2622,15 @@ int Algo_CharacterCollisionTesting(const GL_NETLizard_3D_Model *map_model, const
 			*character_index = index;
 		if(rv)
 		{
-			nl_vector3_t c = {
+			nl_vector3_s c = {
 				characters[index].position[0],
 				characters[index].position[1],
 				characters[index].position[2] + characters[index].height
 			};
-			nl_vector3_t dir = Vector3_SubtractVector3(&point, &c);
+			nl_vector3_s dir = Vector3_SubtractVector3(&point, &c);
 			Vector3_Normalize(&dir);
 			dir = Vector3_Scale(&dir, CHARACTER_MIN_SPACING);
-			nl_vector3_t p = Vector3_PlusVector3(&point, &dir);
+			nl_vector3_s p = Vector3_PlusVector3(&point, &dir);
 			rv->x = p.x;
 			rv->y = p.y;
 			rv->z = p.z;
@@ -2684,17 +2684,17 @@ int Game_WeaponShot(game_character *gamer, list_template *particle_list, list_te
 				gamer->ai.action & aiaction_attack_type &&
 				(gamer->ai.action & aiaction_movexy_type) == 0)
 			gamer->ai.attack_count++;
-		nl_vector3_t vg = {
+		nl_vector3_s vg = {
 			gamer->position[0],
 			gamer->position[1],
 			gamer->position[2] + gamer->height
 		};
-		nl_vector3_t point = {
+		nl_vector3_s point = {
 			gamer->ai.position_target[0],
 			gamer->ai.position_target[1],
 			gamer->ai.position_target[2]
 		};
-		nl_vector3_t va = Vector3_SubtractVector3(&vg, &point);
+		nl_vector3_s va = Vector3_SubtractVector3(&vg, &point);
 		float xl = va.x;
 		float yl = va.y;
 		float f = Algo_FormatAngle(rtoa(atan2(yl, xl)) - 90.0);
@@ -2727,33 +2727,33 @@ int Game_WeaponShot(game_character *gamer, list_template *particle_list, list_te
 // 子弹与角色碰撞
 // 1 碰撞 0 未碰撞
 // 返回 击中角色索引，距离，击中身体部位， 击中点坐标 击中点反射法线 
-int Game_BulletCharacterCollisionTesting(bullet *bt, game_character *characters, int start, int count, int *c_index, float *c_dis, human_body_type *type, nl_vector3_t *c, nl_vector3_t *n)
+int Game_BulletCharacterCollisionTesting(bullet *bt, game_character *characters, int start, int count, int *c_index, float *c_dis, human_body_type *type, nl_vector3_s *c, nl_vector3_s *n)
 {
 	if(!bt || !characters)
 		return 0;
 
-	const nl_vector3_t me = {
+	const nl_vector3_s me = {
 		bt->last_pos[0],
 		bt->last_pos[1],
 		bt->last_pos[2]
 	};
-	const nl_vector3_t new_me = {
+	const nl_vector3_s new_me = {
 		bt->position[0],
 		bt->position[1],
 		bt->position[2]
 	};
-	nl_vector3_t bullet_sport_v = Vector3_SubtractVector3(&new_me, &me);
+	nl_vector3_s bullet_sport_v = Vector3_SubtractVector3(&new_me, &me);
 	const float bullet_sport_dis = Vector3_Mag(&bullet_sport_v);
 
 	human_body_type t = human_body_total;
 	int index = -1;
 	int res = 0;
 	float distance = 0.0;
-	//nl_vector3_t d = Algo_ComputeDirection(bt->y_angle, bt->x_angle);
+	//nl_vector3_s d = Algo_ComputeDirection(bt->y_angle, bt->x_angle);
 	Vector3_Normalize(&bullet_sport_v);
-	nl_vector3_t glc_pos = {0.0, 0.0, 0.0};
-	nl_vector3_t glc_nml = {0.0, 0.0, 0.0};
-	line_t line = {me, bullet_sport_v};
+	nl_vector3_s glc_pos = {0.0, 0.0, 0.0};
+	nl_vector3_s glc_nml = {0.0, 0.0, 0.0};
+	ray_s line = {me, bullet_sport_v};
 	int i;
 	for(i = start; i < count; i++)
 	{
@@ -2764,7 +2764,7 @@ int Game_BulletCharacterCollisionTesting(bullet *bt, game_character *characters,
 			continue;
 		if(bt->group == b->group) // kill partner ?
 			continue;
-		nl_vector3_t tg = {
+		nl_vector3_s tg = {
 			b->position[0],
 			b->position[1],
 			b->position[2]
@@ -2772,15 +2772,15 @@ int Game_BulletCharacterCollisionTesting(bullet *bt, game_character *characters,
 		/*
 			 if(bt->type == no_bullet_type)
 			 {
-			 nl_vector3_t dis = Vector3_SubtractVector3(&tg, &new_me);
+			 nl_vector3_s dis = Vector3_SubtractVector3(&tg, &new_me);
 			 if(Vector3_Mag(&dis) > (b->width + CHARACTER_MIN_SPACING + bt->range) / cos(ator(bt->x_angle)))
 			 continue;
 			 }
 			 */
 		float lamda = 0.0;
-		vector3_t c_pos = {0.0, 0.0, 0.0};
-		vector3_t c_nml = {0.0, 0.0, 0.0};
-		cylinder_t cylinder = {
+		vector3_s c_pos = {0.0, 0.0, 0.0};
+		vector3_s c_nml = {0.0, 0.0, 0.0};
+		cylinder_s cylinder = {
 			tg, 
 			{0.0, 0.0, 1.0},
 			b->width
@@ -2842,28 +2842,28 @@ int Game_BulletCharacterCollisionTesting(bullet *bt, game_character *characters,
 // 子弹与地形碰撞
 // 1 碰撞 0 未碰撞
 // 返回 距离, 场景索引，碰撞物品索引，击中点坐标 击中点反射法线 
-int Game_BulletMapCollisionTesting(const GL_NETLizard_3D_Model *model, bullet *bt, float *c_dis, int *c_scene, int *c_item, nl_vector3_t *c, nl_vector3_t *n)
+int Game_BulletMapCollisionTesting(const GL_NETLizard_3D_Model *model, bullet *bt, float *c_dis, int *c_scene, int *c_item, nl_vector3_s *c, nl_vector3_s *n)
 {
 	if(!model || !bt)
 		return 0;
 
-	const nl_vector3_t me = {
+	const nl_vector3_s me = {
 		bt->last_pos[0],
 		bt->last_pos[1],
 		bt->last_pos[2]
 	};
-	const nl_vector3_t new_me = {
+	const nl_vector3_s new_me = {
 		bt->position[0],
 		bt->position[1],
 		bt->position[2]
 	};
-	nl_vector3_t bullet_sport_v = Vector3_SubtractVector3(&new_me, &me);
+	nl_vector3_s bullet_sport_v = Vector3_SubtractVector3(&new_me, &me);
 	const float bullet_sport_dis = Vector3_Mag(&bullet_sport_v);
 
 	Vector3_Normalize(&bullet_sport_v);
-	//nl_vector3_t d = Algo_ComputeDirection(bt->y_dir, bt->x_dir);
-	nl_vector3_t glc_pos = {0.0, 0.0, 0.0};
-	nl_vector3_t glc_nml = {0.0, 0.0, 0.0};
+	//nl_vector3_s d = Algo_ComputeDirection(bt->y_dir, bt->x_dir);
+	nl_vector3_s glc_pos = {0.0, 0.0, 0.0};
+	nl_vector3_s glc_nml = {0.0, 0.0, 0.0};
 	int scene = -1;
 	float distance = 0.0;
 	int item = -1;
@@ -2885,12 +2885,12 @@ int Game_BulletMapCollisionTesting(const GL_NETLizard_3D_Model *model, bullet *b
 	return 0;
 }
 
-int Game_BoomAttack(const GL_NETLizard_3D_Model *model, const nl_vector3_t *boom_pos, const game_character *gamer, float *dis, nl_vector3_t *cv, nl_vector3_t *cn, human_body_type *type)
+int Game_BoomAttack(const GL_NETLizard_3D_Model *model, const nl_vector3_s *boom_pos, const game_character *gamer, float *dis, nl_vector3_s *cv, nl_vector3_s *cn, human_body_type *type)
 {
 	if(!model || !boom_pos || !gamer)
 		return 0;
 	int res = 0;
-	nl_vector3_t v2 = {
+	nl_vector3_s v2 = {
 		gamer->position[0],
 		gamer->position[1],
 		gamer->position[2] + gamer->height
@@ -2927,13 +2927,13 @@ int Game_BoomAttack(const GL_NETLizard_3D_Model *model, const nl_vector3_t *boom
 		}
 	}
 	float lamda = 0.0;
-	vector3_t c_pos = {0.0, 0.0, 0.0};
-	vector3_t c_nml = {0.0, 0.0, 0.0};
+	vector3_s c_pos = {0.0, 0.0, 0.0};
+	vector3_s c_nml = {0.0, 0.0, 0.0};
 	res = 0;
 
-	nl_vector3_t pos = {gamer->position[0], gamer->position[1], z};
-	nl_vector3_t wpos = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
-	nl_vector3_t dir = Vector3_SubtractVector3(&wpos, boom_pos);
+	nl_vector3_s pos = {gamer->position[0], gamer->position[1], z};
+	nl_vector3_s wpos = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
+	nl_vector3_s dir = Vector3_SubtractVector3(&wpos, boom_pos);
 	Vector3_Normalize(&dir);
 	if(dir.z == -1)
 	{
@@ -2955,8 +2955,8 @@ int Game_BoomAttack(const GL_NETLizard_3D_Model *model, const nl_vector3_t *boom
 	}
 	else
 	{
-		line_t line = {*boom_pos, dir};
-		cylinder_t cylinder = {
+		ray_s line = {*boom_pos, dir};
+		cylinder_s cylinder = {
 			pos, 
 			{0.0, 0.0, 1.0},
 			gamer->width
@@ -2967,13 +2967,13 @@ int Game_BoomAttack(const GL_NETLizard_3D_Model *model, const nl_vector3_t *boom
 			if(c_pos.z > gamer->position[2] + gamer->full_height)
 			{
 				c_pos.z = gamer->position[2] + gamer->full_height;
-				nl_vector3_t v = Vector3_SubtractVector3(&c_pos, boom_pos);
+				nl_vector3_s v = Vector3_SubtractVector3(&c_pos, boom_pos);
 				lamda = Vector3_Mag(&v);
 			}
 			else if(c_pos.z < gamer->position[2])
 			{
 				c_pos.z = gamer->position[2];
-				nl_vector3_t v = Vector3_SubtractVector3(&c_pos, boom_pos);
+				nl_vector3_s v = Vector3_SubtractVector3(&c_pos, boom_pos);
 				lamda = Vector3_Mag(&v);
 			}
 			c_nml = dir;
@@ -3000,9 +3000,9 @@ void Game_ComputeCharacterAndCharacterAngle(const game_character *a, const game_
 {
 	if(!a || !b || (!x_angle && !y_angle))
 		return;
-	nl_vector3_t v1 = {a->position[0], a->position[1], a->position[2] + a->height};
-	nl_vector3_t v2 = {b->position[0], b->position[1], b->position[2] + b->height};
-	nl_vector3_t v = Vector3_SubtractVector3(&v1, &v2);
+	nl_vector3_s v1 = {a->position[0], a->position[1], a->position[2] + a->height};
+	nl_vector3_s v2 = {b->position[0], b->position[1], b->position[2] + b->height};
+	nl_vector3_s v = Vector3_SubtractVector3(&v1, &v2);
 	float yr = 0.0;
 	float xr = 0.0;
 	Algo_GetNormalAngle(&v, &yr, &xr);
@@ -3114,8 +3114,8 @@ void Game_HandleScriptAI(const GL_NETLizard_3D_Model *map_model, game_character 
 	double per = (double)(time - gamer->ai.time) / 1000.0;
 	float turn_unit = gamer->turn_unit * per;
 	float move_unit = gamer->move_unit * per;
-	nl_vector3_t ov = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
-	nl_vector3_t rv = ov;
+	nl_vector3_s ov = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
+	nl_vector3_s rv = ov;
 
 	// 重新计算是否需要旋转
 	float oxr = gamer->x_angle;
@@ -3124,17 +3124,17 @@ void Game_HandleScriptAI(const GL_NETLizard_3D_Model *map_model, game_character 
 	float ryr = 0.0;
 	position_type p = center_position_type;
 	orientation_type o = center_orientation_type;
-	nl_vector3_t vg = {
+	nl_vector3_s vg = {
 		gamer->position[0],
 		gamer->position[1],
 		gamer->position[2]
 	};
-	nl_vector3_t point = {
+	nl_vector3_s point = {
 		gamer->ai.path[gamer->ai.current_path * 4],
 		gamer->ai.path[gamer->ai.current_path * 4 + 1],
 		gamer->ai.path[gamer->ai.current_path * 4 + 2]
 	};
-	nl_vector3_t va = Vector3_SubtractVector3(&vg, &point);
+	nl_vector3_s va = Vector3_SubtractVector3(&vg, &point);
 	float xl = va.x;
 	float yl = va.y;
 	float f = Algo_FormatAngle(rtoa(atan2(yl, xl)) - 90.0);
@@ -3182,15 +3182,15 @@ void Game_HandleScriptAI(const GL_NETLizard_3D_Model *map_model, game_character 
 	}
 
 	// 前进
-	nl_vector2_t vp = {
+	nl_vector2_s vp = {
 		gamer->ai.position_progress[0],
 		gamer->ai.position_progress[1]
 	};
-	nl_vector2_t vt = {
+	nl_vector2_s vt = {
 		gamer->ai.path[gamer->ai.current_path * 4],
 		gamer->ai.path[gamer->ai.current_path * 4 + 1],
 	};
-	nl_vector2_t v2 = Vector2_SubtractVector2(&vt, &vp);
+	nl_vector2_s v2 = Vector2_SubtractVector2(&vt, &vp);
 	float dis = Vector2_Mag(&v2);
 	// 位置距离目标位置小于计算宽度 停止动作进度
 	if(abs(dis) <= gamer->ai.position_range)
@@ -3227,8 +3227,8 @@ void Game_HandleScriptAI(const GL_NETLizard_3D_Model *map_model, game_character 
 		rv.z += -Physics_GetFalldownDistance(gamer->z_moving.jump_speed, GAME_G, delta);
 		gamer->z_moving.speed = Physics_GetJumpSpeed(gamer->z_moving.jump_speed, GAME_G, delta);
 	}
-	nl_vector3_t v = ov;
-	nl_vector3_t cv = {0.0, 0.0, 0.0};
+	nl_vector3_s v = ov;
+	nl_vector3_s cv = {0.0, 0.0, 0.0};
 	if(Algo_CharacterCollisionTesting(map_model, gamer, &rv, characters, 0, character_count, NULL, &cv))
 	{
 		rv.x = cv.x;
@@ -3336,15 +3336,15 @@ int Game_HandleForceAI(const GL_NETLizard_3D_Model *map_model, game_character *g
 		return 0;
 	}
 
-	nl_vector3_t start_pos = {gamer->ai.force_start_pos[0], gamer->ai.force_start_pos[1], gamer->ai.force_start_pos[2]};
-	nl_vector3_t last_pos = {gamer->ai.force_pos[0], gamer->ai.force_pos[1], gamer->ai.force_pos[2]};
-	nl_vector3_t pos = {0.0, 0.0, 0.0};
+	nl_vector3_s start_pos = {gamer->ai.force_start_pos[0], gamer->ai.force_start_pos[1], gamer->ai.force_start_pos[2]};
+	nl_vector3_s last_pos = {gamer->ai.force_pos[0], gamer->ai.force_pos[1], gamer->ai.force_pos[2]};
+	nl_vector3_s pos = {0.0, 0.0, 0.0};
 	Physics_GetGravityPosition(gamer->ai.force_speed, &start_pos, &last_pos, gamer->ai.force_x_dir, gamer->ai.force_y_dir, time - gamer->ai.force_start_time, gamer->ai.force_time_limit == 0 ? 1 : 0, &pos, NULL, NULL);
 	gamer->ai.force_pos[0] = pos.x;
 	gamer->ai.force_pos[1] = pos.y;
 	gamer->ai.force_pos[2] = pos.z;
 
-	nl_vector3_t rv = pos;
+	nl_vector3_s rv = pos;
 	rv.z += gamer->height;
 	gamer->scene_collision_result = Algo_PointIsCollisionInScene(map_model, &rv, gamer->width, gamer->height, &gamer->scene, &gamer->collision_item);
 	/*
@@ -3356,7 +3356,7 @@ int Game_HandleForceAI(const GL_NETLizard_3D_Model *map_model, game_character *g
 		 */
 	if(gamer->scene_collision_result)
 	{
-		nl_vector3_t v = rv;
+		nl_vector3_s v = rv;
 		Algo_ComputeCharacterPositionInNETLizard3DMap(map_model, gamer, &rv, &v);
 		if(!(rv.z < v.z))
 			v.z = rv.z;
@@ -3384,7 +3384,7 @@ int Game_HandleForceAI(const GL_NETLizard_3D_Model *map_model, game_character *g
 	}
 }
 
-void Game_LookatCharacter(const GL_NETLizard_3D_Model *map_model, game_character *gamer, const nl_vector3_t *dir)
+void Game_LookatCharacter(const GL_NETLizard_3D_Model *map_model, game_character *gamer, const nl_vector3_s *dir)
 {
 	if(!map_model || !gamer || !dir)
 		return;

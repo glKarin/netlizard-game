@@ -22,7 +22,7 @@
 #define SKY_FILE _KARIN_RESOURCE_DIR"resource/sky1.png"
 #define FP_FILE _KARIN_RESOURCE_DIR"resource/c0.png"
 
-#include "ada.h"
+#include "bio/ada.h"
 ADA_GL_Model ada;
 ADA_pmd pmd;
 
@@ -293,7 +293,7 @@ int Viewer_IdleFunc(void)
 		 for(i = 0; i < item_model->item_meshes[0].item_mesh.plane_count; i++)
 		 {
 		 printfi(i);
-		 printfv3(*((vector3_t *)(item_model->item_meshes[0].item_mesh.plane[i].normal)));
+		 printfv3(*((vector3_s *)(item_model->item_meshes[0].item_mesh.plane[i].normal)));
 		 }
 		 */
 	// 测面 （1 0 0）

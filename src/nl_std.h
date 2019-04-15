@@ -55,10 +55,10 @@ typedef enum _bool_e bool_t; // GLboolean
 
 #define CHARCE(x) (rand() % (x) == 0)
 
-typedef struct _vector3_t gl_vector3_t;
-typedef struct _vector3_t nl_vector3_t;
-typedef struct _vector2_t gl_vector2_t;
-typedef struct _vector2_t nl_vector2_t;
+typedef struct _vector3_s gl_vector3_s;
+typedef struct _vector3_s nl_vector3_s;
+typedef struct _vector2_s gl_vector2_s;
+typedef struct _vector2_s nl_vector2_s;
 
 #define CONVERT_VECTOR3_GL_TO_NL(glv, nlv) { \
 	(nlv).x = -(glv).x; \
@@ -105,10 +105,10 @@ typedef struct _vector2_t nl_vector2_t;
 
 int equalsf(float a, float b);
 int iszerof(float f);
-nl_vector3_t Algo_GLToNLVector3(const gl_vector3_t *glv, int *res);
-gl_vector3_t Algo_NLToGLVector3(const nl_vector3_t *nlv, int *res);
-void Algo_MakeGLVector3(vector3_t *v);
-void Algo_MakeNLVector3(vector3_t *v);
+nl_vector3_s Algo_GLToNLVector3(const gl_vector3_s *glv, int *res);
+gl_vector3_s Algo_NLToGLVector3(const nl_vector3_s *nlv, int *res);
+void Algo_MakeGLVector3(vector3_s *v);
+void Algo_MakeNLVector3(vector3_s *v);
 char * itostr(int i);
 char * lltostr(long long i);
 char * ftostr(float f);

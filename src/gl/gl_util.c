@@ -1,7 +1,7 @@
 #include "gl_util.h"
 #include "SOIL/SOIL.h"
 #include "netlizard/netlizard.h"
-#include "openglu.h"
+#include "opengl/openglu.h"
 #include "nl_std.h"
 
 #include <stdlib.h>
@@ -441,7 +441,7 @@ GLuint * OpenGL_SelectMode(GLsizei size)
 }
 #endif
 
-void Algo_ExtrameDistanceAlongDir(const vector3_t *dir, array* vertices, int *min, int *max)
+void Algo_ExtrameDistanceAlongDir(const vector3_s *dir, array* vertices, int *min, int *max)
 {
 	if(!dir || !vertices)
 		return;
@@ -450,7 +450,7 @@ void Algo_ExtrameDistanceAlongDir(const vector3_t *dir, array* vertices, int *mi
 	int i;
 	for(i = 0 ; i < vertices->length; i += 3)
 	{
-		vector3_t p = {v[i], v[i + 1], v[i + 2]};
+		vector3_s p = {v[i], v[i + 1], v[i + 2]};
 		float proj = Vector3_DotVector3(&p, dir);
 
 		if(proj > maxProj)
@@ -469,13 +469,13 @@ void Algo_ExtrameDistanceAlongDir(const vector3_t *dir, array* vertices, int *mi
 	}// end for
 }// end for extrameDistanceAlongDir
 
-void Algo_ComputeAABBFromOriginalPointSet(array* vertices, vector3_t *min, vector3_t *max)
+void Algo_ComputeAABBFromOriginalPointSet(array* vertices, vector3_s *min, vector3_s *max)
 {
 	if(!vertices)
 		return;
 	float *v = (float *)(vertices->array);
 	int minX_i = 0 , maxX_i = 0 ;
-	vector3_t vx = {1.0, 0.0, 0.0};
+	vector3_s vx = {1.0, 0.0, 0.0};
 	Algo_ExtrameDistanceAlongDir(&vx, vertices, &minX_i, &maxX_i);
 	if(min)
 		min->x = v[minX_i];
@@ -483,7 +483,7 @@ void Algo_ComputeAABBFromOriginalPointSet(array* vertices, vector3_t *min, vecto
 		max->x = v[maxX_i];
 
 	int minY_i = 0 , maxY_i = 0;
-	vector3_t vy = {0.0, 1.0, 0.0};
+	vector3_s vy = {0.0, 1.0, 0.0};
 	Algo_ExtrameDistanceAlongDir(&vy, vertices, &minY_i, &maxY_i);
 	if(min)
 		min->y = v[minY_i + 1];
@@ -491,7 +491,7 @@ void Algo_ComputeAABBFromOriginalPointSet(array* vertices, vector3_t *min, vecto
 		max->y = v[maxY_i + 1];
 
 	int minZ_i = 0 , maxZ_i = 0;
-	vector3_t vz = {0.0, 0.0, 1.0};
+	vector3_s vz = {0.0, 0.0, 1.0};
 	Algo_ExtrameDistanceAlongDir(&vz, vertices, &minZ_i, &maxZ_i);
 	if(min)
 		min->z = v[minZ_i + 2];

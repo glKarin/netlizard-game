@@ -51,7 +51,7 @@ static progress_bar bar;
 static char *loading_finished_action = NULL;
 static char *loading_fail_action = NULL;
 static float idle_time = 0.0f;
-static GLboolean auto_load = GL_FALSE;
+static unsigned auto_load = GL_FALSE;
 static bool_t has_init = 0;
 static GLsizei page_width = HARMATTAN_FULL_WIDTH;
 static GLsizei page_height = HARMATTAN_FULL_HEIGHT;
@@ -319,7 +319,7 @@ void Menu_SetLoadingTitle(const char *str)
 	SET_TEXT(title.text, str)
 }
 
-void Menu_SetLoadingAuto(GLboolean b)
+void Menu_SetLoadingAuto(unsigned b)
 {
 	if(auto_load != b)
 		auto_load = b;

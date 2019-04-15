@@ -309,8 +309,8 @@ void Main3D_ModelViewTransform(person_mode mode, GLfloat tps_y_angle/*left is le
 	{
 		if(auto_cast)
 		{
-			vector3_t d = Algo_ComputeDirection(y_r_3d + tps_y_angle, x_r_3d + tps_x_angle);
-			vector3_t dir = {
+			vector3_s d = Algo_ComputeDirection(y_r_3d + tps_y_angle, x_r_3d + tps_x_angle);
+			vector3_s dir = {
 				-d.x * tps_factory,
 				-d.y * tps_factory,
 				-d.z * tps_factory
@@ -896,8 +896,8 @@ int Main3D_BaseTransform(void)
 	float ryr = 0.0;
 	float rxr = 0.0;
 
-	gl_vector3_t ov = {x_t_3d, y_t_3d, z_t_3d};
-	gl_vector3_t rv = {0.0, 0.0, 0.0};
+	gl_vector3_s ov = {x_t_3d, y_t_3d, z_t_3d};
+	gl_vector3_s rv = {0.0, 0.0, 0.0};
 	Algo_GLTransformPositionAndAngle(p, &ov, move_unit_3d, &rv, o, oxr, oyr, turn_unit_3d, &rxr, &ryr, is_cross);
 
 	if(o != center_orientation_type)

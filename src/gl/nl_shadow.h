@@ -2,7 +2,7 @@
 #define _KARIN_NL_SHADOW_H
 
 #include "nl_gl.h"
-#include "vector.h"
+#include "math3d/vector.h"
 #include "lightsource.h"
 #include "shadow.h"
 

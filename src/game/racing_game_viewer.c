@@ -159,7 +159,7 @@ void Game_InitPlayerLighting(void)
 void Game_InitGlobalLighting(void)
 {
 #ifndef _HARMATTAN_OPENGLES2
-	vector3_t dir = {light_position[0], light_position[1], light_position[2]};
+	vector3_s dir = {light_position[0], light_position[1], light_position[2]};
 	Vector3_Normalize(&dir);
 	light_position[0] = dir.x;
 	light_position[1] = dir.y;
@@ -508,7 +508,7 @@ void Game_RacingUpdateGLTransform(game_character *gamer)
 
 	if(p_mode == third_person_mode)
 	{
-		gl_vector3_t third = {0.0, 0.0, 0.0};
+		gl_vector3_s third = {0.0, 0.0, 0.0};
 		//if(Algo_UpdateThirdPersonPosition(&third.x, &third.y, &third.z, x_t_3d, y_t_3d, z_t_3d, x_r_3d, y_r_3d, -27.0, 15.0, 180.0, gamer->scene, gamer->scene_collision_result))
 		float rxr = 0.0;
 		float ryr = 0.0;
@@ -1056,7 +1056,7 @@ void Game_GetSetting(void)
 
 void Game_RacingUpdateLightingDirection(void)
 {
-	nl_vector3_t dir = Algo_ComputeDirection(lighting_y_angle, lighting_x_angle);
+	nl_vector3_s dir = Algo_ComputeDirection(lighting_y_angle, lighting_x_angle);
 	light_position[0] = dir.x;
 	light_position[1] = dir.y;
 	light_position[2] = dir.z;
@@ -1064,7 +1064,7 @@ void Game_RacingUpdateLightingDirection(void)
 
 void Game_RacingRenderLightingSource(void)
 {
-	vector3_t dir = {
+	vector3_s dir = {
 		light_position[0],
 		light_position[1],
 		light_position[2]
@@ -1100,7 +1100,7 @@ void Game_RacingHandlePlayerAI(game_character *gamer, long long time)
 	float turn_unit = gamer->turn_unit * per;
 	float move_unit = gamer->move_unit * per;
 
-	nl_vector3_t ori_v = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
+	nl_vector3_s ori_v = {gamer->position[0], gamer->position[1], gamer->position[2] + gamer->height};
 	float oxr = gamer->x_angle;
 	float oyr = gamer->y_angle;
 
@@ -1134,7 +1134,7 @@ void Game_RacingHandlePlayerAI(game_character *gamer, long long time)
 	// get return var
 	float ryr = 0.0;
 	float rxr = 0.0;
-	nl_vector3_t rv = ori_v;
+	nl_vector3_s rv = ori_v;
 
 	Algo_TransformPositionAndAngle(p, &ori_v, move_unit, &rv, o, oxr, oyr, turn_unit, &rxr, &ryr, is_cross);
 

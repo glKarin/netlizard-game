@@ -322,11 +322,11 @@ void UI_RenderScene2D(const scene_2d *scene)
 	glPopMatrix();
 }
 
-vector3_t Algo_GLComputeDirection(float yr, float xr)
+vector3_s Algo_GLComputeDirection(float yr, float xr)
 {
 	GLfloat y = ator(yr);
 	GLfloat x = ator(xr);
-	vector3_t v ={
+	vector3_s v ={
 		-cos(x) * sin(y),
 		sin(x),
 		cos(x) * cos(y)
@@ -335,11 +335,11 @@ vector3_t Algo_GLComputeDirection(float yr, float xr)
 	return v;
 }
 
-vector3_t Algo_ComputeDirection(float yr, float xr)
+vector3_s Algo_ComputeDirection(float yr, float xr)
 {
 	GLfloat y = ator(yr);
 	GLfloat x = ator(xr);
-	vector3_t v ={
+	vector3_s v ={
 		cos(x) * sin(y),
 		- cos(x) * cos(y),
 		- sin(x)
@@ -365,7 +365,7 @@ void delete_scene_2d(scene_2d *s)
 	}
 }
 
-void Algo_TransformPositionAndAngle(position_type p, const nl_vector3_t *ov, float tunit, nl_vector3_t *rv, orientation_type o, float oxr, float oyr,  float runit, float *rxr, float *ryr, int cross)
+void Algo_TransformPositionAndAngle(position_type p, const nl_vector3_s *ov, float tunit, nl_vector3_s *rv, orientation_type o, float oxr, float oyr,  float runit, float *rxr, float *ryr, int cross)
 {
 	if(!ov)
 		return;
@@ -480,7 +480,7 @@ void Algo_TransformPositionAndAngle(position_type p, const nl_vector3_t *ov, flo
 	}
 }
 
-void Algo_GLTransformPositionAndAngle(position_type p, const gl_vector3_t *ov, float tunit, gl_vector3_t *rv, orientation_type o, float oxr, float oyr, float runit, float *rxr, float *ryr, int cross)
+void Algo_GLTransformPositionAndAngle(position_type p, const gl_vector3_s *ov, float tunit, gl_vector3_s *rv, orientation_type o, float oxr, float oyr, float runit, float *rxr, float *ryr, int cross)
 {
 	if(!ov)
 		return;
@@ -595,7 +595,7 @@ void Algo_GLTransformPositionAndAngle(position_type p, const gl_vector3_t *ov, f
 	}
 }
 
-void Algo_GetNormalAngle2D(const vector2_t *normal, float *yr)
+void Algo_GetNormalAngle2D(const vector2_s *normal, float *yr)
 {
 	if(!normal)
 		return;
@@ -622,7 +622,7 @@ unsigned long long Game_GetGameTime(void)
 	return t;
 }
 
-void Algo_GetNormalAngle(const nl_vector3_t *normal, float *yr, float *xr)
+void Algo_GetNormalAngle(const nl_vector3_s *normal, float *yr, float *xr)
 {
 	if(!normal)
 		return;

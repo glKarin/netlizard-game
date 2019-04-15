@@ -4,7 +4,7 @@
 #include "math3d/vector3.h"
 #include "netlizard/netlizard.h"
 
-#include "opengl.h"
+#include "opengl/opengl.h"
 
 #define VEC_X(v) v[0]
 #define VEC_Y(v) v[1]
@@ -228,8 +228,8 @@ GLuint * OpenGL_SelectMode(GLsizei size);
 #endif
 
 //void nlCastAABB(array *vertex, GLfloat *min_x_r, GLfloat *min_y_r, GLfloat *min_z_r, GLfloat *max_x_r, GLfloat *max_y_r, GLfloat *max_z_r);
-void Algo_ExtrameDistanceAlongDir(const vector3_t *dir, array* vertices, int *min, int *max);
-void Algo_ComputeAABBFromOriginalPointSet(array* vertices, vector3_t *min, vector3_t *max);
+void Algo_ExtrameDistanceAlongDir(const vector3_s *dir, array* vertices, int *min, int *max);
+void Algo_ComputeAABBFromOriginalPointSet(array* vertices, vector3_s *min, vector3_s *max);
 
 // 取得当前的模型视图投影矩阵
 void OpenGL_ExtractFrustum(GLfloat frustum[][4]);

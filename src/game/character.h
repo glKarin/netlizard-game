@@ -1,7 +1,7 @@
 #ifndef KARIN_GAME_CHARACTER_H
 #define KARIN_GAME_CHARACTER_H
 
-#include "lol.h"
+#include "lolking/lol.h"
 #include "nl_gl.h"
 #include "game_algo.h"
 #include "game_ai.h"

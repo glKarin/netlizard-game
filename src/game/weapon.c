@@ -173,8 +173,8 @@ bullet * Game_WeaponFire(bullet bt[], const weapon *wp, float w, int character_i
 			r = rand() % (o * 2) - o;
 			y = Algo_FormatAngle(wp->y_angle + ((float)r / 100.0));
 		}
-		nl_vector3_t wpos = {wp->position[0], wp->position[1], wp->position[2]};
-		nl_vector3_t dir = Algo_ComputeDirection(y, x);
+		nl_vector3_s wpos = {wp->position[0], wp->position[1], wp->position[2]};
+		nl_vector3_s dir = Algo_ComputeDirection(y, x);
 		Vector3_Inverse(&dir);
 		dir = Vector3_Scale(&dir, w);
 		dir = Vector3_PlusVector3(&wpos, &dir);

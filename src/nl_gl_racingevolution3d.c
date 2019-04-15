@@ -36,8 +36,8 @@ GL_RE3D_Model * NETLizard_MakeGL2RE3DModel(const RE3D_Model *model)
 		memcpy(m->strips, mesh->strip->array, sizeof(unsigned int) * mesh->strip->length);
 		m->primitive = mesh->primitive;
 		m->tex_index = mesh->tex_index;
-		vector3_t min = {0.0, 0.0, 0.0};
-		vector3_t max = {0.0, 0.0, 0.0};
+		vector3_s min = {0.0, 0.0, 0.0};
+		vector3_s max = {0.0, 0.0, 0.0};
 		Algo_ComputeAABBFromOriginalPointSet(mesh->vertex, &min, &max);
 		//nlCastAABB(mesh->vertex, &min.x, &min.y, &min.z, &max.x, &max.y, &max.z);
 		m->ortho[0] = max.x + m->translations[0];

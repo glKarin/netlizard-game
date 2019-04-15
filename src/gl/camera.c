@@ -18,7 +18,7 @@ void newcam(camera_s *cam)
 	VECTOR_Z(cam->direction) = -1;
 }
 
-void initcam(camera_s *cam, const vector3_t *pos, const vector3_t *rot)
+void initcam(camera_s *cam, const vector3_s *pos, const vector3_s *rot)
 {
 	if(!cam)
 		return;
@@ -41,10 +41,10 @@ void initcam(camera_s *cam, const vector3_t *pos, const vector3_t *rot)
 	VECTOR_Y(cam->up) = 1;
 }
 
-void cammove(camera_s *cam, const vector3_t *unit)
+void cammove(camera_s *cam, const vector3_s *unit)
 {
-	vector3_t v;
-	vector3_t left;
+	vector3_s v;
+	vector3_s left;
 
 	if(!unit)
 		return;
@@ -61,7 +61,7 @@ void cammove(camera_s *cam, const vector3_t *unit)
 	cam->position = Vector3_PlusVector3(&cam->position, &v);
 }
 
-void camrot(camera_s *cam, const vector3_t *unit)
+void camrot(camera_s *cam, const vector3_s *unit)
 {
 	if(!unit)
 		return;
@@ -72,7 +72,7 @@ void camrot(camera_s *cam, const vector3_t *unit)
 	angtodir(&cam->direction, &cam->rotation);
 }
 
-void angtodir(vector3_t *r, const vector3_t *a)
+void angtodir(vector3_s *r, const vector3_s *a)
 {
 	float xrad, yrad;
 	float x, y, z;
@@ -99,7 +99,7 @@ void camtrans_gl(const camera_s *cam)
 	if(!cam)
 		return;
 #if USING_GLU
-	vector3_t forward = vector3_add(&cam->position, &cam->direction);
+	vector3_s forward = vector3_add(&cam->position, &cam->direction);
 	gluLookAt(
 			VECTOR_X(cam->position),
 			VECTOR_Y(cam->position),

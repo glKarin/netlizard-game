@@ -1,8 +1,8 @@
 #ifndef _KARIN_HLSDK_STUDIO_GAME_H
 #define _KARIN_HLSDK_STUDIO_GAME_H
 
-#include "studio_render.h"
-#include "hlsdk.h"
+#include "csol/studio_render.h"
+#include "csol/hlsdk.h"
 
 #define HL_MDL_Z_TRANSLATE 36
 

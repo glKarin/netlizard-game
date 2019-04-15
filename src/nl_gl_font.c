@@ -1,5 +1,5 @@
 #include "nl_gl.h"
-#include "font_reader.h"
+#include "netlizard/font_reader.h"
 #include "gl_util.h"
 
 #include <string.h>

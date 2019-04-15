@@ -1,7 +1,7 @@
 #ifndef KARIN_NETLIZARD_VIEWER_H
 #define KARIN_NETLIZARD_VIEWER_H
 
-#include "opengl.h"
+#include "opengl/opengl.h"
 
 void Viewer_NETLizard3DAnimationRegisterFunction(void);
 int Viewer_NETLizard3DAnimationInitMain(const char *game, const char *dir, const char *src, unsigned int lvl, int anim);

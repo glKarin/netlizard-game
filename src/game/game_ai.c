@@ -179,15 +179,15 @@ void AI_ProcessAction(game_ai *ai, long long time)
 		}
 		if(ai->goto_mask && (ai->action & aiaction_moveforward_type))
 		{
-			nl_vector2_t vp = {
+			nl_vector2_s vp = {
 				ai->position_progress[0],
 				ai->position_progress[1]
 			};
-			nl_vector2_t vt = {
+			nl_vector2_s vt = {
 				ai->position_target[0],
 				ai->position_target[1]
 			};
-			nl_vector2_t v = Vector2_SubtractVector2(&vt, &vp);
+			nl_vector2_s v = Vector2_SubtractVector2(&vt, &vp);
 			float dis = Vector2_Mag(&v);
 			if(abs(dis) <= ai->position_range)
 			{
@@ -295,15 +295,15 @@ void AI_ProcessAction(game_ai *ai, long long time)
 			}
 			if(ai->goto_mask && (ai->action & aiaction_moveforward_type))
 			{
-				nl_vector2_t vp = {
+				nl_vector2_s vp = {
 					ai->position_progress[0],
 					ai->position_progress[1]
 				};
-				nl_vector2_t vt = {
+				nl_vector2_s vt = {
 					ai->position_target[0],
 					ai->position_target[1]
 				};
-				nl_vector2_t v = Vector2_SubtractVector2(&vt, &vp);
+				nl_vector2_s v = Vector2_SubtractVector2(&vt, &vp);
 				float dis = Vector2_Mag(&v);
 				if(abs(dis) <= ai->position_range)
 				{
@@ -343,15 +343,15 @@ void AI_ProcessAction(game_ai *ai, long long time)
 			}
 			if(ai->goto_mask && (ai->action & aiaction_moveforward_type))
 			{
-				nl_vector2_t vp = {
+				nl_vector2_s vp = {
 					ai->position_progress[0],
 					ai->position_progress[1]
 				};
-				nl_vector2_t vt = {
+				nl_vector2_s vt = {
 					ai->path[ai->current_path * 4],
 					ai->path[ai->current_path * 4 + 1]
 				};
-				nl_vector2_t v = Vector2_SubtractVector2(&vt, &vp);
+				nl_vector2_s v = Vector2_SubtractVector2(&vt, &vp);
 				float dis = Vector2_Mag(&v);
 				if(abs(dis) <= ai->position_range || ai->current_scene == (int)(ai->path[ai->current_path * 4 + 3]))
 				{

@@ -4,7 +4,7 @@
 #include "netlizard/netlizard_3d.h"
 #include "gl_util.h"
 #include "netlizard/racingevolution3d_reader.h"
-#include "vector3.h"
+#include "math3d/vector3.h"
 #include "nl_std.h"
 
 #define OPENGL_RENDER_VERTEX_DATA NL_MASK(0)

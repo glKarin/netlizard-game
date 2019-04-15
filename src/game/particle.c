@@ -246,9 +246,9 @@ void Particle_UpdateParticle(const GL_NETLizard_3D_Model *model, particle *p, lo
 
 	if(update)
 	{
-		nl_vector3_t start_pos = {p->start_pos[0], p->start_pos[1], p->start_pos[2]};
-		nl_vector3_t last_pos = {p->last_pos[0], p->last_pos[1], p->last_pos[2]};
-		nl_vector3_t pos = {0.0, 0.0, 0.0};
+		nl_vector3_s start_pos = {p->start_pos[0], p->start_pos[1], p->start_pos[2]};
+		nl_vector3_s last_pos = {p->last_pos[0], p->last_pos[1], p->last_pos[2]};
+		nl_vector3_s pos = {0.0, 0.0, 0.0};
 		/*float dis = */Physics_GetGravityPosition(p->speed, &start_pos, &last_pos, p->x_dir, p->y_dir, game_time - p->time, gravity, &pos, NULL, NULL/*&p->x_angle, &p->y_angle*/);
 		p->last_pos[0] = p->pos[0];
 		p->last_pos[1] = p->pos[1];
@@ -259,9 +259,9 @@ void Particle_UpdateParticle(const GL_NETLizard_3D_Model *model, particle *p, lo
 
 		if(p->collision && model)
 		{
-			nl_vector3_t v = {0.0, 0.0, 0.0};
-			nl_vector3_t pos = {p->pos[0], p->pos[1], p->pos[2]};
-			nl_vector3_t last_pos = {p->last_pos[0], p->last_pos[1], p->last_pos[2]};
+			nl_vector3_s v = {0.0, 0.0, 0.0};
+			nl_vector3_s pos = {p->pos[0], p->pos[1], p->pos[2]};
+			nl_vector3_s last_pos = {p->last_pos[0], p->last_pos[1], p->last_pos[2]};
 			int r = Algo_ComputePositionInNETLizard3DMapNotGravity(model, &last_pos, &pos, 0, 0, &v, NULL, NULL);
 			if(r == 0)
 			{

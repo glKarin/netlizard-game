@@ -1,7 +1,7 @@
 #include "nl_gl.h"
 
 #include "netlizard/netlizard.h"
-#include "spirit_reader.h"
+#include "netlizard/spirit_reader.h"
 
 #include <string.h>
 #include <stdlib.h>

@@ -374,9 +374,9 @@ GLvoid NETLizard_HandleMachineEvent(GL_NETLizard_3D_Model *map_model, Machine_Ev
 		{
 			if(mode)
 			{
-				nl_vector3_t vp = {event->target_x, event->target_y, event->target_z};
-				nl_vector3_t vg = {model->pos[0], model->pos[1], model->pos[2]};
-				nl_vector3_t v = Vector3_SubtractVector3(&vg, &vp);
+				nl_vector3_s vp = {event->target_x, event->target_y, event->target_z};
+				nl_vector3_s vg = {model->pos[0], model->pos[1], model->pos[2]};
+				nl_vector3_s v = Vector3_SubtractVector3(&vg, &vp);
 				float xl = v.x;
 				float yl = v.y;
 				GLfloat f = Algo_FormatAngle(rtoa(atan2(yl, xl)) - 90.0);

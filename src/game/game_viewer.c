@@ -207,7 +207,7 @@ void Game_InitPlayerLighting(void)
 void Game_InitGlobalLighting(void)
 {
 #ifndef _HARMATTAN_OPENGLES2
-	vector3_t dir = light.position;
+	vector3_s dir = light.position;
 	Vector3_Normalize(&dir);
 	Algo_GetNormalAngle(&dir, &lighting_y_angle, &lighting_x_angle);
 	GLfloat ambient_light[] = {
@@ -320,7 +320,7 @@ void Game_ViewerRegisterFunction(void)
 
 int Game_InitGame(void)
 {
-	vector3_t lightpos;
+	vector3_s lightpos;
 	GLfloat bg_color[] = {0.2, 0.2, 0.2, 1.0};
 
 	if(has_init)
@@ -399,7 +399,7 @@ int Game_InitGame(void)
 	y_r_3d = Algo_FormatAngle(map_model->start_angle[1] - 180.0);
 	//x_r_3d = map_model->start_angle[0];
 	*/
-	nl_vector3_t p = {map_model->start_pos[0], map_model->start_pos[1], map_model->start_pos[2]};
+	nl_vector3_s p = {map_model->start_pos[0], map_model->start_pos[1], map_model->start_pos[2]};
 	int scene = Algo_GetPointInAABBInNETLizard3DMap(&p, map_model);
 
 	if(loading_progress_func)
@@ -433,8 +433,8 @@ int Game_InitGame(void)
 		Game_RandStartPosition(map_model, characters + i, -1);
 	}
 	frustum_far = FRUSTUM_FAR;
-	nl_vector3_t min = {0.0, 0.0, 0.0};
-	nl_vector3_t max = {0.0, 0.0, 0.0};
+	nl_vector3_s min = {0.0, 0.0, 0.0};
+	nl_vector3_s max = {0.0, 0.0, 0.0};
 	Algo_GetNETLizard3DMapRange(map_model, NULL, 0, &min, &max);
 #ifndef _HARMATTAN_OPENGL
 	frustum_far = KARIN_MAX(max.y - min.y, (KARIN_MAX(max.x - min.x, max.z - min.z)));
@@ -657,13 +657,13 @@ void Game_DrawFunc(void)
 				// 渲染圆点瞄准器
 				if(pm == third_person_mode && tps_using_ray_crosshair && game_mode.characters[game_mode.current_character].health != health_death_type)
 				{
-					nl_vector3_t p1 = {0.0, 0.0, 0.0};
-					nl_vector3_t p2 = {0.0, 0.0, 0.0};
+					nl_vector3_s p1 = {0.0, 0.0, 0.0};
+					nl_vector3_s p2 = {0.0, 0.0, 0.0};
 					float dis1 = 0.0;
 					float dis2 = 0.0;
 					int r1 = Game_GetRayPointCoord(map_model, game_mode.characters + game_mode.current_character, GL_TRUE, NULL, &p1, NULL, &dis1);
 					int r2 = Algo_RayCharacterCollisionTesting(game_mode.characters + game_mode.current_character, game_mode.characters, 0, game_mode.character_count, GL_TRUE, NULL, &dis2, &p2);
-					nl_vector3_t collision_point = {0.0, 0.0, 0.0};
+					nl_vector3_s collision_point = {0.0, 0.0, 0.0};
 					int ray_ava = 1;
 					if(r1 && r2)
 					{
@@ -944,7 +944,7 @@ void Game_UpdateGLTransform(game_character *gamer)
 
 	if(game_mode.p_mode == third_person_mode)
 	{
-		gl_vector3_t third = {0.0, 0.0, 0.0};
+		gl_vector3_s third = {0.0, 0.0, 0.0};
 		//if(Algo_UpdateThirdPersonPosition(&third.x, &third.y, &third.z, x_t_3d, y_t_3d, z_t_3d, x_r_3d, y_r_3d, -27.0, 15.0, 180.0, gamer->scene, gamer->scene_collision_result))
 		float rxr = 0.0;
 		float ryr = 0.0;
@@ -1287,7 +1287,7 @@ void Game_UpdateRadar(const game_character *gamer, const game_character characte
 	int i;
 	int count = 0;
 	GLfloat *points = NEW_II(GLfloat, 4 * character_count);
-	nl_vector3_t me = {gamer->position[0], gamer->position[1], gamer->position[2]};
+	nl_vector3_s me = {gamer->position[0], gamer->position[1], gamer->position[2]};
 	for(i = start; i < character_count; i++)
 	{
 		if(gamer == characters + i)
@@ -1300,8 +1300,8 @@ void Game_UpdateRadar(const game_character *gamer, const game_character characte
 		else if(gamer->group != characters[i].group)
 			g = 2;
 
-		nl_vector3_t p = {characters[i].position[0], characters[i].position[1], characters[i].position[2]};
-		nl_vector3_t d = Vector3_SubtractVector3(&p, &me);
+		nl_vector3_s p = {characters[i].position[0], characters[i].position[1], characters[i].position[2]};
+		nl_vector3_s d = Vector3_SubtractVector3(&p, &me);
 		points[count * 4] = d.x;
 		points[count * 4 + 1] = d.y;
 		points[count * 4 + 2] = d.z;
@@ -1941,7 +1941,7 @@ void Game_ReplayGame(void)
 		if(wp && wp->type > short_attack_type)
 			Game_CharacterRand4Weapons(game_mode.characters + i);
 	}
-	nl_vector3_t p = {map_model->start_pos[0], map_model->start_pos[1], map_model->start_pos[2]};
+	nl_vector3_s p = {map_model->start_pos[0], map_model->start_pos[1], map_model->start_pos[2]};
 	int scene = Algo_GetPointInAABBInNETLizard3DMap(&p, map_model);
 	player->position[0] = map_model->start_pos[0];
 	player->position[1] = map_model->start_pos[1];
@@ -1999,12 +1999,12 @@ void Game_GameOver(void)
 
 void Game_UpdateLightingDirection(void)
 {
-	nl_vector3_t dir = Algo_ComputeDirection(lighting_y_angle, lighting_x_angle);
+	nl_vector3_s dir = Algo_ComputeDirection(lighting_y_angle, lighting_x_angle);
 }
 
 void Game_RenderLightingSource(void)
 {
-	vector3_t dir = light.position;
+	vector3_s dir = light.position;
 	dir = Vector3_Scale(&dir, frustum_far);
 	const GLfloat length[3] = {
 		LIGHTING_SOURCE_LENGTH, LIGHTING_SOURCE_LENGTH, LIGHTING_SOURCE_LENGTH,

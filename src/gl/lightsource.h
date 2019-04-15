@@ -1,8 +1,8 @@
 #ifndef KARIN_LIGHT_SPURCE_H
 #define KARIN_LIGHT_SPURCE_H
 
-#include "opengl.h"
-#include "vector.h"
+#include "opengl/opengl.h"
+#include "math3d/vector.h"
 
 #define LIGHT_AMBIANT_COLOR 1
 #define LIGHT_DIFFUSE_COLOR (1 << 1)
@@ -24,7 +24,7 @@ typedef struct _Light_Source_s
 {
 	Light_Source_Type_e type;
 
-	vector3_t position;
+	vector3_s position;
 	int dirlighting;
 
 	float ambient[4];
@@ -32,7 +32,7 @@ typedef struct _Light_Source_s
 	float specular[4];
 
 	// spot
-	vector3_t direction;
+	vector3_s direction;
 	float exponent;
 	float cutoff;
 
@@ -42,9 +42,9 @@ typedef struct _Light_Source_s
 } Light_Source_s;
 
 void Lighting_glLight(const Light_Source_s *light, GLenum source);
-Light_Source_s * new_point_light_source(Light_Source_s *r, const vector3_t *pos);
-Light_Source_s * new_spot_light_source(Light_Source_s *r, const vector3_t *pos, const vector3_t *dir, float exponent, float cutoff);
-Light_Source_s * new_direction_light_source(Light_Source_s *r, const vector3_t *dir);
+Light_Source_s * new_point_light_source(Light_Source_s *r, const vector3_s *pos);
+Light_Source_s * new_spot_light_source(Light_Source_s *r, const vector3_s *pos, const vector3_s *dir, float exponent, float cutoff);
+Light_Source_s * new_direction_light_source(Light_Source_s *r, const vector3_s *dir);
 
 void Lighting_SetColor(Light_Source_s *light, int type, const float color[4]);
 

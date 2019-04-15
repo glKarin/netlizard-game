@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include <assert.h>
 
-nl_vector3_t Algo_GLToNLVector3(const gl_vector3_t *glv, int *res)
+nl_vector3_s Algo_GLToNLVector3(const gl_vector3_s *glv, int *res)
 {
-	nl_vector3_t nlv = {0.0, 0.0, 0.0};
+	nl_vector3_s nlv = {0.0, 0.0, 0.0};
 	if(!glv)
 	{
 		if(res)
@@ -21,9 +21,9 @@ nl_vector3_t Algo_GLToNLVector3(const gl_vector3_t *glv, int *res)
 	return nlv;
 }
 
-gl_vector3_t Algo_NLToGLVector3(const nl_vector3_t *nlv, int *res)
+gl_vector3_s Algo_NLToGLVector3(const nl_vector3_s *nlv, int *res)
 {
-	gl_vector3_t glv = {0.0, 0.0, 0.0};
+	gl_vector3_s glv = {0.0, 0.0, 0.0};
 	if(!nlv)
 	{
 		if(res)
@@ -36,19 +36,19 @@ gl_vector3_t Algo_NLToGLVector3(const nl_vector3_t *nlv, int *res)
 	return glv;
 }
 
-void Algo_MakeGLVector3(vector3_t *v)
+void Algo_MakeGLVector3(vector3_s *v)
 {
 	if(!v)
 		return;
-	vector3_t rv = *v;
+	vector3_s rv = *v;
 	CONVERT_VECTOR3_POINTER_NL_TO_GL(&rv, v)
 }
 
-void Algo_MakeNLVector3(vector3_t *v)
+void Algo_MakeNLVector3(vector3_s *v)
 {
 	if(!v)
 		return;
-	vector3_t rv = *v;
+	vector3_s rv = *v;
 	CONVERT_VECTOR3_POINTER_GL_TO_NL(&rv, v)
 }
 

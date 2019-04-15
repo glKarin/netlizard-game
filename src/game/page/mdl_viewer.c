@@ -929,7 +929,7 @@ void Menu_Forward(void *data)
 	if(!has_init)
 		return;
 	float dis = MDL_TRANSLATE_UNIT * delta_time;
-	nl_vector3_t dir = {direction[0], direction[1], direction[2]};
+	nl_vector3_s dir = {direction[0], direction[1], direction[2]};
 	dir = Vector3_Scale(&dir, dis);
 	model_view.translate.xt += dir.x;
 	model_view.translate.yt += dir.y;
@@ -941,7 +941,7 @@ void Menu_Backward(void *data)
 	if(!has_init)
 		return;
 	float dis = MDL_TRANSLATE_UNIT * delta_time;
-	nl_vector3_t dir = {direction[0], direction[1], direction[2]};
+	nl_vector3_s dir = {direction[0], direction[1], direction[2]};
 	dir = Vector3_Scale(&dir, dis);
 	model_view.translate.xt -= dir.x;
 	model_view.translate.yt -= dir.y;
@@ -955,9 +955,9 @@ void Menu_MoveLeft(void *data)
 	float dis = MDL_TRANSLATE_UNIT * delta_time;
 	float xr = MDL_ROTATE_X;
 	float yr = model_view.rotate.zr;
-	nl_vector3_t dir = Algo_ComputeDirection(yr, xr);
-	nl_vector3_t updir = {up[0], up[1], up[2]};
-	nl_vector3_t left = Vector3_CrossVector3(&updir, &dir);
+	nl_vector3_s dir = Algo_ComputeDirection(yr, xr);
+	nl_vector3_s updir = {up[0], up[1], up[2]};
+	nl_vector3_s left = Vector3_CrossVector3(&updir, &dir);
 	dir = Vector3_Scale(&left, dis);
 	model_view.translate.xt += dir.x;
 	model_view.translate.yt += dir.y;
@@ -971,9 +971,9 @@ void Menu_MoveRight(void *data)
 	float dis = MDL_TRANSLATE_UNIT * delta_time;
 	float xr = MDL_ROTATE_X;
 	float yr = model_view.rotate.zr;
-	nl_vector3_t dir = Algo_ComputeDirection(yr, xr);
-	nl_vector3_t updir = {up[0], up[1], up[2]};
-	nl_vector3_t left = Vector3_CrossVector3(&updir, &dir);
+	nl_vector3_s dir = Algo_ComputeDirection(yr, xr);
+	nl_vector3_s updir = {up[0], up[1], up[2]};
+	nl_vector3_s left = Vector3_CrossVector3(&updir, &dir);
 	dir = Vector3_Scale(&left, dis);
 	model_view.translate.xt -= dir.x;
 	model_view.translate.yt -= dir.y;
@@ -1029,7 +1029,7 @@ void Menu_ComputeDirection(void)
 	//float xr = Algo_FormatAngle(model_view.rotate.xr - MDL_ROTATE_X);
 	float xr = model_view.rotate.xr;
 	float yr = model_view.rotate.zr;
-	nl_vector3_t dir = Algo_ComputeDirection(yr, xr);
+	nl_vector3_s dir = Algo_ComputeDirection(yr, xr);
 	direction[0] = dir.x;
 	direction[1] = dir.y;
 	direction[2] = dir.z;

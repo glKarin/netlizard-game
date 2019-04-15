@@ -1,7 +1,7 @@
 #ifndef _KARIN_MESH_H
 #define _KARIN_MESH_H
 
-#include "opengl.h"
+#include "opengl/opengl.h"
 
 #ifdef __cplusplus
 extern "C" {

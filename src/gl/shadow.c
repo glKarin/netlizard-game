@@ -1,6 +1,6 @@
 #include "shadow.h"
-#include "base_algo.h"
-#include "graph.h"
+#include "math3d/base_algo.h"
+#include "math3d/graph.h"
 #include "list_template.h"
 
 #include <string.h>
@@ -10,9 +10,9 @@
 #define F_ZERO 0.1
 
 #define Shadow_Vec3cmp Vector3_EqualsVector3
-#define Shadow_Linecmp LineSegment_EqualsLineSegment
+#define Shadow_Linecmp Line_EqualsLine
 
-static int Shadow_EqualsVector3(const vector3_t *a, const vector3_t *b)
+static int Shadow_EqualsVector3(const vector3_s *a, const vector3_s *b)
 {
 	float xd, yd, zd;
 
@@ -29,7 +29,7 @@ static int Shadow_EqualsVector3(const vector3_t *a, const vector3_t *b)
 			);
 }
 
-static int Shadow_EqualsLineSegment(const line_segment_t *l1, const line_segment_t *l2)
+static int Shadow_EqualsLineSegment(const line_s *l1, const line_s *l2)
 {
 	if(!l1 || !l2)
 		return 0;
@@ -37,7 +37,7 @@ static int Shadow_EqualsLineSegment(const line_segment_t *l1, const line_segment
 }
 
 
-static void Shadow_Vector3ToArray(GLfloat r[3], const vector3_t *v)
+static void Shadow_Vector3ToArray(GLfloat r[3], const vector3_s *v)
 {
 	if(!r || !v)
 		return;
@@ -46,7 +46,7 @@ static void Shadow_Vector3ToArray(GLfloat r[3], const vector3_t *v)
 	r[2] = VECTORV_Z(v);
 }
 
-static void Shadow_ArrayToVector3(vector3_t *r, const GLfloat v[], int count)
+static void Shadow_ArrayToVector3(vector3_s *r, const GLfloat v[], int count)
 {
 	if(!r || !v)
 		return;
@@ -64,24 +64,24 @@ static void Shadow_ArrayToVector3(vector3_t *r, const GLfloat v[], int count)
 	}
 }
 
-static vector3_t * Shadow_MakeHeapVector3From4(const GLfloat v[4])
+static vector3_s * Shadow_MakeHeapVector3From4(const GLfloat v[4])
 {
-	vector3_t *r;
+	vector3_s *r;
 
 	if(!v)
 		return NULL;
 
-	r = NEW(vector3_t);
+	r = NEW(vector3_s);
 	VECTORV_X(r) = v[0] / v[3];
 	VECTORV_Y(r) = v[1] / v[3];
 	VECTORV_Z(r) = v[2] / v[3];
 	return r;
 }
 
-vector3_t Algo_LightingDir(const vector3_t *v, const vector3_t *lightpos, int dirlight)
+vector3_s Algo_LightingDir(const vector3_s *v, const vector3_s *lightpos, int dirlight)
 {
 	int d;
-	vector3_t r = VECTOR3(0, 0, 0);
+	vector3_s r = VECTOR3(0, 0, 0);
 
 	if(!lightpos)
 		return r;
@@ -102,9 +102,9 @@ vector3_t Algo_LightingDir(const vector3_t *v, const vector3_t *lightpos, int di
 	return r;
 }
 
-void Shadow_CaleTrans(material_s *r, const GL_NETLizard_3D_Mesh *nl_mesh, const glmatrix44_t *mat, int invert)
+void Shadow_CaleTrans(material_s *r, const GL_NETLizard_3D_Mesh *nl_mesh, const glmatrix44_s *mat, int invert)
 {
-	glmatrix44_t nor_mat;
+	glmatrix44_s nor_mat;
 	int count;
 	unsigned int i, j;
 	int m, n;
@@ -112,7 +112,7 @@ void Shadow_CaleTrans(material_s *r, const GL_NETLizard_3D_Mesh *nl_mesh, const 
 	const GL_NETLizard_3D_Vertex *nl_vertex;
 	GLushort *nl_indexs;
 	const GL_NETLizard_3D_Material *nl_mat;
-	vector3_t v;
+	vector3_s v;
 
 	if(!r || !nl_mesh)
 		return;
@@ -185,12 +185,12 @@ void Shadow_CaleTrans(material_s *r, const GL_NETLizard_3D_Mesh *nl_mesh, const 
 	GLfloat nv[6];
 	for(i = 0; i < r->count; i++)
 	{
-		vector3_t rv = VECTOR3V(r->points[i].vertex);
+		vector3_s rv = VECTOR3V(r->points[i].vertex);
 		nv[0] = VECTOR_X(rv);
 		nv[1] = VECTOR_Y(rv);
 		nv[2] = VECTOR_Z(rv);
 
-		vector3_t rv2 = VECTOR3V(r->points[i].normal);
+		vector3_s rv2 = VECTOR3V(r->points[i].normal);
 		Vector3_ScaleSelf(&rv2, 20);
 		rv2 = Vector3_PlusVector3(&rv, &rv2);
 		nv[3] = VECTOR_X(rv2);
@@ -216,7 +216,7 @@ void Shadow_CaleTrans(material_s *r, const GL_NETLizard_3D_Mesh *nl_mesh, const 
 	for(i = 0; i < r->count; i++)
 	{
 	glColor4f(0.0, 1.0, 1.0, 1.0);
-		vector3_t rv0 = VECTOR3(0, 0, 0);
+		vector3_s rv0 = VECTOR3(0, 0, 0);
 		rv0 = Math3D_Vector3MultiplyMatrix44(&rv0, mat);
 		nv[0] = VECTOR_X(rv0);
 		nv[1] = VECTOR_Y(rv0);
@@ -225,7 +225,7 @@ void Shadow_CaleTrans(material_s *r, const GL_NETLizard_3D_Mesh *nl_mesh, const 
 		glDrawArrays(GL_POINTS, 0, 1);
 
 	glColor4f(0.0, 1.0, 0.0, 1.0);
-		vector3_t rv = VECTOR3V(r->points[i].vertex);
+		vector3_s rv = VECTOR3V(r->points[i].vertex);
 		nv[0] = VECTOR_X(rv);
 		nv[1] = VECTOR_Y(rv);
 		nv[2] = VECTOR_Z(rv);
@@ -243,28 +243,28 @@ void Shadow_CaleTrans(material_s *r, const GL_NETLizard_3D_Mesh *nl_mesh, const 
 void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s *mat, int method)
 {
 	int has;
-	line_segment_t lp, *lpptr;
+	line_s lp, *lpptr;
 	int i, k, n, o;
 	point_s *pa;
 	material_s *m;
-	list_t(line_segment_t) lines; // line_s
-	list_t(vector3_t) tops, bottoms; // vector3_t
+	list_t(line_s) lines; // ray_s
+	list_t(vector3_s) tops, bottoms; // vector3_s
 	GLfloat *v;
 
 	if(!r || !light || !mat || !mat->count)
 		return;
 
-	LIST(&lines, line_segment_t);
-	LIST(&tops, vector3_t);
-	LIST(&bottoms, vector3_t);
+	LIST(&lines, line_s);
+	LIST(&tops, vector3_s);
+	LIST(&bottoms, vector3_s);
 	newmesh(r, method == SHADOW_Z_FAIL ? 3 : 1); // top[1] bottom[2] caps, and side[0]
 	for(i = 0; i < mat->count / 3; i++) // cale triangle
 	{
 		pa = mat->points + (i * 3);
 		v = pa->vertex;
-		vector3_t nor = VECTOR3V(pa->normal);
-		vector3_t p = VECTOR3V(v);
-		vector3_t p2l = Algo_LightingDir(&p, &light->position, LIGHT_IS_DIRECTION(light));
+		vector3_s nor = VECTOR3V(pa->normal);
+		vector3_s p = VECTOR3V(v);
+		vector3_s p2l = Algo_LightingDir(&p, &light->position, LIGHT_IS_DIRECTION(light));
 #if 0
 	glDisable(GL_DEPTH_TEST);
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -299,8 +299,8 @@ void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s 
 		nv[0] = VECTOR_X(p);
 		nv[1] = VECTOR_Y(p);
 		nv[2] = VECTOR_Z(p);
-		vector3_t p2 = p;
-		vector3_t p3 = Vector3_Scale(&p2l, 200);
+		vector3_s p2 = p;
+		vector3_s p3 = Vector3_Scale(&p2l, 200);
 		p2 = Vector3_PlusVector3(&p2, &p3);
 
 		nv[3] = VECTOR_X(p2);
@@ -323,7 +323,7 @@ void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s 
 				has = 0;
 				for(o = 0; o < lines.count; o++) // find in lines list
 				{
-					if(Shadow_Linecmp(&lp, List_GetConstDataByIndexT(&lines, o, line_segment_t))) // if exists, remove this line, then continue
+					if(Shadow_Linecmp(&lp, List_GetConstDataByIndexT(&lines, o, line_s))) // if exists, remove this line, then continue
 					{
 						//printf("%d exist\n", i);
 						List_DeleteOneByIndex(&lines, o);
@@ -360,7 +360,7 @@ void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s 
 				}
 				if(!has) // if not exists, add new line to list
 				{
-					lpptr = NEW(line_segment_t);
+					lpptr = NEW(line_s);
 					lpptr->a = lp.a;
 					lpptr->b = lp.b;
 					List_PushBackV(&lines, lpptr);
@@ -374,7 +374,7 @@ void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s 
 	{
 		GLfloat vs[6];
 			printf("%d %d\n", o, lines.count);
-			lpptr = List_GetConstDataByIndexT(&lines, o, line_segment_t);
+			lpptr = List_GetConstDataByIndexT(&lines, o, line_s);
 			vs[0] = VECTOR_X(lpptr->a);
 			vs[1] = VECTOR_Y(lpptr->a);
 			vs[2] = VECTOR_Z(lpptr->a);
@@ -421,7 +421,7 @@ void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s 
 		for(o = 0; o < lines.count; o++) // find in lines list
 		{
 			//printf("%d %d\n", o, lines.count);
-			lpptr = List_GetConstDataByIndexT(&lines, o, line_segment_t);
+			lpptr = List_GetConstDataByIndexT(&lines, o, line_s);
 			vs[0] = VECTOR_X(lpptr->a);
 			vs[1] = VECTOR_Y(lpptr->a);
 			vs[2] = VECTOR_Z(lpptr->a);
@@ -448,12 +448,12 @@ void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s 
 	// TODO: cale clock wise, now the lighting source must be above all cubes
 	for(i = 0; i < lines.count; i++)
 	{
-		lpptr = List_GetDataByIndexT(&lines, i, line_segment_t);
+		lpptr = List_GetDataByIndexT(&lines, i, line_s);
 		// point lighting
-		vector3_t dir_a = Algo_LightingDir(&lpptr->a, &light->position, LIGHT_IS_DIRECTION(light));
+		vector3_s dir_a = Algo_LightingDir(&lpptr->a, &light->position, LIGHT_IS_DIRECTION(light));
 		Vector3_ScaleSelf(&dir_a, SHADOW_VOLUME_LENGTH);
 		dir_a = Vector3_PlusVector3(&lpptr->a, &dir_a);
-		vector3_t dir_b = Algo_LightingDir(&lpptr->b, &light->position, LIGHT_IS_DIRECTION(light));
+		vector3_s dir_b = Algo_LightingDir(&lpptr->b, &light->position, LIGHT_IS_DIRECTION(light));
 		Vector3_ScaleSelf(&dir_b, SHADOW_VOLUME_LENGTH);
 		dir_b = Vector3_PlusVector3(&lpptr->b, &dir_b);
 
@@ -606,9 +606,9 @@ void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s 
 		newmat(m, tops.count);
 		for(k = 0; k < tops.count; k += 3)
 		{
-			const vector3_t *first = List_GetDataByIndexT(&tops, k, vector3_t);
-			const vector3_t *sec = List_GetDataByIndexT(&tops, k + 1, vector3_t);
-			const vector3_t *third = List_GetDataByIndexT(&tops, k + 2, vector3_t);
+			const vector3_s *first = List_GetDataByIndexT(&tops, k, vector3_s);
+			const vector3_s *sec = List_GetDataByIndexT(&tops, k + 1, vector3_s);
+			const vector3_s *third = List_GetDataByIndexT(&tops, k + 2, vector3_s);
 			pa = m->points + k;
 			Shadow_Vector3ToArray(pa->vertex, first);
 			pa = m->points + k + 1;
@@ -623,16 +623,16 @@ void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s 
 		newmat(m, bottoms.count);
 		for(k = 0; k < bottoms.count; k += 3)
 		{
-			const vector3_t *first = List_GetDataByIndexT(&bottoms, k, vector3_t);
-			const vector3_t *sec = List_GetDataByIndexT(&bottoms, k + 1, vector3_t);
-			const vector3_t *third = List_GetDataByIndexT(&bottoms, k + 2, vector3_t);
+			const vector3_s *first = List_GetDataByIndexT(&bottoms, k, vector3_s);
+			const vector3_s *sec = List_GetDataByIndexT(&bottoms, k + 1, vector3_s);
+			const vector3_s *third = List_GetDataByIndexT(&bottoms, k + 2, vector3_s);
 
 			// point lighting
-			vector3_t dir_a = Algo_LightingDir(first, &light->position, LIGHT_IS_DIRECTION(light));
+			vector3_s dir_a = Algo_LightingDir(first, &light->position, LIGHT_IS_DIRECTION(light));
 			Vector3_ScaleSelf(&dir_a, LIGHT_IS_DIRECTION(light));
-			vector3_t dir_b = Algo_LightingDir(sec, &light->position, LIGHT_IS_DIRECTION(light));
+			vector3_s dir_b = Algo_LightingDir(sec, &light->position, LIGHT_IS_DIRECTION(light));
 			Vector3_ScaleSelf(&dir_b, SHADOW_VOLUME_LENGTH);
-			vector3_t dir_c = Algo_LightingDir(third, &light->position, LIGHT_IS_DIRECTION(light));
+			vector3_s dir_c = Algo_LightingDir(third, &light->position, LIGHT_IS_DIRECTION(light));
 			Vector3_ScaleSelf(&dir_c, SHADOW_VOLUME_LENGTH);
 
 			pa = m->points + k;
@@ -686,7 +686,7 @@ void Shadow_MakeVolume(mesh_s *r, const Light_Source_s *light, const material_s 
 
 __Exit:
 	List_DeleteAll(&lines);
-	if(m == SHADOW_Z_FAIL)
+	if(method == SHADOW_Z_FAIL)
 	{
 		List_DeleteAll(&tops);
 		List_DeleteAll(&bottoms);
@@ -856,7 +856,7 @@ __Exit:
 void Shadow_RenderItemShadow(const GL_NETLizard_3D_Item_Mesh *mesh, const Light_Source_s *light, int method)
 {
 	material_s m;
-	glmatrix44_t mat;
+	glmatrix44_s mat;
 
 	if(!mesh || !light)
 		return;

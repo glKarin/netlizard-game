@@ -212,20 +212,20 @@ void UI_RenderScene3D(const scene_3d *scene);
 void delete_scene_3d(scene_3d *s);
 
 // 计算NETLizard 3D场景中位置角度变换结果
-void Algo_TransformPositionAndAngle(position_type p, const nl_vector3_t *ov, float tunit, nl_vector3_t *rv, orientation_type o, float oxr, float oyr, float runit, float *rxr, float *ryr, int corss);
+void Algo_TransformPositionAndAngle(position_type p, const nl_vector3_s *ov, float tunit, nl_vector3_s *rv, orientation_type o, float oxr, float oyr, float runit, float *rxr, float *ryr, int corss);
 // 计算OpenGL视觉坐标位置角度变换结果
-void Algo_GLTransformPositionAndAngle(position_type p, const gl_vector3_t *ov, float tunit, gl_vector3_t *rv, orientation_type o, float oxr, float oyr, float runit, float *rxr, float *ryr, int cross);
+void Algo_GLTransformPositionAndAngle(position_type p, const gl_vector3_s *ov, float tunit, gl_vector3_s *rv, orientation_type o, float oxr, float oyr, float runit, float *rxr, float *ryr, int cross);
 // NETLizard 3D 场景中按角度计算方向
-vector3_t Algo_GLComputeDirection(float y, float x);
+vector3_s Algo_GLComputeDirection(float y, float x);
 // OpenGL 视觉坐标系按角度计算方向
-vector3_t Algo_ComputeDirection(float yr, float xr);
-void Algo_GetNormalAngle2D(const vector2_t *normal, float *yr);
+vector3_s Algo_ComputeDirection(float yr, float xr);
+void Algo_GetNormalAngle2D(const vector2_s *normal, float *yr);
 // 获取当前事件 微秒
 unsigned long long Game_GetGameTimeUS(void);
 // 毫秒
 unsigned long long Game_GetGameTime(void);
 void UI_ResizeScene2D(scene_2d *s, GLfloat w, GLfloat h);
-void Algo_GetNormalAngle(const nl_vector3_t *normal, float *yr, float *xr);
+void Algo_GetNormalAngle(const nl_vector3_s *normal, float *yr, float *xr);
 const char * Console_PrintLine(const char *title, char ch);
 void UI_ResizeScene3D(scene_3d *s, GLfloat w, GLfloat h, GLfloat fw, GLfloat fh);
 

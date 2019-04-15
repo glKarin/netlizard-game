@@ -3,32 +3,18 @@
 ######################################################################
 
 TEMPLATE = app
-DEPENDPATH += . .. ../glk ../SOIL ../netlizard ../math3d ../bio ../lolking game game/component template sound local physics game/page ../opengl ../csol csol gl
-
-INCLUDEPATH += . .. ../SOIL ../glk ../netlizard ../math3d ../bio ../lolking game game/component template sound local physics game/page ../opengl ../csol csol gl
+TARGET = netlizard-game
 
 include(../netlizard-game.pri)
+
+DEPENDPATH += . .. $$BUILD_DIR/renderer $$BUILD_DIR/libs game game/component template sound local physics game/page csol gl
+INCLUDEPATH += . .. $$BUILD_DIR/renderer $$BUILD_DIR/libs game game/component template sound local physics game/page csol gl
 
 LIBS += -lnetlizard -lSOIL -lglk -llolking -lmath3d -lbio -lopengl -lcsol
 LIBS += -lSDL -lSDL_mixer
 
-#QMAKE_CXXFLAGS += -std=c++0x
-
-QT -= core gui
-CONFIG -= qt
-CONFIG += debug_and_release x11
-CONFIG(debug, debug|release) {
-OBJECTS_DIR = ../.debug/.obj/src
-LIBS += -L../.debug
-PRE_TARGETDEPS += ../.debug/libnetlizard.so ../.debug/libSOIL.so ../.debug/liblolking.so ../.debug/libmath3d.so ../.debug/libglk.so ../.debug/libbio.so ../.debug/libopengl.so ../.debug/libcsol.so
-TARGET = netlizard-game.debug
-} else {
-OBJECTS_DIR = ../.release/.obj/src
-LIBS += -L../.release
-PRE_TARGETDEPS += ../.release/libnetlizard.so ../.release/libSOIL.so ../.release/liblolking.so ../.release/libmath3d.so ../.release/libglk.so ../.release/libbio.so ../.release/libopengl.so ../.release/libcsol.so
-TARGET = netlizard-game
-}
-DESTDIR = ..
+CONFIG += x11
+PRE_TARGETDEPS += $$DESTDIR/libnetlizard.so $$DESTDIR/libSOIL.so $$DESTDIR/liblolking.so $$DESTDIR/libmath3d.so $$DESTDIR/libglk.so $$DESTDIR/libbio.so $$DESTDIR/libopengl.so $$DESTDIR/libcsol.so
 
 # Input
 HEADERS += netlizard3d_viewer.h \
@@ -196,7 +182,7 @@ SOURCES += ../main.c \
 					 sound/sdlk_sound.c \
 					 physics/gravity.c
 
-bin.files = ../$${TARGET}
+bin.files = $$DESTDIR/$${TARGET}
 bin.path = /usr/bin
 
 INSTALLS += bin

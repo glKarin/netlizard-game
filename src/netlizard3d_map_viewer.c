@@ -182,7 +182,7 @@ void Viewer_NETLizard3DMapRegisterFunction(void)
 
 void Viewer_InitFunc(void)
 {
-	vector3_t lightpos;
+	vector3_s lightpos;
 
 	Viewer_Init3DFunc();
 	GLfloat bg_color[] = {1.0, 1.0, 1.0, 1.0};
@@ -247,7 +247,7 @@ void Viewer_InitFunc(void)
 	y_r_3d = Algo_FormatAngle(map_model->start_angle[1] - 180.0);
 	//x_r_3d = map_model->start_angle[0];
 	
-	nl_vector3_t p = {map_model->start_pos[0], map_model->start_pos[1], map_model->start_pos[2]};
+	nl_vector3_s p = {map_model->start_pos[0], map_model->start_pos[1], map_model->start_pos[2]};
 	int scene = Algo_GetPointInAABBInNETLizard3DMap(&p, map_model);
 
 	new_game_character(&player, natasha, map_model->start_pos[0], map_model->start_pos[1], map_model->start_pos[2] - (2293760 >> 16), 0.0, map_model->start_angle[1], 0, "karin", scene, NULL, 0);
@@ -255,8 +255,8 @@ void Viewer_InitFunc(void)
 	player.ai.time = time;
 
 	frustum_far = FRUSTUM_FAR;
-	nl_vector3_t min = {0.0, 0.0, 0.0};
-	nl_vector3_t max = {0.0, 0.0, 0.0};
+	nl_vector3_s min = {0.0, 0.0, 0.0};
+	nl_vector3_s max = {0.0, 0.0, 0.0};
 	Algo_GetNETLizard3DMapRange(map_model, NULL, 0, &min, &max);
 #ifndef _HARMATTAN_OPENGL
 	frustum_far = KARIN_MAX(max.y - min.y, (KARIN_MAX(max.x - min.x, max.z - min.z)));
@@ -368,7 +368,7 @@ void Viewer_DrawFunc(void)
 			}
 
 			// 渲染圆点瞄准器
-			nl_vector3_t collision_point = {0.0, 0.0, 0.0};
+			nl_vector3_s collision_point = {0.0, 0.0, 0.0};
 			int scene = -1;
 			int r = Game_GetRayPointCoord(map_model, &player, GL_FALSE, &scene, &collision_point, NULL, NULL);
 			if(r)
@@ -473,7 +473,7 @@ void Viewer_UpdatePlayerPosition(void)
 {
 	// myself caillyn model
 	// get position and angle
-	nl_vector3_t ori_v = {player.position[0], player.position[1], player.position[2] + player.height};
+	nl_vector3_s ori_v = {player.position[0], player.position[1], player.position[2] + player.height};
 	double per = (double)(time - player.ai.time) / 1000.0;
 	float turn_unit = player.turn_unit * per;
 	float move_unit = player.move_unit * per;
@@ -511,7 +511,7 @@ void Viewer_UpdatePlayerPosition(void)
 	// get return var
 	float ryr = 0.0;
 	float rxr = 0.0;
-	nl_vector3_t rv = ori_v;
+	nl_vector3_s rv = ori_v;
 
 	Algo_TransformPositionAndAngle(p, &ori_v, move_unit, &rv, o, oxr, oyr, turn_unit, &rxr, &ryr, is_cross);
 
@@ -538,7 +538,7 @@ void Viewer_UpdatePlayerPosition(void)
 		player.z_moving.speed = Physics_GetJumpSpeed(player.z_moving.jump_speed, GAME_G, delta);
 	}
 	// collision testing
-	nl_vector3_t v = ori_v;
+	nl_vector3_s v = ori_v;
 	Algo_ComputeCharacterPositionInNETLizard3DMap(map_model, &player, &rv, &v);
 	if(player.scene_collision_result)
 	{
@@ -605,7 +605,7 @@ void Viewer_UpdateGLTransform(game_character *gamer)
 
 	if(p_mode == third_person_mode)
 	{
-		gl_vector3_t third = {0.0, 0.0, 0.0};
+		gl_vector3_s third = {0.0, 0.0, 0.0};
 		//if(Algo_UpdateThirdPersonPosition(&third.x, &third.y, &third.z, x_t_3d, y_t_3d, z_t_3d, x_r_3d, y_r_3d, -27.0, 15.0, 180.0, gamer->scene, gamer->scene_collision_result))
 		float rxr = 0.0;
 		float ryr = 0.0;
@@ -960,9 +960,9 @@ void Viewer_HandleNETLizard3DMapEvent(float delta)
 	{
 		if(ev[e].event_type == Event_DoorV)
 		{
-			nl_vector3_t pos = {player.position[0], player.position[1], player.position[2]};
+			nl_vector3_s pos = {player.position[0], player.position[1], player.position[2]};
 			GL_NETLizard_3D_Item_Mesh *model = map_model->item_meshes + ev[e].doorv_event.item_id;
-			aabb_t aabb = {
+			bound_s aabb = {
 				{model->item_mesh.ortho[3] + model->pos[0] - player.width, model->item_mesh.ortho[4] + model->pos[1] - player.width, 0},
 				{model->item_mesh.ortho[0] + model->pos[0] + player.width, model->item_mesh.ortho[1] + model->pos[1] + player.width, 0}
 			};
@@ -977,18 +977,18 @@ void Viewer_HandleNETLizard3DMapEvent(float delta)
 		}
 		else if(ev[e].event_type == Event_Double_DoorV)
 		{
-			nl_vector3_t pos = {player.position[0], player.position[1], player.position[2]};
+			nl_vector3_s pos = {player.position[0], player.position[1], player.position[2]};
 			GL_NETLizard_3D_Item_Mesh *model = map_model->item_meshes + ev[e].double_doorv_event.item_id;
 			GL_NETLizard_3D_Item_Mesh *model2 = map_model->item_meshes + ev[e].double_doorv_event.item_id_pair;
-			nl_vector3_t minv = {0.0, 0.0, 0.0};
-			nl_vector3_t maxv = {0.0, 0.0, 0.0};
+			nl_vector3_s minv = {0.0, 0.0, 0.0};
+			nl_vector3_s maxv = {0.0, 0.0, 0.0};
 			minv.x = KARIN_MIN(model->item_mesh.ortho[3] + model->pos[0] - player.width, model2->item_mesh.ortho[3] + model2->pos[0] - player.width);
 			minv.y = KARIN_MIN(model->item_mesh.ortho[4] + model->pos[1] - player.width, model2->item_mesh.ortho[4] + model2->pos[1] - player.width);
 			minv.z = KARIN_MIN(model->item_mesh.ortho[5] + model->pos[2], model2->item_mesh.ortho[5] + model2->pos[2]);
 			maxv.x = KARIN_MAX(model->item_mesh.ortho[0] + model->pos[0] + player.width, model2->item_mesh.ortho[0] + model2->pos[0] + player.width);
 			maxv.y = KARIN_MAX(model->item_mesh.ortho[1] + model->pos[1] + player.width, model2->item_mesh.ortho[1] + model2->pos[1] + player.width);
 			maxv.z = KARIN_MAX(model->item_mesh.ortho[2] + model->pos[2], model2->item_mesh.ortho[2] + model2->pos[2]);
-			aabb_t aabb = {minv, maxv};
+			bound_s aabb = {minv, maxv};
 			if(Math3D_PointInAABB(&pos, &aabb) || (player.collision_item != -1 && (ev[e].double_doorv_event.item_id == player.collision_item || ev[e].double_doorv_event.item_id_pair == player.collision_item)))
 			{
 				NETLizard_HandleDoubleVDoorEvent(map_model, &(ev[e].double_doorv_event), 1, delta);
@@ -1000,18 +1000,18 @@ void Viewer_HandleNETLizard3DMapEvent(float delta)
 		}
 		else if(ev[e].event_type == Event_Double_DoorH)
 		{
-			nl_vector3_t pos = {player.position[0], player.position[1], player.position[2]};
+			nl_vector3_s pos = {player.position[0], player.position[1], player.position[2]};
 			GL_NETLizard_3D_Item_Mesh *model = map_model->item_meshes + ev[e].double_doorh_event.item_id;
 			GL_NETLizard_3D_Item_Mesh *model2 = map_model->item_meshes + ev[e].double_doorh_event.item_id_pair;
-			nl_vector3_t minv = {0.0, 0.0, 0.0};
-			nl_vector3_t maxv = {0.0, 0.0, 0.0};
+			nl_vector3_s minv = {0.0, 0.0, 0.0};
+			nl_vector3_s maxv = {0.0, 0.0, 0.0};
 			minv.x = KARIN_MIN(model->item_mesh.ortho[3] + model->pos[0] - player.width, model2->item_mesh.ortho[3] + model2->pos[0] - player.width);
 			minv.y = KARIN_MIN(model->item_mesh.ortho[4] + model->pos[1] - player.width, model2->item_mesh.ortho[4] + model2->pos[1] - player.width);
 			minv.z = KARIN_MIN(model->item_mesh.ortho[5] + model->pos[2], model2->item_mesh.ortho[5] + model2->pos[2]);
 			maxv.x = KARIN_MAX(model->item_mesh.ortho[0] + model->pos[0] + player.width, model2->item_mesh.ortho[0] + model2->pos[0] + player.width);
 			maxv.y = KARIN_MAX(model->item_mesh.ortho[1] + model->pos[1] + player.width, model2->item_mesh.ortho[1] + model2->pos[1] + player.width);
 			maxv.z = KARIN_MAX(model->item_mesh.ortho[2] + model->pos[2], model2->item_mesh.ortho[2] + model2->pos[2]);
-			aabb_t aabb = {minv, maxv};
+			bound_s aabb = {minv, maxv};
 			if(Math3D_PointInAABB(&pos, &aabb) || (player.collision_item != -1 && (ev[e].double_doorh_event.item_id == player.collision_item || ev[e].double_doorh_event.item_id_pair == player.collision_item)))
 			{
 				NETLizard_HandleDoubleHDoorEvent(map_model, &(ev[e].double_doorh_event), 1, delta);
@@ -1023,9 +1023,9 @@ void Viewer_HandleNETLizard3DMapEvent(float delta)
 		}
 		else if(ev[e].event_type == Event_Elevator)
 		{
-			nl_vector3_t pos = {player.position[0], player.position[1], player.position[2]};
+			nl_vector3_s pos = {player.position[0], player.position[1], player.position[2]};
 			GL_NETLizard_3D_Item_Mesh *model = map_model->item_meshes + ev[e].elevator_event.item_id;
-			aabb_t aabb = {
+			bound_s aabb = {
 				{model->item_mesh.ortho[3] + model->pos[0], model->item_mesh.ortho[4] + model->pos[1], ev[e].elevator_event.min_z},
 				{model->item_mesh.ortho[0] + model->pos[0], model->item_mesh.ortho[1] + model->pos[1], ev[e].elevator_event.max_z + 2}
 			};
@@ -1048,10 +1048,10 @@ void Viewer_HandleNETLizard3DMapEvent(float delta)
 		}
 		else if(ev[e].event_type == Event_Machine)
 		{
-			nl_vector3_t pos = {player.position[0], player.position[1], player.position[2] + player.height};
+			nl_vector3_s pos = {player.position[0], player.position[1], player.position[2] + player.height};
 
 			GL_NETLizard_3D_Item_Mesh *model = map_model->item_meshes + ev[e].machine_event.machine_gun_event.item_id;
-			nl_vector3_t pos2 = {model->pos[0], model->pos[1], model->pos[2] - 125};
+			nl_vector3_s pos2 = {model->pos[0], model->pos[1], model->pos[2] - 125};
 			float d = 0.0;
 			int r = Algo_PointCanViewPointInNETLizard3DMap(map_model, &pos, &pos2, &d);
 			if(r && (ev[e].machine_event.machine_gun_event.range < 0 || d <= ev[e].machine_event.machine_gun_event.range))

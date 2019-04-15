@@ -769,8 +769,8 @@ int UI_LoadNETLizard3DMap(void)
 		viewer.rotate.yr = Algo_FormatAngle(map_model->start_angle[1] - 180.0);
 		viewer.rotate.zr = -90;
 		viewer.far = FRUSTUM_FAR;
-		nl_vector3_t min = {0.0, 0.0, 0.0};
-		nl_vector3_t max = {0.0, 0.0, 0.0};
+		nl_vector3_s min = {0.0, 0.0, 0.0};
+		nl_vector3_s max = {0.0, 0.0, 0.0};
 		Algo_GetNETLizard3DMapRange(map_model, NULL, 0, &min, &max);
 #ifndef _HARMATTAN_OPENGL
 		viewer.far = KARIN_MAX(max.y - min.y, (KARIN_MAX(max.x - min.x, max.z - min.z)));

@@ -1,7 +1,7 @@
 #include "page_stack.h"
 #include "list_template.h"
 #include "nl_std.h"
-#include "netlizard.h"
+#include "netlizard/netlizard.h"
 
 #include <stdio.h>
 #include <string.h>

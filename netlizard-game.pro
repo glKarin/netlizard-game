@@ -3,8 +3,10 @@
 ######################################################################
 
 TEMPLATE = subdirs
-SUBDIRS += opengl SOIL glk netlizard math3d lolking bio csol src testapp
+SUBDIRS += renderer netlizard libs src test
 CONFIG += ordered
+
+include(netlizard-game.pri)
 
 rsc.source = ./resource
 rsc.target = .

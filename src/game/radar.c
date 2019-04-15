@@ -115,7 +115,7 @@ void UI_RenderRadar(const radar *r)
 				unsigned int i;
 				for(i = 0; i < r->point_count; i++)
 				{
-					vector2_t v2 = {r->point_pos[i * 4], r->point_pos[i * 4 + 1]};
+					vector2_s v2 = {r->point_pos[i * 4], r->point_pos[i * 4 + 1]};
 					float len = Vector2_Mag(&v2);
 					if(len > r->range)
 						continue;

@@ -42,7 +42,7 @@ void Lighting_glLight(const Light_Source_s *light, GLenum source)
 #endif
 }
 
-Light_Source_s * new_point_light_source(Light_Source_s *r, const vector3_t *pos)
+Light_Source_s * new_point_light_source(Light_Source_s *r, const vector3_s *pos)
 {
 	if(!pos)
 		return NULL;
@@ -56,7 +56,7 @@ Light_Source_s * new_point_light_source(Light_Source_s *r, const vector3_t *pos)
 	return light;
 }
 
-Light_Source_s * new_spot_light_source(Light_Source_s *r, const vector3_t *pos, const vector3_t *dir, float exponent, float cutoff)
+Light_Source_s * new_spot_light_source(Light_Source_s *r, const vector3_s *pos, const vector3_s *dir, float exponent, float cutoff)
 {
 	if(!pos || !dir)
 		return NULL;
@@ -73,7 +73,7 @@ Light_Source_s * new_spot_light_source(Light_Source_s *r, const vector3_t *pos, 
 	return light;
 }
 
-Light_Source_s * new_direction_light_source(Light_Source_s *r, const vector3_t *dir)
+Light_Source_s * new_direction_light_source(Light_Source_s *r, const vector3_s *dir)
 {
 	if(!dir)
 		return NULL;

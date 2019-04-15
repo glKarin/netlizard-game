@@ -70,9 +70,9 @@ void Game_UpdateBullet(bullet *b, long long game_time)
 		}
 	}
 
-	nl_vector3_t start_pos = {b->start_pos[0], b->start_pos[1], b->start_pos[2]};
-	nl_vector3_t last_pos = {b->last_pos[0], b->last_pos[1], b->last_pos[2]};
-	nl_vector3_t pos = {0.0, 0.0, 0.0};
+	nl_vector3_s start_pos = {b->start_pos[0], b->start_pos[1], b->start_pos[2]};
+	nl_vector3_s last_pos = {b->last_pos[0], b->last_pos[1], b->last_pos[2]};
+	nl_vector3_s pos = {0.0, 0.0, 0.0};
 	/*
 	float rx = 0.0;
 	float ry = 0.0;
